@@ -14,7 +14,8 @@ public import ADR11.Introduction.Proposition1
 The rooted triples on three distinct taxa `a, b, c` have the probabilities of the rooted gene trees
 under the induced species tree on `{a, b, c}` (`triple_exists_fin3`). When no cluster contains
 exactly two of `a, b, c`, the induced tree is the unresolved tree `(a,b,c)`, and the three
-probabilities are `1/3` (`section5_threeTaxa`); otherwise exactly one exceeds `1/3`
+probabilities are `1/3`, the limits of equation (1) as the internal branch length tends to `0`
+(`lim_threeTaxa_unresolved`, as in `section5_threeTaxa`); otherwise exactly one exceeds `1/3`
 (`triple_rootedTripleProb_of_resolved`). So in any species tree a cluster contains `a` and `b` but
 not `c` exactly when `ℙ(ab|c) > 1/3` (`triple_resolved_iff`), and the proof of Proposition 1
 (`triple_sameRootedMetricTree`) applies.
@@ -52,7 +53,9 @@ private theorem triple_fin3_eq_hierarchyOf_empty {H : Finset (Finset (Fin 3))}
     exacts [hH.1, hH.2.1 x]
 
 /-- **The unresolved triple.** If no cluster contains exactly two of the distinct taxa `a, b, c`,
-then the three rooted triples on them have probability `1/3`. -/
+then the three rooted triples on them have probability `1/3`: the induced species tree on
+`{a, b, c}` is the unresolved tree `(a,b,c)`, whose rooted gene trees have probability `1/3` as the
+limits of equation (1) (`lim_threeTaxa_unresolved`). -/
 theorem triple_rootedTripleProb_of_unresolved (σ : SpeciesTree X) {a b c : X} (hab : a ≠ b)
     (hac : a ≠ c) (hbc : b ≠ c) (h₁ : ¬ ∃ C ∈ σ.clusters, a ∈ C ∧ b ∈ C ∧ c ∉ C)
     (h₂ : ¬ ∃ C ∈ σ.clusters, a ∈ C ∧ c ∈ C ∧ b ∉ C)
@@ -62,12 +65,8 @@ theorem triple_rootedTripleProb_of_unresolved (σ : SpeciesTree X) {a b c : X} (
   obtain ⟨τ, e₁, e₂, e₃, h01, h02, h12, -⟩ := triple_exists_fin3 σ hab hac hbc
   have hτ : τ.clusters = hierarchyOf ∅ :=
     triple_fin3_eq_hierarchyOf_empty τ.isHierarchy (mt h01.1 h₁) (mt h02.1 h₂) (mt h12.1 h₃)
-  -- `section5_threeTaxa` also takes a resolved tree; any one will do
-  obtain ⟨⟨f₁, f₂, f₃⟩, -⟩ := section5_threeTaxa τ
-    (SpeciesTree.ofLengths clusters3 (fun _ => 1) (by decide) (by decide) (by decide) (by decide)
-      fun _ _ _ _ => one_pos) hτ rfl
   rw [e₁, e₂, e₃]
-  exact ⟨f₁, f₂, f₃⟩
+  exact lim_threeTaxa_unresolved τ hτ
 
 /-- In any species tree, a cluster contains `a` and `b` but not `c` if and only if the probability
 of the rooted triple `ab|c` exceeds `1/3`. -/

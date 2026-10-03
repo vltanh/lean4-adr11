@@ -26,8 +26,9 @@ length `0` can be contracted, and the distributions are continuous in the edge l
   of its hierarchy (for example a binary resolution), with the lengths of `σ` on its edges.
 * `continuous_kingmanTransition_apply`, `continuous_forestDist`, `continuous_unrootedDistOf`: the
   distributions depend continuously on the edge lengths.
-* `SpeciesTree.tendsto_unrootedDistOf`: the unrooted gene tree distribution of `σ` is the limit of
-  those of a refinement `H`, with lengths `ε → 0` on the added edges.
+* `SpeciesTree.tendsto_unrootedDistOf`, `lim_tendsto_rootedDist`: the unrooted (rooted) gene tree
+  distribution of `σ` is the limit of those of a refinement `H`, with lengths `ε → 0` on the added
+  edges.
 
 ## Implementation notes
 
@@ -406,6 +407,26 @@ theorem SpeciesTree.tendsto_unrootedDistOf (σ : SpeciesTree X) {H : Finset (Fin
       σ.unrootedDist s T :=
     σ.unrootedDist_eq_of_subset hH hsub (fun A hA _ => ite_eq_left hA)
       (fun D _ hD => ite_eq_right hD) s T
+  rw [← h0]
+  exact hcont.tendsto 0
+
+/-- **Section 5, limits, for rooted gene trees.** The rooted gene tree distribution of a hierarchy
+`H` refining the hierarchy of a species tree `σ`, with the lengths of `σ` on its edges and the
+length `ε` on the added edges, tends to that of `σ` as `ε → 0`. -/
+theorem lim_tendsto_rootedDist (σ : SpeciesTree X) {H : Finset (Finset X)}
+    (hH : IsHierarchy H) (hsub : σ.clusters ⊆ H) (s : L → X) (G : Finset (Finset L)) :
+    Filter.Tendsto
+      (fun ε : ℝ => forestDist H (fun A => if A ∈ σ.clusters then σ.length A else ε) s univ G)
+      (nhds 0) (nhds (σ.rootedDist s G)) := by
+  -- the distribution is continuous in `ε`, and at `ε = 0` the added edges contract
+  have hcont : Continuous fun ε : ℝ =>
+      forestDist H (fun A => if A ∈ σ.clusters then σ.length A else ε) s univ G :=
+    continuous_forestDist H
+      (fun A => continuous_if_const _ (fun _ => continuous_const) fun _ => continuous_id) s univ G
+  have h0 : forestDist H (fun A => if A ∈ σ.clusters then σ.length A else (0 : ℝ)) s univ G =
+      σ.rootedDist s G :=
+    σ.rootedDist_eq_of_subset hH hsub (fun A hA _ => ite_eq_left hA)
+      (fun D _ hD => ite_eq_right hD) s G
   rw [← h0]
   exact hcont.tendsto 0
 

@@ -3,7 +3,7 @@ module
 public import ADR11.FiveTaxa.Balanced
 public import ADR11.FiveTaxa.Caterpillar
 public import ADR11.FiveTaxa.Pseudocaterpillar
-public import ADR11.Computation.FiveTaxa
+public import ADR11.Nonbinary
 
 /-!
 # Appendix C: nonbinary 5-taxon species trees
@@ -16,7 +16,15 @@ public import ADR11.Computation.FiveTaxa
 * `table7_classes`: the equivalence classes of Table 7.
 * `appendixC_degenerate`: the two 2-element classes of `P₅` and of `P₇` can merge.
 
-Everything except `table7` is derived from the formulas of `table7` (for the resolved shapes, from
+`table7` is obtained as in the paper (l.944), from the equations (11)–(13) for the resolved trees
+by setting one or more branch lengths to `0`. Each `Pₖ` is the contraction of a binary
+representative with the same labels: `P₁, P₂, P₄, P₆, P₈` of the balanced tree, `P₃, P₉` of the
+caterpillar, `P₅, P₇` of the pseudocaterpillar. By `section5_limit` its distribution is the limit
+of the representative's as the contracted lengths tend to `0`; the formulas are continuous in
+`X, Y, Z`, so the limit is the formula with `X`, `Y` or `Z` equal to `1` (`lim_u_bal`,
+`lim_u_cat`, `lim_u_pse`).
+
+Everything else is derived from the formulas of `table7` (for the resolved shapes, from
 (11)–(13) and the inequalities (4)–(6)): each `u_i` equals `u` of the name of its class, the
 differences between the classes are explicit positive polynomials in `X, Y, Z ∈ (0, 1)`, and the
 separating or degenerate examples are species trees `SpeciesTree.ofLengths` with rational
@@ -31,11 +39,139 @@ open Finset Real
 
 variable {X : Type*} [Fintype X] [DecidableEq X]
 
+/-! ### Table 7: the formulas (11)–(13) with branch lengths set to `0` -/
+
+/-- Equation (11): `u_i` of the balanced species tree `(((a,b):x,c):y,(d,e):z)` as a polynomial in
+`X = e^{-x}`, `Y = e^{-y}`, `Z = e^{-z}`. -/
+private noncomputable def lim_balF (i : ℕ) (X Y Z : ℝ) : ℝ :=
+  if i = 1 then 1 - 2 / 3 * X - 2 / 3 * Y * Z + 1 / 3 * X * Y * Z + 1 / 15 * X * Y ^ 3 * Z
+  else if i ∈ ({2, 3} : Finset ℕ) then 1 / 3 * Y * Z - 1 / 6 * X * Y * Z - 1 / 10 * X * Y ^ 3 * Z
+  else if i ∈ ({4, 13} : Finset ℕ) then 1 / 3 * X - 1 / 3 * X * Y * Z + 1 / 15 * X * Y ^ 3 * Z
+  else if i ∈ ({5, 6, 9, 12} : Finset ℕ) then 1 / 6 * X * Y * Z - 1 / 10 * X * Y ^ 3 * Z
+  else 1 / 15 * X * Y ^ 3 * Z
+
+/-- Equation (12): `u_i` of the caterpillar species tree `((((a,b):x,c):y,d):z,e)` as a polynomial
+in `X = e^{-x}`, `Y = e^{-y}`, `Z = e^{-z}`. -/
+private noncomputable def lim_catF (i : ℕ) (X Y Z : ℝ) : ℝ :=
+  if i = 1 then
+    1 - 2 / 3 * X - 2 / 3 * Y + 1 / 3 * X * Y + 1 / 18 * X * Y ^ 3 + 1 / 90 * X * Y ^ 3 * Z ^ 6
+  else if i = 2 then 1 / 3 * Y - 1 / 6 * X * Y - 1 / 9 * X * Y ^ 3 + 1 / 90 * X * Y ^ 3 * Z ^ 6
+  else if i = 3 then 1 / 3 * Y - 1 / 6 * X * Y - 1 / 18 * X * Y ^ 3 - 2 / 45 * X * Y ^ 3 * Z ^ 6
+  else if i ∈ ({4, 13} : Finset ℕ) then
+    1 / 3 * X - 1 / 3 * X * Y + 1 / 18 * X * Y ^ 3 + 1 / 90 * X * Y ^ 3 * Z ^ 6
+  else if i ∈ ({5, 12} : Finset ℕ) then
+    1 / 6 * X * Y - 1 / 9 * X * Y ^ 3 + 1 / 90 * X * Y ^ 3 * Z ^ 6
+  else if i ∈ ({6, 9} : Finset ℕ) then
+    1 / 6 * X * Y - 1 / 18 * X * Y ^ 3 - 2 / 45 * X * Y ^ 3 * Z ^ 6
+  else 1 / 18 * X * Y ^ 3 + 1 / 90 * X * Y ^ 3 * Z ^ 6
+
+/-- Equation (13): `u_i` of the pseudocaterpillar species tree `(((a,b):x,(d,e):y):z,c)` as a
+polynomial in `X = e^{-x}`, `Y = e^{-y}`, `Z = e^{-z}`. -/
+private noncomputable def lim_pseF (i : ℕ) (X Y Z : ℝ) : ℝ :=
+  if i = 1 then 1 - 2 / 3 * X - 2 / 3 * Y + 4 / 9 * X * Y - 2 / 45 * X * Y * Z ^ 6
+  else if i ∈ ({2, 3} : Finset ℕ) then 1 / 3 * Y - 5 / 18 * X * Y + 1 / 90 * X * Y * Z ^ 6
+  else if i ∈ ({4, 13} : Finset ℕ) then 1 / 3 * X - 5 / 18 * X * Y + 1 / 90 * X * Y * Z ^ 6
+  else if i ∈ ({8, 11} : Finset ℕ) then 1 / 9 * X * Y - 2 / 45 * X * Y * Z ^ 6
+  else 1 / 18 * X * Y + 1 / 90 * X * Y * Z ^ 6
+
+/-- Equation (11) in the form `u_i = lim_balF i X Y Z`. -/
+private theorem lim_balF_eq (τ : SpeciesTree (Fin 5)) (hτ : τ.clusters = balanced5) {i : ℕ}
+    (hi : i ∈ Icc 1 15) :
+    u τ i = lim_balF i (exp (-τ.length {0, 1})) (exp (-τ.length {0, 1, 2}))
+      (exp (-τ.length {3, 4})) := by
+  obtain ⟨h1, h2, h3, h4, h13, h5, h6, h9, h12, h7, h8, h10, h11, h14, h15⟩ := equation11 τ hτ
+  obtain ⟨hi1, hi15⟩ := mem_Icc.1 hi
+  interval_cases i <;>
+    simp only [lim_balF, h1, h2, h3, h4, h13, h5, h6, h9, h12, h7, h8, h10, h11, h14, h15,
+      Finset.mem_insert, Finset.mem_singleton, Nat.reduceEqDiff, or_false, or_true, ↓reduceIte]
+
+/-- Equation (12) in the form `u_i = lim_catF i X Y Z`. -/
+private theorem lim_catF_eq (τ : SpeciesTree (Fin 5)) (hτ : τ.clusters = caterpillar5) {i : ℕ}
+    (hi : i ∈ Icc 1 15) :
+    u τ i = lim_catF i (exp (-τ.length {0, 1})) (exp (-τ.length {0, 1, 2}))
+      (exp (-τ.length {0, 1, 2, 3})) := by
+  obtain ⟨h1, h2, h3, h4, h13, h5, h12, h6, h9, h7, h8, h10, h11, h14, h15⟩ := equation12 τ hτ
+  obtain ⟨hi1, hi15⟩ := mem_Icc.1 hi
+  interval_cases i <;>
+    simp only [lim_catF, h1, h2, h3, h4, h13, h5, h12, h6, h9, h7, h8, h10, h11, h14, h15,
+      Finset.mem_insert, Finset.mem_singleton, Nat.reduceEqDiff, or_false, or_true, ↓reduceIte]
+
+/-- Equation (13) in the form `u_i = lim_pseF i X Y Z`. -/
+private theorem lim_pseF_eq (τ : SpeciesTree (Fin 5)) (hτ : τ.clusters = pseudocaterpillar5)
+    {i : ℕ} (hi : i ∈ Icc 1 15) :
+    u τ i = lim_pseF i (exp (-τ.length {0, 1})) (exp (-τ.length {3, 4}))
+      (exp (-τ.length {0, 1, 3, 4})) := by
+  obtain ⟨h1, h2, h3, h4, h13, h5, h6, h7, h9, h10, h12, h14, h15, h8, h11⟩ := equation13 τ hτ
+  obtain ⟨hi1, hi15⟩ := mem_Icc.1 hi
+  interval_cases i <;>
+    simp only [lim_pseF, h1, h2, h3, h4, h13, h5, h6, h7, h9, h10, h12, h14, h15, h8, h11,
+      Finset.mem_insert, Finset.mem_singleton, Nat.reduceEqDiff, or_false, or_true, ↓reduceIte]
+
+/-- **Setting branch lengths to `0` in the formula of a binary representative.** If every species
+tree with the clusters `H` has `u_i = F(e^{-ℓ(A)}, e^{-ℓ(B)}, e^{-ℓ(C)})` with `F` continuous, then
+a species tree whose clusters are among those of `H` has `u_i` given by `F` at the lengths of its
+edges, with the length `0` on the edges of `H` that it contracts: its distribution is the limit of
+those of `H` as the contracted lengths tend to `0` (`section5_limit`, `lim_unrootedDist_eq`). -/
+private theorem lim_u_eq (σ : SpeciesTree (Fin 5)) {H : Finset (Finset (Fin 5))}
+    (hH : IsHierarchy H) (hsub : σ.clusters ⊆ H) (i : ℕ) (A B C : Finset (Fin 5))
+    (F : ℝ → ℝ → ℝ → ℝ) (hF : Continuous fun p : ℝ × ℝ × ℝ => F p.1 p.2.1 p.2.2)
+    (hτ : ∀ τ : SpeciesTree (Fin 5), τ.clusters = H →
+      u τ i = F (exp (-τ.length A)) (exp (-τ.length B)) (exp (-τ.length C))) :
+    u σ i = F (exp (-if A ∈ σ.clusters then σ.length A else 0))
+      (exp (-if B ∈ σ.clusters then σ.length B else 0))
+      (exp (-if C ∈ σ.clusters then σ.length C else 0)) :=
+  lim_unrootedDist_eq σ hH hsub (T5 i) (fun ℓ => F (exp (-ℓ A)) (exp (-ℓ B)) (exp (-ℓ C))) hτ
+    (hF.comp ((lim_continuous_length σ A).neg.rexp.prodMk
+      ((lim_continuous_length σ B).neg.rexp.prodMk
+        (lim_continuous_length σ C).neg.rexp))).continuousAt
+
+/-- The species trees obtained from the balanced tree `(((a,b):x,c):y,(d,e):z)` by contracting
+edges: equation (11) with the lengths of the contracted edges set to `0`. -/
+private theorem lim_u_bal (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters ⊆ balanced5) {i : ℕ}
+    (hi : i ∈ Icc 1 15) :
+    u σ i = lim_balF i
+      (exp (-if ({0, 1} : Finset (Fin 5)) ∈ σ.clusters then σ.length {0, 1} else 0))
+      (exp (-if ({0, 1, 2} : Finset (Fin 5)) ∈ σ.clusters then σ.length {0, 1, 2} else 0))
+      (exp (-if ({3, 4} : Finset (Fin 5)) ∈ σ.clusters then σ.length {3, 4} else 0)) :=
+  lim_u_eq σ ⟨by decide, by decide, by decide, by decide⟩ hσ i _ _ _ (lim_balF i)
+    (by unfold lim_balF; split_ifs <;> fun_prop) fun τ hτ => lim_balF_eq τ hτ hi
+
+/-- The species trees obtained from the caterpillar `((((a,b):x,c):y,d):z,e)` by contracting
+edges: equation (12) with the lengths of the contracted edges set to `0`. -/
+private theorem lim_u_cat (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters ⊆ caterpillar5) {i : ℕ}
+    (hi : i ∈ Icc 1 15) :
+    u σ i = lim_catF i
+      (exp (-if ({0, 1} : Finset (Fin 5)) ∈ σ.clusters then σ.length {0, 1} else 0))
+      (exp (-if ({0, 1, 2} : Finset (Fin 5)) ∈ σ.clusters then σ.length {0, 1, 2} else 0))
+      (exp (-if ({0, 1, 2, 3} : Finset (Fin 5)) ∈ σ.clusters then σ.length {0, 1, 2, 3}
+        else 0)) :=
+  lim_u_eq σ ⟨by decide, by decide, by decide, by decide⟩ hσ i _ _ _ (lim_catF i)
+    (by unfold lim_catF; split_ifs <;> fun_prop) fun τ hτ => lim_catF_eq τ hτ hi
+
+/-- The species trees obtained from the pseudocaterpillar `(((a,b):x,(d,e):y):z,c)` by contracting
+edges: equation (13) with the lengths of the contracted edges set to `0`. -/
+private theorem lim_u_pse (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters ⊆ pseudocaterpillar5)
+    {i : ℕ} (hi : i ∈ Icc 1 15) :
+    u σ i = lim_pseF i
+      (exp (-if ({0, 1} : Finset (Fin 5)) ∈ σ.clusters then σ.length {0, 1} else 0))
+      (exp (-if ({3, 4} : Finset (Fin 5)) ∈ σ.clusters then σ.length {3, 4} else 0))
+      (exp (-if ({0, 1, 3, 4} : Finset (Fin 5)) ∈ σ.clusters then σ.length {0, 1, 3, 4}
+        else 0)) :=
+  lim_u_eq σ ⟨by decide, by decide, by decide, by decide⟩ hσ i _ _ _ (lim_pseF i)
+    (by unfold lim_pseF; split_ifs <;> fun_prop) fun τ hτ => lim_pseF_eq τ hτ hi
+
 /-- **Table 7**: the equivalence classes of equiprobable gene trees and the unrooted gene tree
 distributions of the nonbinary 5-taxon representatives `P₁, …, P₉`, in terms of the transformed
 lengths of their internal edges. For each representative the value of `u_i` is given for every
 `i`; `X`, `Y`, `Z` denote `e^{-x}`, `e^{-y}`, `e^{-z}` for the edges labelled `x`, `y`, `z` in
-Table 6. -/
+Table 6.
+
+As in the paper (l.944), the formulas are those of Appendix B for a resolved tree with one or more
+branch lengths set to `0`: each `Pₖ` is the contraction of a binary representative with the same
+labels, `P₁, P₂, P₄, P₆, P₈` of the balanced tree `(((a,b):x,c):y,(d,e):z)`, `P₃, P₉` of the
+caterpillar `((((a,b):x,c):y,d):z,e)` and `P₅, P₇` of the pseudocaterpillar
+`(((a,b):x,(d,e):y):z,c)`, and its distribution is the limit of the representative's as the
+contracted lengths tend to `0` (`lim_u_bal`, `lim_u_cat`, `lim_u_pse`). -/
 theorem table7 (σ : SpeciesTree (Fin 5)) (i : ℕ) (hi : i ∈ Icc 1 15) :
     (σ.clusters = polytomy5 1 → u σ i = 1 / 15) ∧
     (σ.clusters = polytomy5 2 →
@@ -89,21 +225,70 @@ theorem table7 (σ : SpeciesTree (Fin 5)) (i : ℕ) (hi : i ∈ Icc 1 15) :
           1 / 6 * Y - 1 / 18 * Y ^ 3 - 2 / 45 * Y ^ 3 * Z ^ 6
         else 1 / 18 * Y ^ 3 + 1 / 90 * Y ^ 3 * Z ^ 6) := by
   obtain ⟨hi1, hi15⟩ := Finset.mem_Icc.1 hi
-  have key : ∀ k ∈ Icc 1 9, σ.clusters = polytomy5 k →
-      u σ i = Computation.evalPoly σ.length (Computation.polytomy5Poly k i) :=
-    fun k hk hσ => Computation.u_polytomy5 hk σ hσ hi
+  -- `Pₖ` contracts edges of a binary representative with the same labels: (11)–(13) with the
+  -- contracted lengths set to `0`, that is with `X`, `Y` or `Z` equal to `1`
   refine ⟨fun hσ => ?_, fun hσ => ?_, fun hσ => ?_, fun hσ => ?_, fun hσ => ?_, fun hσ => ?_,
-    fun hσ => ?_, fun hσ => ?_, fun hσ => ?_⟩ <;> (try dsimp only) <;>
-    rw [key _ (by decide) hσ] <;> clear key hσ hi <;> interval_cases i <;>
-    simp only [Computation.polytomy5Poly, Computation.polytomy5Poly₁, Computation.polytomy5Poly₂,
-      Computation.polytomy5Poly₃, Computation.polytomy5Poly₄, Computation.polytomy5Poly₅,
-      Computation.polytomy5Poly₆, Computation.polytomy5Poly₇, Computation.polytomy5Poly₈,
-      Computation.polytomy5Poly₉, Computation.evalPoly_cons, Computation.evalPoly_nil,
-      Computation.monoVal_cons, Computation.monoVal_nil, Computation.decC_5_3,
-      Computation.decC_5_7, Computation.decC_5_15, Computation.decC_5_24, Computation.decC_5_27,
-      Finset.mem_insert, Finset.mem_singleton, Nat.reduceEqDiff, or_false, or_true,
-      ↓reduceIte] <;>
-    push_cast <;> ring
+    fun hσ => ?_, fun hσ => ?_, fun hσ => ?_⟩ <;> (try dsimp only)
+  on_goal 1 => -- `P₁ = (a,b,c,d,e)`: the balanced tree with `x, y, z → 0`
+    rw [lim_u_bal σ (by rw [hσ]; decide) hi, hσ]
+    simp only [show ({0, 1} : Finset (Fin 5)) ∉ polytomy5 1 by decide,
+      show ({0, 1, 2} : Finset (Fin 5)) ∉ polytomy5 1 by decide,
+      show ({3, 4} : Finset (Fin 5)) ∉ polytomy5 1 by decide, ↓reduceIte, neg_zero,
+      exp_zero]
+  on_goal 2 => -- `P₂ = (a,b,c,(d,e))`: the balanced tree with `x, y → 0`
+    rw [lim_u_bal σ (by rw [hσ]; decide) hi, hσ]
+    simp only [show ({0, 1} : Finset (Fin 5)) ∉ polytomy5 2 by decide,
+      show ({0, 1, 2} : Finset (Fin 5)) ∉ polytomy5 2 by decide,
+      show ({3, 4} : Finset (Fin 5)) ∈ polytomy5 2 by decide, ↓reduceIte, neg_zero,
+      exp_zero]
+  on_goal 3 => -- `P₃ = ((a,b,c,d),e)`: the caterpillar with `x, y → 0`
+    rw [lim_u_cat σ (by rw [hσ]; decide) hi, hσ]
+    simp only [show ({0, 1} : Finset (Fin 5)) ∉ polytomy5 3 by decide,
+      show ({0, 1, 2} : Finset (Fin 5)) ∉ polytomy5 3 by decide,
+      show ({0, 1, 2, 3} : Finset (Fin 5)) ∈ polytomy5 3 by decide, ↓reduceIte, neg_zero,
+      exp_zero]
+  on_goal 4 => -- `P₄ = ((a,b,c),d,e)`: the balanced tree with `x, z → 0`
+    rw [lim_u_bal σ (by rw [hσ]; decide) hi, hσ]
+    simp only [show ({0, 1} : Finset (Fin 5)) ∉ polytomy5 4 by decide,
+      show ({0, 1, 2} : Finset (Fin 5)) ∈ polytomy5 4 by decide,
+      show ({3, 4} : Finset (Fin 5)) ∉ polytomy5 4 by decide, ↓reduceIte, neg_zero,
+      exp_zero]
+  on_goal 5 => -- `P₅ = ((a,b),(d,e),c)`: the pseudocaterpillar with `z → 0`
+    rw [lim_u_pse σ (by rw [hσ]; decide) hi, hσ]
+    simp only [show ({0, 1} : Finset (Fin 5)) ∈ polytomy5 5 by decide,
+      show ({3, 4} : Finset (Fin 5)) ∈ polytomy5 5 by decide,
+      show ({0, 1, 3, 4} : Finset (Fin 5)) ∉ polytomy5 5 by decide, ↓reduceIte, neg_zero,
+      exp_zero]
+  on_goal 6 => -- `P₆ = (((a,b),c),d,e)`: the balanced tree with `z → 0`
+    rw [lim_u_bal σ (by rw [hσ]; decide) hi, hσ]
+    simp only [show ({0, 1} : Finset (Fin 5)) ∈ polytomy5 6 by decide,
+      show ({0, 1, 2} : Finset (Fin 5)) ∈ polytomy5 6 by decide,
+      show ({3, 4} : Finset (Fin 5)) ∉ polytomy5 6 by decide, ↓reduceIte, neg_zero,
+      exp_zero]
+  on_goal 7 => -- `P₇ = (((a,b),d,e),c)`: the pseudocaterpillar with `y → 0`
+    rw [lim_u_pse σ (by rw [hσ]; decide) hi, hσ]
+    simp only [show ({0, 1} : Finset (Fin 5)) ∈ polytomy5 7 by decide,
+      show ({3, 4} : Finset (Fin 5)) ∉ polytomy5 7 by decide,
+      show ({0, 1, 3, 4} : Finset (Fin 5)) ∈ polytomy5 7 by decide, ↓reduceIte, neg_zero,
+      exp_zero]
+  on_goal 8 => -- `P₈ = ((a,b,c),(d,e))`: the balanced tree with `x → 0`
+    rw [lim_u_bal σ (by rw [hσ]; decide) hi, hσ]
+    simp only [show ({0, 1} : Finset (Fin 5)) ∉ polytomy5 8 by decide,
+      show ({0, 1, 2} : Finset (Fin 5)) ∈ polytomy5 8 by decide,
+      show ({3, 4} : Finset (Fin 5)) ∈ polytomy5 8 by decide, ↓reduceIte, neg_zero,
+      exp_zero]
+  on_goal 9 => -- `P₉ = (((a,b,c),d),e)`: the caterpillar with `x → 0`
+    rw [lim_u_cat σ (by rw [hσ]; decide) hi, hσ]
+    simp only [show ({0, 1} : Finset (Fin 5)) ∉ polytomy5 9 by decide,
+      show ({0, 1, 2} : Finset (Fin 5)) ∈ polytomy5 9 by decide,
+      show ({0, 1, 2, 3} : Finset (Fin 5)) ∈ polytomy5 9 by decide, ↓reduceIte, neg_zero,
+      exp_zero]
+  -- the formulas with `X`, `Y` or `Z` equal to `1` are those of Table 7
+  all_goals
+    interval_cases i <;>
+      simp only [lim_balF, lim_catF, lim_pseF, Finset.mem_insert, Finset.mem_singleton,
+        Nat.reduceEqDiff, or_false, or_true, ↓reduceIte] <;>
+      ring
 
 /-- The class of `T_i` for the nonbinary representative `P_k` in Table 7, named by its smallest
 index. -/
