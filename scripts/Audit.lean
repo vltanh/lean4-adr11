@@ -142,6 +142,7 @@ meta def paperResults : List (String × Name) :=
    ("Sec 4.1, caterpillar", ``ADR11.fourTaxa_caterpillar),
    ("Sec 4.1, recovery", ``ADR11.fourTaxa_recovery),
    ("Sec 4.1, five trees", ``ADR11.fourTaxa_sameDistribution),
+   ("Sec 4.1, labelled shapes", ``ADR11.fourTaxa_card_shapes),
    ("Prop 3", ``ADR11.proposition3),
    ("Lemma 4", ``ADR11.lemma4),
    ("Lemma 4, six taxa", ``ADR11.lemma4_six),

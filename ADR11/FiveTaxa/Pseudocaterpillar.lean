@@ -2,6 +2,7 @@ module
 
 public import ADR11.FiveTaxa.Basic
 public import ADR11.Computation.FiveTaxa
+public import ADR11.FiveTaxa.Explanations
 
 /-!
 # The pseudocaterpillar 5-taxon species tree `(((a,b):x,(d,e):y):z,c)`
@@ -9,6 +10,13 @@ public import ADR11.Computation.FiveTaxa
 Appendix B.3 (equation (13)), Table 3, the equivalence classes, the inequalities (6) and their
 exhaustiveness (Section 4.2.3). Throughout, `X = e^{-x}`, `Y = e^{-y}`, `Z = e^{-z}` with
 `x, y, z` the lengths of the edges above `{a,b}`, `{d,e}` and `{a,b,d,e}`.
+
+As in the paper, each invariant of Table 3 is proved by its explanation
+(`ex_pseudocaterpillar_rows`): the symmetries `(ab)`, `(de)`, `(ab)(de)` of the species tree, or
+the near-the-root argument (`ADR11.FiveTaxa.Explanations`); the "if" direction of the equivalence
+classes follows from these invariants. That the invariants form a basis, and that there are no
+others (`table3`), rests on the explicit formulas (13), like the inequalities (6), as in the
+paper.
 -/
 
 @[expose] public section
@@ -132,12 +140,60 @@ private theorem tables_pse_li : LinearIndependent ℝ table3Basis := by
   intro i
   fin_cases i <;> assumption
 
-/-- The vectors of Table 3 are invariants, by (13). -/
+/-! ### The invariants of Table 3, by their explanations (Section 4.2.3) -/
+
+/-- The invariants of Table 3, each by the explanation the paper gives for it (Section 4.2.3).
+The symmetries `(ab)`, `(de)` and `(ab)(de)` of the species tree (`ex_u_eq_of_perm`). Near the
+root (`ex_u_eq_nearRoot`): the children of the root are `{a,b,d,e}` and `{c}`; no cherry of the
+gene trees `T₅, T₆, T₉, T₁₂, T₁₅` lies inside `{a,b}` or `{d,e}`, so they can only be realized
+when the lineages `A, B, D, E` enter the near-the-root population above `{a,b,d,e}` uncoalesced,
+and `T₁₂`, `T₉`, `T₆`, `T₅` are mapped to `T₁₅` by the permutations `(ABD)`, `(AE)(BD)`, `(ADE)`,
+`(AD)` of these lineages. (The paper describes this population as "ancestral to species a, b, c,
+and d but not to e", a slip: the order of events it lists, `BE`, `ABE`, `ABDE`, is that of the
+population above `{a,b,d,e}`, the outgroup being `c`.) In the order of the table: `u₁₄ = u₁₅` by
+`(de)`, `u₁₂ = u₁₅` near the root, `u₁₀ = u₁₅` by `(ab)`, `u₉ = u₁₅` near the root, `u₈ = u₁₁` by
+`(ab)`, `u₇ = u₁₅` by `(ab)(de)`, `u₆ = u₁₅` and `u₅ = u₁₅` near the root, `u₄ = u₁₃` by `(ab)`,
+`u₂ = u₃` by `(de)`. -/
+theorem ex_pseudocaterpillar_rows (σ : SpeciesTree (Fin 5))
+    (hσ : σ.clusters = pseudocaterpillar5) :
+    u σ 14 = u σ 15 ∧ u σ 12 = u σ 15 ∧ u σ 10 = u σ 15 ∧ u σ 9 = u σ 15 ∧ u σ 8 = u σ 11 ∧
+      u σ 7 = u σ 15 ∧ u σ 6 = u σ 15 ∧ u σ 5 = u σ 15 ∧ u σ 4 = u σ 13 ∧ u σ 2 = u σ 3 := by
+  -- the symmetries `(ab)`, `(de)` and `(ab)(de)` of `σ⁺`: they fix `{a,b}`, `{d,e}`, `{a,b,d,e}`
+  have ab : ∀ {i j : ℕ}, relabelFamily (Equiv.swap (0 : Fin 5) 1) (T5 i) = T5 j →
+      u σ i = u σ j := fun h => ex_u_eq_of_perm σ hσ _ (by decide) (by decide) h
+  have de : ∀ {i j : ℕ}, relabelFamily (Equiv.swap (3 : Fin 5) 4) (T5 i) = T5 j →
+      u σ i = u σ j := fun h => ex_u_eq_of_perm σ hσ _ (by decide) (by decide) h
+  have abde : ∀ {i j : ℕ},
+      relabelFamily ((Equiv.swap (0 : Fin 5) 1).trans (Equiv.swap 3 4)) (T5 i) = T5 j →
+      u σ i = u σ j := fun h => ex_u_eq_of_perm σ hσ _ (by decide) (by decide) h
+  -- near the root: the population above `{a,b,d,e}`, the outgroup being `c`
+  have near : ∀ {i j : ℕ} (g : Equiv.Perm (Fin 5)), g 2 = 2 → i ∈ Icc 1 15 → j ∈ Icc 1 15 →
+      relabelFamily g (T5 i) = T5 j →
+      (∀ B ∈ pseudocaterpillar5, B ⊂ {2}ᶜ → ∀ P ∈ T5 i, #P = 2 → ¬ P ⊆ B) →
+      (∀ B ∈ pseudocaterpillar5, B ⊂ {2}ᶜ → ∀ P ∈ T5 j, #P = 2 → ¬ P ⊆ B) → u σ i = u σ j := by
+    intro i j g hg hi hj hij hTi hTj
+    rw [← hσ] at hTi hTj
+    exact ex_u_eq_nearRoot σ (by rw [hσ]; decide) g hg hi hj hij hTi hTj
+  exact ⟨de (by decide),
+    near ((Equiv.swap 1 3).trans (Equiv.swap 0 1)) (by decide) (by decide) (by decide)
+      (by decide) (by decide) (by decide),
+    ab (by decide),
+    near ((Equiv.swap 0 4).trans (Equiv.swap 1 3)) (by decide) (by decide) (by decide)
+      (by decide) (by decide) (by decide),
+    ab (by decide), abde (by decide),
+    near ((Equiv.swap 3 4).trans (Equiv.swap 0 3)) (by decide) (by decide) (by decide)
+      (by decide) (by decide) (by decide),
+    near (Equiv.swap 0 3) (by decide) (by decide) (by decide) (by decide) (by decide)
+      (by decide),
+    ab (by decide), de (by decide)⟩
+
+/-- The vectors of Table 3 are invariants, each by its explanation
+(`ex_pseudocaterpillar_rows`). -/
 private theorem tables_pse_mem (k : Fin 10) :
     table3Basis k ∈ linearInvariants pseudocaterpillar5 := by
   rw [tables_mem_linearInvariants]
   intro σ hσ
-  obtain ⟨-, -, e3, -, e13, -, e6, e7, e9, e10, e12, e14, e15, -, e11⟩ := equation13 σ hσ
+  obtain ⟨r14, r12, r10, r9, r8, r7, r6, r5, r4, r2⟩ := ex_pseudocaterpillar_rows σ hσ
   rw [tables_sum15]
   fin_cases k <;> simp [table3Basis, ue] <;> linarith
 
@@ -211,14 +267,14 @@ def pseudocaterpillarClass : ℕ → ℕ
   | 3 => 2 | 13 => 4 | 11 => 8
   | 6 => 5 | 7 => 5 | 9 => 5 | 10 => 5 | 12 => 5 | 14 => 5 | 15 => 5 | i => i
 
-/-- Each `u_k` equals `u` of the name of the class of `T_k`. -/
+/-- Each `u_k` equals `u` of the name of the class of `T_k`: these equalities are the invariants
+of Table 3 (`ex_pseudocaterpillar_rows`). -/
 private theorem tables_pse_cls (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = pseudocaterpillar5) :
     ∀ k ∈ Icc 1 15, u σ k = u σ (pseudocaterpillarClass k) := by
-  obtain ⟨-, -, e3, -, e13, -, e6, e7, e9, e10, e12, e14, e15, -, e11⟩ := equation13 σ hσ
+  obtain ⟨r14, r12, r10, r9, r8, r7, r6, r5, r4, r2⟩ := ex_pseudocaterpillar_rows σ hσ
   intro k hk
   obtain ⟨hk1, hk2⟩ := mem_Icc.1 hk
-  interval_cases k <;>
-    simp only [pseudocaterpillarClass, e3, e13, e6, e7, e9, e10, e12, e14, e15, e11]
+  interval_cases k <;> simp only [pseudocaterpillarClass] <;> linarith
 
 /-- The names of the classes. -/
 private theorem tables_pse_rep :

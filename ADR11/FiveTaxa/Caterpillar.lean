@@ -2,6 +2,7 @@ module
 
 public import ADR11.FiveTaxa.Basic
 public import ADR11.Computation.FiveTaxa
+public import ADR11.FiveTaxa.Explanations
 
 /-!
 # The rooted caterpillar 5-taxon species tree `((((a,b):x,c):y,d):z,e)`
@@ -10,6 +11,13 @@ Appendix B.2 (equation (12)), Table 2, the marginalization invariant, the equiva
 the inequalities (5) and their exhaustiveness (Section 4.2.2). Throughout, `X = e^{-x}`,
 `Y = e^{-y}`, `Z = e^{-z}` with `x, y, z` the lengths of the edges above `{a,b}`, `{a,b,c}` and
 `{a,b,c,d}`.
+
+As in the paper, each invariant of Table 2 is proved by its explanation: the near-the-root
+argument and the symmetry `(ab)` (`ex_caterpillar_rows`, from `ADR11.FiveTaxa.Explanations`), and
+for the last one the marginalization argument (`caterpillar_marginalization`: Lemma 5 on
+`{b,c,d,e}` and the four-taxon distribution); the "if" direction of the equivalence classes
+follows from these invariants. That the invariants form a basis, and that there are no others
+(`table2`), rests on the explicit formulas (12), like the inequalities (5), as in the paper.
 -/
 
 @[expose] public section
@@ -141,12 +149,101 @@ private theorem tables_cat_li : LinearIndependent ℝ table2Basis := by
   intro i
   fin_cases i <;> assumption
 
-/-- The vectors of Table 2 are invariants, by (12). -/
+/-! ### The invariants of Table 2, by their explanations (Section 4.2.2) -/
+
+/-- The invariants of Table 2 other than the last, each by the explanation the paper gives for it
+(Section 4.2.2). Near the root (`ex_u_eq_nearRoot`): the children of the root are `{a,b,c,d}` and
+`{e}`; no cherry of the gene trees `T₇, T₈, T₁₁, T₁₄, T₁₅` lies inside `{a,b}` or `{a,b,c}`, so
+they can only be realized when the lineages `A, B, C, D` enter the near-the-root population above
+`{a,b,c,d}` uncoalesced, and `T₁₄`, `T₁₁`, `T₈`, `T₇` are mapped to `T₁₅` by the permutations
+`(BC)`, `(ABC)`, `(AC)`, `(ACB)` of these lineages. The symmetry `(ab)`
+of the species tree (`ex_u_eq_of_perm`). In the order of the table: `u₁₄ = u₁₅` and `u₁₁ = u₁₅`
+near the root, `u₁₀ = u₁₅` by `(ab)`, `u₈ = u₁₅` and `u₇ = u₁₅` near the root, `u₆ = u₉`,
+`u₅ = u₁₂` and `u₄ = u₁₃` by `(ab)`. The last invariant is `caterpillar_marginalization`. -/
+theorem ex_caterpillar_rows (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = caterpillar5) :
+    u σ 14 = u σ 15 ∧ u σ 11 = u σ 15 ∧ u σ 10 = u σ 15 ∧ u σ 8 = u σ 15 ∧ u σ 7 = u σ 15 ∧
+      u σ 6 = u σ 9 ∧ u σ 5 = u σ 12 ∧ u σ 4 = u σ 13 := by
+  -- the symmetry `(ab)` of `σ⁺`: it fixes `{a,b}`, `{a,b,c}`, `{a,b,c,d}`
+  have ab : ∀ {i j : ℕ}, relabelFamily (Equiv.swap (0 : Fin 5) 1) (T5 i) = T5 j →
+      u σ i = u σ j := fun h => ex_u_eq_of_perm σ hσ _ (by decide) (by decide) h
+  -- near the root: the population above `{a,b,c,d}`, the outgroup being `e`
+  have near : ∀ {i j : ℕ} (g : Equiv.Perm (Fin 5)), g 4 = 4 → i ∈ Icc 1 15 → j ∈ Icc 1 15 →
+      relabelFamily g (T5 i) = T5 j →
+      (∀ B ∈ caterpillar5, B ⊂ {4}ᶜ → ∀ P ∈ T5 i, #P = 2 → ¬ P ⊆ B) →
+      (∀ B ∈ caterpillar5, B ⊂ {4}ᶜ → ∀ P ∈ T5 j, #P = 2 → ¬ P ⊆ B) → u σ i = u σ j := by
+    intro i j g hg hi hj hij hTi hTj
+    rw [← hσ] at hTi hTj
+    exact ex_u_eq_nearRoot σ (by rw [hσ]; decide) g hg hi hj hij hTi hTj
+  exact ⟨near (Equiv.swap 1 2) (by decide) (by decide) (by decide) (by decide) (by decide)
+      (by decide),
+    near ((Equiv.swap 1 2).trans (Equiv.swap 0 1)) (by decide) (by decide) (by decide)
+      (by decide) (by decide) (by decide),
+    ab (by decide),
+    near (Equiv.swap 0 2) (by decide) (by decide) (by decide) (by decide) (by decide)
+      (by decide),
+    near ((Equiv.swap 0 2).trans (Equiv.swap 0 1)) (by decide) (by decide) (by decide)
+      (by decide) (by decide) (by decide),
+    ab (by decide), ab (by decide), ab (by decide)⟩
+
+/-- The taxa `b, c, d, e`. -/
+private abbrev ex_catS : Finset (Fin 5) := {1, 2, 3, 4}
+
+private theorem ex_catS_nonempty : ex_catS.Nonempty := ⟨1, by decide⟩
+
+/-- A set of taxa, as a set of taxa of `ex_catS`. -/
+private def ex_catQ (A : Finset (Fin 5)) : Finset ex_catS := A.subtype (· ∈ ex_catS)
+
+/-- Lemma 5 for the quartet tree on `{b,c,d,e}` with the cherry `P` (as `ex_catQ P`): its
+probability under `σ⁺({b,c,d,e})` is the sum of the `u_i` over the indices `i ∈ s` of the gene
+trees `T_i` that induce it. -/
+private theorem ex_cat_lemma5 (σ : SpeciesTree (Fin 5)) (P : Finset (Fin 5)) (s : Finset ℕ)
+    (hs : (Icc 1 15).filter (fun i => restrictSplits ex_catS (T5 i) =
+      treeOfClusters {ex_catQ P}) = s) :
+    (σ.restrict ex_catS ex_catS_nonempty).unrootedDist id (treeOfClusters {ex_catQ P}) =
+      ∑ i ∈ s, u σ i := by
+  rw [ex_lemma5_T5, ← sum_filter, hs]
+
+/-- The marginalization argument of Section 4.2.2: on the taxa `{b,c,d,e}` the two quartets that
+disagree with the species tree are equiprobable, which gives
+`u₂ + u₆ + u₇ + u₁₁ + u₁₄ = u₃ + u₅ + u₈ + u₁₀ + u₁₅`, and then the last invariant of Table 2.
+
+Proof (the paper's): by Lemma 5 on `S = {b,c,d,e}` (`ex_lemma5_T5`), the probabilities of the
+quartet trees `BD|CE` and `BE|CD` under the induced species tree `σ⁺(S) = (((b,c),d),e)` are the
+sums of the `u_i` over the gene trees inducing them, `T₂, T₆, T₇, T₁₁, T₁₄` and
+`T₃, T₅, T₈, T₁₀, T₁₅` (checked by `decide`). On four taxa the two quartet trees inconsistent with
+the species tree are equiprobable (Section 4.1, `four_unrootedDist_of_ne`), which gives the first
+equation. The last three terms on each side are equal to `u₁₅` (near the root and `(ab)`,
+`ex_caterpillar_rows`); cancelling them, and replacing `u₆` by `u₉` and `u₅` by `u₁₂` (`(ab)`),
+gives `u₂ - u₃ + u₉ - u₁₂ = 0`. -/
+theorem caterpillar_marginalization (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = caterpillar5) :
+    u σ 2 + u σ 6 + u σ 7 + u σ 11 + u σ 14 = u σ 3 + u σ 5 + u σ 8 + u σ 10 + u σ 15 ∧
+      u σ 2 - u σ 3 + u σ 9 - u σ 12 = 0 := by
+  -- Lemma 5 on `{b,c,d,e}`: the gene trees inducing `BD|CE` and `BE|CD`
+  have hBD := ex_cat_lemma5 σ {1, 3} {2, 6, 7, 11, 14} (by decide +kernel)
+  have hBE := ex_cat_lemma5 σ {1, 4} {3, 5, 8, 10, 15} (by decide +kernel)
+  -- the four-taxon fact: `σ⁺({b,c,d,e})` has the split `BC|DE`, and the two other quartet trees
+  -- are equiprobable
+  have h4 : Fintype.card ex_catS = 4 := by decide
+  have hA : ex_catQ {1, 2} ∈ unroot (σ.restrict ex_catS ex_catS_nonempty).clusters := by
+    show ex_catQ {1, 2} ∈ unroot (restrictClusters ex_catS σ.clusters)
+    rw [hσ]
+    decide +kernel
+  rw [four_unrootedDist_of_ne h4 _ hA (by decide) (by decide) (by decide) (by decide)] at hBD hBE
+  have hmarg : u σ 2 + u σ 6 + u σ 7 + u σ 11 + u σ 14 =
+      u σ 3 + u σ 5 + u σ 8 + u σ 10 + u σ 15 := by
+    rw [hBD] at hBE
+    simpa [sum_insert, add_assoc] using hBE
+  -- cancel the terms equal to `u₁₅`, and replace `u₆` by `u₉` and `u₅` by `u₁₂`
+  obtain ⟨r14, r11, r10, r8, r7, r6, r5, -⟩ := ex_caterpillar_rows σ hσ
+  exact ⟨hmarg, by linarith⟩
+
+/-- The vectors of Table 2 are invariants, each by its explanation (`ex_caterpillar_rows`, and
+`caterpillar_marginalization` for the last one). -/
 private theorem tables_cat_mem (k : Fin 9) : table2Basis k ∈ linearInvariants caterpillar5 := by
   rw [tables_mem_linearInvariants]
   intro σ hσ
-  obtain ⟨-, -, -, -, e13, -, e12, -, e9, -, e8, e10, e11, e14, e15⟩ := equation12 σ hσ
-  obtain ⟨X, Y, Z, -, -, -, -, -, -, -, h2, h3, -, h5, h6, -⟩ := tables_cat_formulas σ hσ
+  obtain ⟨r14, r11, r10, r8, r7, r6, r5, r4⟩ := ex_caterpillar_rows σ hσ
+  have r2 := (caterpillar_marginalization σ hσ).2
   rw [tables_sum15]
   fin_cases k <;> simp [table2Basis, ue] <;> linarith
 
@@ -218,30 +315,20 @@ theorem table2 :
   · rw [Submodule.mem_span_range_iff_exists_fun]
     exact ⟨_, tables_cat_repr (tables_cat_sums hc)⟩
 
-/-- The marginalization argument of Section 4.2.2: on the taxa `{b,c,d,e}` the two quartets that
-disagree with the species tree are equiprobable, which gives
-`u₂ + u₆ + u₇ + u₁₁ + u₁₄ = u₃ + u₅ + u₈ + u₁₀ + u₁₅`, and then the last invariant of Table 2. -/
-theorem caterpillar_marginalization (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = caterpillar5) :
-    u σ 2 + u σ 6 + u σ 7 + u σ 11 + u σ 14 = u σ 3 + u σ 5 + u σ 8 + u σ 10 + u σ 15 ∧
-      u σ 2 - u σ 3 + u σ 9 - u σ 12 = 0 := by
-  obtain ⟨-, -, -, -, -, -, e12, -, e9, -, e8, e10, e11, e14, e15⟩ := equation12 σ hσ
-  obtain ⟨X, Y, Z, -, -, -, -, -, -, -, h2, h3, -, h5, h6, -⟩ := tables_cat_formulas σ hσ
-  rw [e12, e9, e8, e10, e11, e14, e15, h2, h3, h5, h6]
-  constructor <;> ring
-
 /-- The class of `T_i` in the partition of Section 4.2.2, named by its smallest index:
 `{T₁}, {T₂}, {T₃}, {T₄,T₁₃}, {T₅,T₁₂}, {T₆,T₉}, {T₇,T₈,T₁₀,T₁₁,T₁₄,T₁₅}`. -/
 def caterpillarClass : ℕ → ℕ
   | 13 => 4 | 12 => 5 | 9 => 6
   | 8 => 7 | 10 => 7 | 11 => 7 | 14 => 7 | 15 => 7 | i => i
 
-/-- Each `u_k` equals `u` of the name of the class of `T_k`. -/
+/-- Each `u_k` equals `u` of the name of the class of `T_k`: these equalities are the invariants
+of Table 2 (`ex_caterpillar_rows`). -/
 private theorem tables_cat_cls (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = caterpillar5) :
     ∀ k ∈ Icc 1 15, u σ k = u σ (caterpillarClass k) := by
-  obtain ⟨-, -, -, -, e13, -, e12, -, e9, -, e8, e10, e11, e14, e15⟩ := equation12 σ hσ
+  obtain ⟨r14, r11, r10, r8, r7, r6, r5, r4⟩ := ex_caterpillar_rows σ hσ
   intro k hk
   obtain ⟨hk1, hk2⟩ := mem_Icc.1 hk
-  interval_cases k <;> simp only [caterpillarClass, e13, e12, e9, e8, e10, e11, e14, e15]
+  interval_cases k <;> simp only [caterpillarClass] <;> linarith
 
 /-- The names of the classes. -/
 private theorem tables_cat_rep :

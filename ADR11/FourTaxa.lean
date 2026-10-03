@@ -2,6 +2,8 @@ module
 
 public import ADR11.SmallTrees
 public import ADR11.Computation.FourTaxa
+public import ADR11.Introduction.Counts
+public import ADR11.Rootings.Support
 
 /-!
 # Section 4.1: four taxa
@@ -9,6 +11,8 @@ public import ADR11.Computation.FourTaxa
 With four taxa `a, b, c, d` (`Fin 4`), the unrooted gene trees are `T_{AB|CD}`, `T_{AC|BD}` and
 `T_{AD|BC}` (`treeOfClusters {{0,1}}`, `treeOfClusters {{0,2}}`, `treeOfClusters {{0,3}}`).
 
+* `fourTaxa_card_shapes`: of the 15 rooted binary species tree topologies on four taxa, three are
+  labelled balanced trees and twelve are labelled caterpillars.
 * `fourTaxa_balanced`, `fourTaxa_caterpillar`: the unrooted gene tree distributions of the
   balanced species tree `((a,b):x,(c,d):y)` and of the rooted caterpillar `(((a,b):x,c):y,d)`.
 * `fourTaxa_sameDistribution`: the five rooted species trees `(((a,b):x,c):y₁,d)`,
@@ -24,6 +28,52 @@ namespace ADR11
 open Finset Real
 
 variable {X : Type*} [Fintype X] [DecidableEq X]
+
+open scoped Classical in
+/-- Section 4.1 (l.319): "Of the 15 possibilities for `ψ⁺`, there are three labeled balanced tree
+topologies, and 12 labeled caterpillar topologies." Among the rooted binary trees on four taxa
+(`IsBinaryHierarchy`, counted by `section1_card_rooted`), three are balanced (two clusters of size
+2) and twelve are caterpillars (a cluster of size 2 inside a cluster of size 3).
+
+Proof: every rooted binary tree on `Fin 4` is one of the code lists `root_binEnum 3 15`
+(`root_binEnum_complete_univ`), all of which are rooted binary trees (`root_binHierB`); the two
+counts are computed on this list by `decide`. -/
+theorem fourTaxa_card_shapes :
+    #{G : Finset (Finset (Fin 4)) | IsBinaryHierarchy G} = 15 ∧
+    #{G : Finset (Finset (Fin 4)) | IsBinaryHierarchy G ∧
+        ∃ A ∈ G, ∃ B ∈ G, #A = 2 ∧ #B = 2 ∧ A ≠ B} = 3 ∧
+    #{G : Finset (Finset (Fin 4)) | IsBinaryHierarchy G ∧
+        ∃ A ∈ G, ∃ B ∈ G, #A = 2 ∧ #B = 3 ∧ A ⊆ B} = 12 := by
+  have hB : ∀ l ∈ root_binEnum 3 15, root_binHierB 4 l = true := by decide +kernel
+  -- the rooted binary trees on `Fin 4` are the trees of the enumeration
+  have hE : ∀ G : Finset (Finset (Fin 4)),
+      IsBinaryHierarchy G ↔ G ∈ ((root_binEnum 3 15).map (Computation.decF 4)).toFinset := by
+    intro G
+    rw [List.mem_toFinset, List.mem_map]
+    constructor
+    · rintro ⟨⟨hu, -, hne, hlam⟩, hbin⟩
+      exact root_binEnum_complete_univ ⟨hu, fun A _ => subset_univ A, hne, hlam, hbin⟩
+    · rintro ⟨l, hl, rfl⟩
+      exact root_isBinHier_of_binHierB (hB l hl)
+  refine ⟨?_, ?_, ?_⟩
+  · rw [section1_card_rooted 4 (by norm_num)]
+    rfl
+  · calc #{G : Finset (Finset (Fin 4)) | IsBinaryHierarchy G ∧
+            ∃ A ∈ G, ∃ B ∈ G, #A = 2 ∧ #B = 2 ∧ A ≠ B}
+        = #(((root_binEnum 3 15).map (Computation.decF 4)).toFinset.filter
+            fun G => ∃ A ∈ G, ∃ B ∈ G, #A = 2 ∧ #B = 2 ∧ A ≠ B) := by
+          congr 1
+          ext G
+          simp only [mem_filter, mem_univ, true_and, hE]
+      _ = 3 := by decide +kernel
+  · calc #{G : Finset (Finset (Fin 4)) | IsBinaryHierarchy G ∧
+            ∃ A ∈ G, ∃ B ∈ G, #A = 2 ∧ #B = 3 ∧ A ⊆ B}
+        = #(((root_binEnum 3 15).map (Computation.decF 4)).toFinset.filter
+            fun G => ∃ A ∈ G, ∃ B ∈ G, #A = 2 ∧ #B = 3 ∧ A ⊆ B) := by
+          congr 1
+          ext G
+          simp only [mem_filter, mem_univ, true_and, hE]
+      _ = 12 := by decide +kernel
 
 /-- Section 4.1: for the balanced species tree `((a,b):x,(c,d):y)`,
 `ℙ(T_{AB|CD}) = 1 - (2/3) e^{-(x+y)}` and `ℙ(T_{AC|BD}) = ℙ(T_{AD|BC}) = (1/3) e^{-(x+y)}`. -/

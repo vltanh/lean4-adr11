@@ -2,6 +2,7 @@ module
 
 public import ADR11.FiveTaxa.Basic
 public import ADR11.Computation.FiveTaxa
+public import ADR11.FiveTaxa.Explanations
 
 /-!
 # The balanced 5-taxon species tree `(((a,b):x,c):y,(d,e):z)`
@@ -9,6 +10,12 @@ public import ADR11.Computation.FiveTaxa
 Appendix B.1 (equation (11)), Table 1, the equivalence classes, the inequalities (4), their
 exhaustiveness, and the extreme classes (Section 4.2.1). Throughout, `X = e^{-x}`, `Y = e^{-y}`,
 `Z = e^{-z}` with `x, y, z` the lengths of the edges above `{a,b}`, `{a,b,c}` and `{d,e}`.
+
+As in the paper, each invariant of Table 1 is proved by its explanation (`ex_balanced_rows`):
+the symmetries `(ab)`, `(de)`, `(ab)(de)` of the species tree, or the above-the-root argument with
+Lemma 4 (`ADR11.FiveTaxa.Explanations`); the "if" direction of the equivalence classes follows
+from these invariants. That the invariants form a basis, and that there are no others
+(`table1`), rests on the explicit formulas (11), like the inequalities (4), as in the paper.
 -/
 
 @[expose] public section
@@ -145,11 +152,44 @@ private theorem tables_bal_li : LinearIndependent ℝ table1Basis := by
   intro i
   fin_cases i <;> assumption
 
-/-- The vectors of Table 1 are invariants, by (11). -/
+/-! ### The invariants of Table 1, by their explanations (Section 4.2.1) -/
+
+/-- The invariants of Table 1, each by the explanation the paper gives for it (Section 4.2.1).
+The symmetries `(ab)`, `(de)` and `(ab)(de)` of the species tree (`ex_u_eq_of_perm`), and the
+above-the-root argument with Lemma 4 for `T₈`, `T₁₁`, `T₁₅` (`ex_u_eq_aboveRoot`): none of their
+cherries (`AD, BE`; `AE, BD`; `BE, CD`) lies inside `{a,b}`, `{a,b,c}` or `{d,e}`, so their first
+coalescent event, and then every event, occurs above the root. In the order of the table:
+`u₁₄ = u₁₅` by `(de)`, `u₁₁ = u₁₅` above the root, `u₁₀ = u₁₅` by `(ab)`, `u₉ = u₁₂` by `(de)`,
+`u₈ = u₁₅` above the root, `u₇ = u₁₅` and `u₆ = u₁₂` by `(ab)(de)`, `u₅ = u₁₂` and `u₄ = u₁₃` by
+`(ab)`, `u₂ = u₃` by `(de)`. -/
+theorem ex_balanced_rows (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = balanced5) :
+    u σ 14 = u σ 15 ∧ u σ 11 = u σ 15 ∧ u σ 10 = u σ 15 ∧ u σ 9 = u σ 12 ∧ u σ 8 = u σ 15 ∧
+      u σ 7 = u σ 15 ∧ u σ 6 = u σ 12 ∧ u σ 5 = u σ 12 ∧ u σ 4 = u σ 13 ∧ u σ 2 = u σ 3 := by
+  -- the symmetries `(ab)`, `(de)` and `(ab)(de)` of `σ⁺`: they fix `{a,b}`, `{a,b,c}`, `{d,e}`
+  have ab : ∀ {i j : ℕ}, relabelFamily (Equiv.swap (0 : Fin 5) 1) (T5 i) = T5 j →
+      u σ i = u σ j := fun h => ex_u_eq_of_perm σ hσ _ (by decide) (by decide) h
+  have de : ∀ {i j : ℕ}, relabelFamily (Equiv.swap (3 : Fin 5) 4) (T5 i) = T5 j →
+      u σ i = u σ j := fun h => ex_u_eq_of_perm σ hσ _ (by decide) (by decide) h
+  have abde : ∀ {i j : ℕ},
+      relabelFamily ((Equiv.swap (0 : Fin 5) 1).trans (Equiv.swap 3 4)) (T5 i) = T5 j →
+      u σ i = u σ j := fun h => ex_u_eq_of_perm σ hσ _ (by decide) (by decide) h
+  -- above the root: no cherry of the gene tree inside a cluster other than the root, so its first
+  -- coalescent event, and then every event, occurs above the root
+  have root : ∀ {i j : ℕ}, i ∈ Icc 1 15 → j ∈ Icc 1 15 →
+      (∀ B ∈ balanced5, B ≠ univ → ∀ P ∈ T5 i, #P = 2 → ¬ P ⊆ B) →
+      (∀ B ∈ balanced5, B ≠ univ → ∀ P ∈ T5 j, #P = 2 → ¬ P ⊆ B) → u σ i = u σ j := by
+    intro i j hi hj hTi hTj
+    rw [← hσ] at hTi hTj
+    exact ex_u_eq_aboveRoot σ hi hj hTi hTj
+  exact ⟨de (by decide), root (by decide) (by decide) (by decide) (by decide), ab (by decide),
+    de (by decide), root (by decide) (by decide) (by decide) (by decide), abde (by decide),
+    abde (by decide), ab (by decide), ab (by decide), de (by decide)⟩
+
+/-- The vectors of Table 1 are invariants, each by its explanation (`ex_balanced_rows`). -/
 private theorem tables_bal_mem (k : Fin 10) : table1Basis k ∈ linearInvariants balanced5 := by
   rw [tables_mem_linearInvariants]
   intro σ hσ
-  obtain ⟨-, -, e3, -, e13, -, e6, e9, e12, -, e8, e10, e11, e14, e15⟩ := equation11 σ hσ
+  obtain ⟨r14, r11, r10, r9, r8, r7, r6, r5, r4, r2⟩ := ex_balanced_rows σ hσ
   rw [tables_sum15]
   fin_cases k <;> simp [table1Basis, ue] <;> linarith
 
@@ -223,13 +263,14 @@ def balancedClass : ℕ → ℕ
   | 3 => 2 | 13 => 4 | 6 => 5 | 9 => 5 | 12 => 5
   | 8 => 7 | 10 => 7 | 11 => 7 | 14 => 7 | 15 => 7 | i => i
 
-/-- Each `u_k` equals `u` of the name of the class of `T_k`. -/
+/-- Each `u_k` equals `u` of the name of the class of `T_k`: these equalities are the invariants
+of Table 1 (`ex_balanced_rows`). -/
 private theorem tables_bal_cls (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = balanced5) :
     ∀ k ∈ Icc 1 15, u σ k = u σ (balancedClass k) := by
-  obtain ⟨-, -, e3, -, e13, -, e6, e9, e12, -, e8, e10, e11, e14, e15⟩ := equation11 σ hσ
+  obtain ⟨r14, r11, r10, r9, r8, r7, r6, r5, r4, r2⟩ := ex_balanced_rows σ hσ
   intro k hk
   obtain ⟨hk1, hk2⟩ := mem_Icc.1 hk
-  interval_cases k <;> simp only [balancedClass, e3, e13, e6, e9, e12, e8, e10, e11, e14, e15]
+  interval_cases k <;> simp only [balancedClass] <;> linarith
 
 /-- The names of the classes. -/
 private theorem tables_bal_rep :
