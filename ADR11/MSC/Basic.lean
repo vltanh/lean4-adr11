@@ -22,14 +22,16 @@ results here assume `H` is a hierarchy (`IsHierarchy H`) and the lengths are non
 * `forestDist_singleton_of_card_le_one`, `forestDist_id_singleton`: at a leaf from which at most
   one lineage is sampled, the leaving forest is the sampled forest.
 * `IsHierarchy.disjoint_of_mem_childClusters`, `IsHierarchy.sup_childClusters`,
-  `IsHierarchy.two_le_card_childClusters`, `IsHierarchy.childClusters_eq`,
-  `IsHierarchy.childClusters_eq_pair`: the children of a cluster with at least two elements
-  partition it; `SpeciesTree.isBinary_iff_card_childClusters`: a species tree is binary if and
-  only if every such cluster has exactly two children.
+  `IsHierarchy.two_le_card_childClusters`: the children of a cluster with at least two elements
+  partition it; `IsHierarchy.childClusters_eq`, `IsHierarchy.childClusters_eq_pair`,
+  `IsHierarchy.childClusters_eq_triple`: recognizing the children;
+  `SpeciesTree.isBinary_iff_card_childClusters`: a species tree is binary if and only if every
+  such cluster has exactly two children.
 * `forestDist_support`: the forest leaving the population above `A` is a forest on exactly the
   lineages sampled from `A`, containing their singletons (`enteringDist_support`: the same for the
-  entering forest).
-* `forestDist_nonneg`, `forestDist_nonneg_of_ne_univ`, `forestDist_sum`, `enteringDist_sum`,
+  entering forest; `forestDist_univ_support`: above the root, it has at most one root).
+* `forestDist_nonneg`, `forestDist_nonneg_of_ne_univ`, `forestDist_sum`, `forestDist_le_one`,
+  `enteringDist_nonneg_of_ne_univ`, `enteringDist_sum`,
   `unrootedDistOf_nonneg`, `unrootedDistOf_sum`: probability distributions.
 * `forestDist_congr_len`: only the lengths of the edges below the root matter.
 * `unrootedDistOf_eq_sum_entering`: the unrooted distribution is obtained from the forest entering
@@ -463,6 +465,26 @@ theorem enteringDist_support {H : Finset (Finset X)} (hH : IsHierarchy H) (len :
     exact ⟨h1, h3⟩
   · exact absurd rfl hf
 
+/-- The forest leaving the population above the root is a forest on all the lineages with at
+most one root (a single rooted gene tree, when some lineage is sampled). -/
+theorem forestDist_univ_support {H : Finset (Finset X)} (hH : IsHierarchy H)
+    (len : Finset X → ℝ) (s : L → X) {G : Finset (Finset L)}
+    (hG : forestDist H len s univ G ≠ 0) :
+    IsForest G ∧ sampledForest s univ ⊆ G ∧ lineages G = univ ∧ #(roots G) ≤ 1 := by
+  obtain ⟨h1, h2, h3⟩ := forestDist_support hH len s hH.1 hG
+  refine ⟨h1, h2, by simpa using h3, ?_⟩
+  rw [forestDist_eq_sum_entering] at hG
+  obtain ⟨F, -, hF⟩ := exists_ne_zero_of_sum_ne_zero hG
+  have hFf := (enteringDist_support hH len s (left_ne_zero_of_mul hF)).1
+  have hK := right_ne_zero_of_mul hF
+  rw [populationKernel, ite_eq_left rfl, kingmanAbsorption_apply hFf] at hK
+  split_ifs at hK with h0 hGF h1
+  · rw [hGF, h0]
+    exact Nat.zero_le 1
+  · exact absurd rfl hK
+  · rw [h1]
+  · exact absurd rfl hK
+
 theorem enteringDist_nonneg_of_ne_univ {H : Finset (Finset X)} (hH : IsHierarchy H)
     {len : Finset X → ℝ} (hlen : ∀ A ∈ H, A ≠ univ → 0 ≤ len A) (s : L → X) (A : Finset X)
     (F : Finset (Finset L)) : 0 ≤ enteringDist H len s A F := by
@@ -606,6 +628,103 @@ theorem IsHierarchy.childClusters_eq_pair {H : Finset (Finset X)} (hH : IsHierar
       · exact absurd hzC (Finset.disjoint_left.1 h hzE)
     exact not_subset_of_ssubset hEA (hA ▸ union_subset hBE hCE)
 
+/-- Three pairwise disjoint clusters whose union is `A`, no two of which have a union in the
+hierarchy, are the children of `A`. -/
+theorem IsHierarchy.childClusters_eq_triple {H : Finset (Finset X)} (hH : IsHierarchy H)
+    {A B C D : Finset X} (hB : B ∈ H) (hC : C ∈ H) (hD : D ∈ H) (hBC : Disjoint B C)
+    (hBD : Disjoint B D) (hCD : Disjoint C D) (hA : B ∪ C ∪ D = A) (hBC' : B ∪ C ∉ H)
+    (hBD' : B ∪ D ∉ H) (hCD' : C ∪ D ∉ H) : childClusters H A = {B, C, D} := by
+  have hne : ∀ {P Q : Finset X}, P ∈ H → Disjoint P Q → P ≠ Q := by
+    intro P Q hP hPQ h
+    subst h
+    obtain ⟨y, hy⟩ := hH.2.2.1 P hP
+    exact Finset.disjoint_left.1 hPQ hy hy
+  have hBC0 := hne hB hBC
+  have hBD0 := hne hB hBD
+  have hCD0 := hne hC hCD
+  refine hH.childClusters_eq (by simp [insert_subset_iff, hB, hC, hD]) ?_ ?_ ?_ ?_
+  · intro P hP Q hQ hPQ
+    simp only [coe_insert, coe_singleton, Set.mem_insert_iff, Set.mem_singleton_iff] at hP hQ
+    rcases hP with rfl | rfl | rfl <;> rcases hQ with rfl | rfl | rfl
+    all_goals first
+      | exact absurd rfl hPQ
+      | exact hBC | exact hBC.symm | exact hBD | exact hBD.symm | exact hCD | exact hCD.symm
+  · simp [← hA, union_assoc]
+  · rw [card_insert_of_notMem (by simp [hBC0, hBD0]), card_pair hCD0]
+    omega
+  · intro E hE hEA
+    simp only [mem_insert, mem_singleton, exists_eq_or_imp, exists_eq_left]
+    by_contra hcon
+    rw [not_or, not_or] at hcon
+    have key : ∀ P ∈ H, ¬ E ⊆ P → P ⊆ E ∨ Disjoint E P := fun P hP h => by
+      rcases hH.2.2.2 E hE P hP with h' | h' | h'
+      · exact absurd h' h
+      · exact Or.inl h'
+      · exact Or.inr h'
+    have hEsub : ∀ x ∈ E, x ∈ B ∨ x ∈ C ∨ x ∈ D := fun x hx => by
+      have := hEA.subset hx
+      rw [← hA] at this
+      simpa [or_assoc] using this
+    obtain ⟨y, hy⟩ := hH.2.2.1 E hE
+    rcases key B hB hcon.1 with hB' | hB' <;> rcases key C hC hcon.2.1 with hC' | hC' <;>
+      rcases key D hD hcon.2.2 with hD' | hD'
+    · exact not_subset_of_ssubset hEA (hA ▸ union_subset (union_subset hB' hC') hD')
+    · refine hBC' ?_
+      have : E = B ∪ C := by
+        ext x
+        refine ⟨fun hx => ?_, fun hx => ?_⟩
+        · rcases hEsub x hx with h | h | h
+          · exact mem_union_left _ h
+          · exact mem_union_right _ h
+          · exact absurd h (Finset.disjoint_left.1 hD' hx)
+        · rcases mem_union.1 hx with h | h
+          · exact hB' h
+          · exact hC' h
+      exact this ▸ hE
+    · refine hBD' ?_
+      have : E = B ∪ D := by
+        ext x
+        refine ⟨fun hx => ?_, fun hx => ?_⟩
+        · rcases hEsub x hx with h | h | h
+          · exact mem_union_left _ h
+          · exact absurd h (Finset.disjoint_left.1 hC' hx)
+          · exact mem_union_right _ h
+        · rcases mem_union.1 hx with h | h
+          · exact hB' h
+          · exact hD' h
+      exact this ▸ hE
+    · refine hcon.1 fun x hx => ?_
+      rcases hEsub x hx with h | h | h
+      · exact h
+      · exact absurd h (Finset.disjoint_left.1 hC' hx)
+      · exact absurd h (Finset.disjoint_left.1 hD' hx)
+    · refine hCD' ?_
+      have : E = C ∪ D := by
+        ext x
+        refine ⟨fun hx => ?_, fun hx => ?_⟩
+        · rcases hEsub x hx with h | h | h
+          · exact absurd h (Finset.disjoint_left.1 hB' hx)
+          · exact mem_union_left _ h
+          · exact mem_union_right _ h
+        · rcases mem_union.1 hx with h | h
+          · exact hC' h
+          · exact hD' h
+      exact this ▸ hE
+    · refine hcon.2.1 fun x hx => ?_
+      rcases hEsub x hx with h | h | h
+      · exact absurd h (Finset.disjoint_left.1 hB' hx)
+      · exact h
+      · exact absurd h (Finset.disjoint_left.1 hD' hx)
+    · refine hcon.2.2 fun x hx => ?_
+      rcases hEsub x hx with h | h | h
+      · exact absurd h (Finset.disjoint_left.1 hB' hx)
+      · exact absurd h (Finset.disjoint_left.1 hC' hx)
+      · exact h
+    · rcases hEsub y hy with h | h | h
+      · exact Finset.disjoint_left.1 hB' hy h
+      · exact Finset.disjoint_left.1 hC' hy h
+      · exact Finset.disjoint_left.1 hD' hy h
+
 /-- A species tree is binary if and only if every cluster with at least two taxa has exactly two
 children. -/
 theorem SpeciesTree.isBinary_iff_card_childClusters (σ : SpeciesTree X) :
@@ -659,6 +778,11 @@ theorem forestDist_singleton_of_card_le_one {H : Finset (Finset X)} (hH : IsHier
   · rw [populationKernel, ite_eq_right hxu]
     exact kingmanTransition_of_card_roots_le_one hF hk _ G
 
+theorem sampledForest_id (A : Finset X) :
+    sampledForest (id : X → X) A = A.image fun x => {x} := by
+  ext C
+  simp [sampledForest]
+
 /-- With one lineage per taxon, the forest leaving the population above a leaf `{x}` is the
 single lineage `{x}`. -/
 theorem forestDist_id_singleton {H : Finset (Finset X)} (hH : IsHierarchy H)
@@ -699,6 +823,13 @@ theorem SpeciesTree.forestDist_nonneg_of_mem (σ : SpeciesTree X) (s : L → X) 
 theorem SpeciesTree.forestDist_sum_eq_one (σ : SpeciesTree X) (s : L → X) {A : Finset X}
     (hA : A ∈ σ.clusters) : ∑ G, forestDist σ.clusters σ.length s A G = 1 :=
   forestDist_sum σ.isHierarchy σ.length s hA
+
+theorem forestDist_le_one {H : Finset (Finset X)} (hH : IsHierarchy H) {len : Finset X → ℝ}
+    (hlen : ∀ A ∈ H, A ≠ univ → 0 ≤ len A) (s : L → X) {A : Finset X} (hA : A ∈ H)
+    (G : Finset (Finset L)) : forestDist H len s A G ≤ 1 := by
+  rw [← forestDist_sum hH len s hA]
+  exact Finset.single_le_sum (fun G _ => forestDist_nonneg_of_ne_univ hH hlen s hA G)
+    (mem_univ G)
 
 theorem unrootedDistOf_nonneg {H : Finset (Finset X)} (hH : IsHierarchy H) {len : Finset X → ℝ}
     (hlen : ∀ A ∈ H, A ≠ univ → 0 ≤ len A) (s : L → X) (T : Finset (Finset L)) :
