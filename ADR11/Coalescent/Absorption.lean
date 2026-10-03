@@ -44,11 +44,7 @@ private theorem absorb_deathProb_zero (k : ℕ) (hk : 1 ≤ k) (t : ℝ) : death
 
 private theorem absorb_tavareCoeff_one (k : ℕ) (hk : 1 ≤ k) : tavareCoeff k 1 1 = 1 := by
   have hk' : (k : ℝ) ≠ 0 := by exact_mod_cast (show k ≠ 0 by omega)
-  unfold tavareCoeff
-  simp only [Nat.factorial, Nat.cast_one, Nat.sub_self, pow_zero, Finset.prod_range_one]
-  rw [show ((1 : ℕ) : ℝ) = 1 by norm_num]
-  simp [div_self hk']
-  norm_num
+  norm_num [tavareCoeff, div_self hk']
 
 /-- `exp(-(m choose 2) t)` tends to `1` if `m = 1` and to `0` if `m ≥ 2`. -/
 private theorem absorb_tendsto_exp (m : ℕ) (hm : 1 ≤ m) :
