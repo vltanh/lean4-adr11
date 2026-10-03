@@ -3,6 +3,7 @@ module
 public import ADR11.SmallTrees
 public import ADR11.MSC.Basic
 public import ADR11.Model.History
+public import ADR11.Computation.Caterpillar5
 
 /-!
 # Section 3: the multispecies coalescent model
@@ -119,8 +120,8 @@ theorem coalescenceProb_self (i : ℕ) (t : ℝ) (ht : 0 < t) :
 theorem section3_example1 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = caterpillar5) :
     σ.rootedDist id (hierarchyOf {{1, 4}, {0, 1, 4}, {0, 1, 2, 4}}) =
       exp (-σ.length {0, 1}) * exp (-σ.length {0, 1, 2}) ^ 3 *
-        exp (-σ.length {0, 1, 2, 3}) ^ 6 / 180 := by
-  sorry
+        exp (-σ.length {0, 1, 2, 3}) ^ 6 / 180 :=
+  Computation.rootedDist_cat5_example1 σ hσ
 
 /-- Second worked example of Section 3: in the same caterpillar species tree, the rooted gene tree
 `(((B,E),A),(C,D))` has probability `X Y³ Z³ / 54 - X Y³ Z⁶ / 540`. -/
@@ -129,8 +130,8 @@ theorem section3_example2 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = caterp
       exp (-σ.length {0, 1}) * exp (-σ.length {0, 1, 2}) ^ 3 *
           exp (-σ.length {0, 1, 2, 3}) ^ 3 / 54 -
         exp (-σ.length {0, 1}) * exp (-σ.length {0, 1, 2}) ^ 3 *
-          exp (-σ.length {0, 1, 2, 3}) ^ 6 / 540 := by
-  sorry
+          exp (-σ.length {0, 1, 2, 3}) ^ 6 / 540 :=
+  Computation.rootedDist_cat5_example2 σ hσ
 
 /-- **Equation (3)** and the history decomposition [Degnan–Salter 2005]: for a species tree
 topology `H` and a rooted gene tree `G`, there are finitely many coalescent histories `h`, with

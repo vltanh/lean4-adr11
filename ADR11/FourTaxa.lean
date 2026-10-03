@@ -1,6 +1,7 @@
 module
 
 public import ADR11.SmallTrees
+public import ADR11.Computation.FourTaxa
 
 /-!
 # Section 4.1: four taxa
@@ -33,7 +34,12 @@ theorem fourTaxa_balanced (σ : SpeciesTree (Fin 4)) (hσ : σ.clusters = balanc
         1 / 3 * exp (-(σ.length {0, 1} + σ.length {2, 3})) ∧
     σ.unrootedDist id (treeOfClusters {{0, 3}}) =
         1 / 3 * exp (-(σ.length {0, 1} + σ.length {2, 3})) := by
-  sorry
+  have h := Computation.unrootedDist_bal4 σ hσ
+  refine ⟨?_, ?_, ?_⟩
+  · rw [h, Computation.ite₃_eq_first]
+  · rw [h, Computation.ite₃_eq_second _ _ _ _ Computation.quartet_ne_01_02]
+  · rw [h, Computation.ite₃_eq_third _ _ _ Computation.quartet_ne_01_03
+      Computation.quartet_ne_02_03]
 
 /-- Section 4.1: for the rooted caterpillar species tree `(((a,b):x,c):y,d)`,
 `ℙ(T_{AB|CD}) = 1 - (2/3) e^{-x}` and `ℙ(T_{AC|BD}) = ℙ(T_{AD|BC}) = (1/3) e^{-x}`. -/
@@ -41,7 +47,12 @@ theorem fourTaxa_caterpillar (σ : SpeciesTree (Fin 4)) (hσ : σ.clusters = cat
     σ.unrootedDist id (treeOfClusters {{0, 1}}) = 1 - 2 / 3 * exp (-σ.length {0, 1}) ∧
     σ.unrootedDist id (treeOfClusters {{0, 2}}) = 1 / 3 * exp (-σ.length {0, 1}) ∧
     σ.unrootedDist id (treeOfClusters {{0, 3}}) = 1 / 3 * exp (-σ.length {0, 1}) := by
-  sorry
+  have h := Computation.unrootedDist_cat4_0123 σ hσ
+  refine ⟨?_, ?_, ?_⟩
+  · rw [h, Computation.ite₃_eq_first]
+  · rw [h, Computation.ite₃_eq_second _ _ _ _ Computation.quartet_ne_01_02]
+  · rw [h, Computation.ite₃_eq_third _ _ _ Computation.quartet_ne_01_03
+      Computation.quartet_ne_02_03]
 
 /-- Section 4.1: for `x > 0`, `yᵢ > 0` and `x > z > 0`, the rooted species trees
 `(((a,b):x,c):y₁,d)`, `(((a,b):x,d):y₂,c)`, `(((c,d):x,a):y₃,b)`, `(((c,d):x,b):y₄,a)` and
@@ -58,6 +69,13 @@ theorem fourTaxa_sameDistribution (σ₁ σ₂ σ₃ σ₄ σ₅ : SpeciesTree (
     (hx₅ : σ₅.length {0, 1} + σ₅.length {2, 3} = σ₁.length {0, 1}) :
     σ₂.unrootedDist id = σ₁.unrootedDist id ∧ σ₃.unrootedDist id = σ₁.unrootedDist id ∧
       σ₄.unrootedDist id = σ₁.unrootedDist id ∧ σ₅.unrootedDist id = σ₁.unrootedDist id := by
-  sorry
+  refine ⟨?_, ?_, ?_, ?_⟩ <;> funext U
+  · rw [Computation.unrootedDist_cat4_0132 σ₂ h₂ U, Computation.unrootedDist_cat4_0123 σ₁ h₁ U,
+      hx₂]
+  · rw [Computation.unrootedDist_cat4_2301 σ₃ h₃ U, Computation.unrootedDist_cat4_0123 σ₁ h₁ U,
+      hx₃]
+  · rw [Computation.unrootedDist_cat4_2310 σ₄ h₄ U, Computation.unrootedDist_cat4_0123 σ₁ h₁ U,
+      hx₄]
+  · rw [Computation.unrootedDist_bal4 σ₅ h₅ U, Computation.unrootedDist_cat4_0123 σ₁ h₁ U, hx₅]
 
 end ADR11

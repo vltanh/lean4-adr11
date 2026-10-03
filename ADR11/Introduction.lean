@@ -1,6 +1,7 @@
 module
 
 public import ADR11.SmallTrees
+public import ADR11.Computation.ThreeTaxa
 
 /-!
 # Section 1: rooted gene trees
@@ -31,19 +32,55 @@ theorem equation1 (σ : SpeciesTree (Fin 3)) (hσ : σ.clusters = clusters3) :
     σ.rootedDist id (rootedTree3 {1, 2}) = 1 / 3 * exp (-σ.length {0, 1}) ∧
     σ.rootedDist id (rootedTree3 {0, 2}) - σ.rootedDist id (rootedTree3 {1, 2}) = 0 ∧
     σ.rootedDist id (rootedTree3 {0, 1}) > σ.rootedDist id (rootedTree3 {0, 2}) := by
-  sorry
+  have h := Computation.rootedDist_three_01 σ hσ
+  have h₁ : σ.rootedDist id (rootedTree3 {0, 1}) = 1 - 2 / 3 * exp (-σ.length {0, 1}) := by
+    rw [h, Computation.ite₃_eq_first]
+  have h₂ : σ.rootedDist id (rootedTree3 {0, 2}) = 1 / 3 * exp (-σ.length {0, 1}) := by
+    rw [h, Computation.ite₃_eq_second _ _ _ _ Computation.rootedTree3_ne_01_02]
+  have h₃ : σ.rootedDist id (rootedTree3 {1, 2}) = 1 / 3 * exp (-σ.length {0, 1}) := by
+    rw [h, Computation.ite₃_eq_third _ _ _ Computation.rootedTree3_ne_01_12
+      Computation.rootedTree3_ne_02_12]
+  have hX : exp (-σ.length {0, 1}) < 1 := by
+    rw [Real.exp_lt_one_iff, neg_lt_zero]
+    exact σ.length_pos {0, 1} (by rw [hσ]; decide) (by decide)
+  refine ⟨h₁, h₂, h₃, by rw [h₂, h₃, sub_self], ?_⟩
+  rw [h₁, h₂]
+  linarith
 
 /-- The invariant of equation (1) holds on the rooted gene tree distribution of a binary 3-taxon
 species tree if, and only if, the species tree has topology `((a,b),c)`. -/
 theorem equation1_iff (σ : SpeciesTree (Fin 3)) (hσ : σ.IsBinary) :
     σ.rootedDist id (rootedTree3 {0, 2}) - σ.rootedDist id (rootedTree3 {1, 2}) = 0 ↔
       σ.clusters = clusters3 := by
-  sorry
+  refine ⟨fun h => ?_, fun hc => (equation1 σ hc).2.2.2.1⟩
+  rcases Computation.clusters_eq_of_isBinary_three σ hσ with hc | hc | hc
+  · exact hc
+  · exfalso
+    have hd := Computation.rootedDist_three_02 σ hc
+    rw [hd, hd, Computation.ite₃_eq_second _ _ _ _ Computation.rootedTree3_ne_01_02,
+      Computation.ite₃_eq_third _ _ _ Computation.rootedTree3_ne_01_12
+        Computation.rootedTree3_ne_02_12] at h
+    have hX : exp (-σ.length {0, 2}) < 1 := by
+      rw [Real.exp_lt_one_iff, neg_lt_zero]
+      exact σ.length_pos {0, 2} (by rw [hc]; decide) (by decide)
+    linarith
+  · exfalso
+    have hd := Computation.rootedDist_three_12 σ hc
+    rw [hd, hd, Computation.ite₃_eq_second _ _ _ _ Computation.rootedTree3_ne_01_02,
+      Computation.ite₃_eq_third _ _ _ Computation.rootedTree3_ne_01_12
+        Computation.rootedTree3_ne_02_12] at h
+    have hX : exp (-σ.length {1, 2}) < 1 := by
+      rw [Real.exp_lt_one_iff, neg_lt_zero]
+      exact σ.length_pos {1, 2} (by rw [hc]; decide) (by decide)
+    linarith
 
 /-- The internal branch length of a 3-taxon species tree `((a,b):t,c)` is recovered from the
 probability `p` that the rooted gene tree has `A` and `B` as a cherry: `t = -log((3/2)(1-p))`. -/
 theorem introduction_tripleLength (σ : SpeciesTree (Fin 3)) (hσ : σ.clusters = clusters3) :
     σ.length {0, 1} = -log (3 / 2 * (1 - σ.rootedDist id (rootedTree3 {0, 1}))) := by
-  sorry
+  rw [(equation1 σ hσ).1]
+  have h : 3 / 2 * (1 - (1 - 2 / 3 * exp (-σ.length {0, 1}))) = exp (-σ.length {0, 1}) := by
+    ring
+  rw [h, Real.log_exp, neg_neg]
 
 end ADR11
