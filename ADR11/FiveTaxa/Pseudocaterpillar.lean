@@ -1,6 +1,7 @@
 module
 
 public import ADR11.FiveTaxa.Basic
+public import ADR11.Computation.FiveTaxa
 
 /-!
 # The pseudocaterpillar 5-taxon species tree `(((a,b):x,(d,e):y):z,c)`
@@ -28,7 +29,18 @@ theorem equation13 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = pseudocaterpi
     u σ 5 = 1 / 18 * X * Y + 1 / 90 * X * Y * Z ^ 6 ∧ u σ 6 = u σ 5 ∧ u σ 7 = u σ 5 ∧
       u σ 9 = u σ 5 ∧ u σ 10 = u σ 5 ∧ u σ 12 = u σ 5 ∧ u σ 14 = u σ 5 ∧ u σ 15 = u σ 5 ∧
     u σ 8 = 1 / 9 * X * Y - 2 / 45 * X * Y * Z ^ 6 ∧ u σ 11 = u σ 8 := by
-  sorry
+  have h (i : ℕ) (hi : i ∈ Icc 1 15) :
+      u σ i = Computation.evalPoly σ.length (Computation.pseudo5Poly i) :=
+    Computation.u_pseudo5 σ hσ hi
+  dsimp only
+  rw [h 1 (by decide), h 2 (by decide), h 3 (by decide), h 4 (by decide), h 5 (by decide),
+    h 6 (by decide), h 7 (by decide), h 8 (by decide), h 9 (by decide), h 10 (by decide),
+    h 11 (by decide), h 12 (by decide), h 13 (by decide), h 14 (by decide), h 15 (by decide)]
+  simp only [Computation.pseudo5Poly, Computation.evalPoly_cons, Computation.evalPoly_nil,
+    Computation.monoVal_cons, Computation.monoVal_nil, Computation.decC_5_3,
+    Computation.decC_5_24, Computation.decC_5_27]
+  push_cast
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> first | trivial | ring
 
 /-- The basis of homogeneous linear invariants listed in Table 3, in the order of the table. -/
 def table3Basis : Fin 10 → Fin 15 → ℝ :=

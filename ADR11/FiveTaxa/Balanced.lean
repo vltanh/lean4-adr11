@@ -1,6 +1,7 @@
 module
 
 public import ADR11.FiveTaxa.Basic
+public import ADR11.Computation.FiveTaxa
 
 /-!
 # The balanced 5-taxon species tree `(((a,b):x,c):y,(d,e):z)`
@@ -29,7 +30,18 @@ theorem equation11 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = balanced5) :
       u σ 12 = u σ 5 ∧
     u σ 7 = 1 / 15 * X * Y ^ 3 * Z ∧ u σ 8 = u σ 7 ∧ u σ 10 = u σ 7 ∧ u σ 11 = u σ 7 ∧
       u σ 14 = u σ 7 ∧ u σ 15 = u σ 7 := by
-  sorry
+  have h (i : ℕ) (hi : i ∈ Icc 1 15) :
+      u σ i = Computation.evalPoly σ.length (Computation.bal5Poly i) :=
+    Computation.u_bal5 σ hσ hi
+  dsimp only
+  rw [h 1 (by decide), h 2 (by decide), h 3 (by decide), h 4 (by decide), h 5 (by decide),
+    h 6 (by decide), h 7 (by decide), h 8 (by decide), h 9 (by decide), h 10 (by decide),
+    h 11 (by decide), h 12 (by decide), h 13 (by decide), h 14 (by decide), h 15 (by decide)]
+  simp only [Computation.bal5Poly, Computation.evalPoly_cons, Computation.evalPoly_nil,
+    Computation.monoVal_cons, Computation.monoVal_nil, Computation.decC_5_3,
+    Computation.decC_5_7, Computation.decC_5_24]
+  push_cast
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> first | trivial | ring
 
 /-! ### Helpers: the formulas (11) on the classes, and balanced trees with given `X, Y, Z` -/
 

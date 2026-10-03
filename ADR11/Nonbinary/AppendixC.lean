@@ -3,6 +3,7 @@ module
 public import ADR11.FiveTaxa.Balanced
 public import ADR11.FiveTaxa.Caterpillar
 public import ADR11.FiveTaxa.Pseudocaterpillar
+public import ADR11.Computation.FiveTaxa
 
 /-!
 # Appendix C: nonbinary 5-taxon species trees
@@ -87,7 +88,22 @@ theorem table7 (σ : SpeciesTree (Fin 5)) (i : ℕ) (hi : i ∈ Icc 1 15) :
         else if i ∈ ({3, 6, 9} : Finset ℕ) then
           1 / 6 * Y - 1 / 18 * Y ^ 3 - 2 / 45 * Y ^ 3 * Z ^ 6
         else 1 / 18 * Y ^ 3 + 1 / 90 * Y ^ 3 * Z ^ 6) := by
-  sorry
+  obtain ⟨hi1, hi15⟩ := Finset.mem_Icc.1 hi
+  have key : ∀ k ∈ Icc 1 9, σ.clusters = polytomy5 k →
+      u σ i = Computation.evalPoly σ.length (Computation.polytomy5Poly k i) :=
+    fun k hk hσ => Computation.u_polytomy5 hk σ hσ hi
+  refine ⟨fun hσ => ?_, fun hσ => ?_, fun hσ => ?_, fun hσ => ?_, fun hσ => ?_, fun hσ => ?_,
+    fun hσ => ?_, fun hσ => ?_, fun hσ => ?_⟩ <;> (try dsimp only) <;>
+    rw [key _ (by decide) hσ] <;> clear key hσ hi <;> interval_cases i <;>
+    simp only [Computation.polytomy5Poly, Computation.polytomy5Poly₁, Computation.polytomy5Poly₂,
+      Computation.polytomy5Poly₃, Computation.polytomy5Poly₄, Computation.polytomy5Poly₅,
+      Computation.polytomy5Poly₆, Computation.polytomy5Poly₇, Computation.polytomy5Poly₈,
+      Computation.polytomy5Poly₉, Computation.evalPoly_cons, Computation.evalPoly_nil,
+      Computation.monoVal_cons, Computation.monoVal_nil, Computation.decC_5_3,
+      Computation.decC_5_7, Computation.decC_5_15, Computation.decC_5_24, Computation.decC_5_27,
+      Finset.mem_insert, Finset.mem_singleton, Nat.reduceEqDiff, or_false, or_true,
+      ↓reduceIte] <;>
+    push_cast <;> ring
 
 /-- The class of `T_i` for the nonbinary representative `P_k` in Table 7, named by its smallest
 index. -/
