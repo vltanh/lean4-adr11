@@ -78,7 +78,8 @@ strictly contained in `A`. -/
 def childClusters (H : Finset (Finset X)) (A : Finset X) : Finset (Finset X) :=
   H.filter fun B => B ⊂ A ∧ ∀ C ∈ H, B ⊂ C → ¬ C ⊂ A
 
-/-- The forest of singleton clusters `{l}` of the lineages `l` sampled from the taxa in `A`. -/
+/-- The forest of singleton clusters `{l}` of the lineages `l` sampled from the taxa in `A` (at an
+internal cluster these singletons already belong to the forests of its children). -/
 def sampledForest (s : L → X) (A : Finset X) : Finset (Finset L) :=
   (univ.filter fun l => s l ∈ A).image fun l => {l}
 

@@ -1,23 +1,21 @@
 module
 
 public import ADR11.FiveTaxa.Basic
+public import ADR11.MSC.Basic
 
 /-!
-# Section 5 and Appendix C: nonbinary species trees
+# Section 5: nonbinary species trees
 
 * `section5_threeTaxa`: for the unresolved 3-taxon species tree the three rooted gene trees are
   equiprobable; for a resolved one exactly one has probability greater than `1/3`.
 * `section5_triples`: a species tree has no cluster separating one of three taxa from the other
   two exactly when the three rooted triples on them are equiprobable.
+* `section5_proposition1`, `section5_corollary2`: Proposition 1 and Corollary 2 for species trees
+  that need not be binary.
+* `section5_limit`: the distributions of a nonbinary species tree are limits of those of a binary
+  resolution as the added branch lengths tend to `0`.
 * `section5_fourTaxa`: `(a,b,c,d)` and `((a,b,c):y,d)` give the same unrooted distribution, and so
   do `(((a,b):x,c):y,d)` and `((a,b):x,c,d)`, with `ℙ(T_{AB|CD}) = 1 - (2/3) e^{-x}`.
-* `proposition11_*`: Proposition 11, the extension of Proposition 3, Corollary 6,
-  Propositions 7 and 8, Theorem 9 and Corollary 10 to nonbinary species trees.
-* `table6`, `table7`: the inequalities and the unrooted gene tree distributions of the nine
-  nonbinary 5-taxon representatives `P₁, …, P₉` (`ADR11.polytomy5`).
-* `appendixC_leastClass`: the least probable class `𝒞` of gene trees is well defined, with the
-  sizes listed in the proof of Proposition 11 for the twelve rooted 5-taxon shapes; and the sizes
-  of the next class used there.
 -/
 
 @[expose] public section
@@ -62,147 +60,26 @@ theorem section5_fourTaxa (σ₁ σ₂ σ₃ σ₄ : SpeciesTree (Fin 4))
       σ₄.unrootedDist id (treeOfClusters {{0, 1}}) = 1 - 2 / 3 * exp (-σ₄.length {0, 1}) := by
   sorry
 
-/-- **Proposition 11** (Proposition 3 for nonbinary species trees). For `|X| = 4`, `σ⁻` is
-identifiable from `ℙ_{σ⁺}`, but `σ⁺` is not. -/
-theorem proposition11_proposition3 (hX : Fintype.card X = 4) :
-    (∀ σ σ' : SpeciesTree X, σ.unrootedDist id = σ'.unrootedDist id →
-        σ.SameUnrootedMetricTree σ') ∧
-      ∃ σ σ' : SpeciesTree X, σ.unrootedDist id = σ'.unrootedDist id ∧
-        ¬ σ.SameRootedMetricTree σ' := by
+/-- Section 5: polytomies are identified by rooted triples, so Proposition 1 holds for species trees
+that need not be binary: the probabilities of rooted triples determine the species tree topology
+and its internal branch lengths. -/
+theorem section5_proposition1 (hX : 3 ≤ Fintype.card X) (σ σ' : SpeciesTree X)
+    (h : ∀ a b c : X, a ≠ b → a ≠ c → b ≠ c → σ.rootedTripleProb a b c = σ'.rootedTripleProb a b c) :
+    σ.SameRootedMetricTree σ' := by
   sorry
 
-/-- **Proposition 11** (Corollary 6 for nonbinary species trees). For any `X`, `ℙ_{σ⁺}` determines
-`σ⁻`. -/
-theorem proposition11_corollary6 (σ σ' : SpeciesTree X)
-    (h : σ.unrootedDist id = σ'.unrootedDist id) : σ.SameUnrootedMetricTree σ' := by
+/-- Section 5: Corollary 2 for species trees that need not be binary. -/
+theorem section5_corollary2 (hX : 3 ≤ Fintype.card X) (σ σ' : SpeciesTree X)
+    (h : σ.rootedDist id = σ'.rootedDist id) : σ.SameRootedMetricTree σ' := by
   sorry
 
-/-- **Proposition 11** (Proposition 7 for nonbinary species trees). -/
-theorem proposition11_proposition7 (hX : Fintype.card X = 5) (σ σ' : SpeciesTree X)
-    (h : σ.unrootedDist id = σ'.unrootedDist id) : σ.clusters = σ'.clusters := by
-  sorry
-
-/-- **Proposition 11** (Proposition 8 for nonbinary species trees). -/
-theorem proposition11_proposition8 (hX : Fintype.card X = 5) (σ σ' : SpeciesTree X)
-    (h : σ.unrootedDist id = σ'.unrootedDist id) : σ.SameRootedMetricTree σ' := by
-  sorry
-
-/-- **Proposition 11** (Theorem 9 for nonbinary species trees, `|X| ≥ 5`). -/
-theorem proposition11_theorem9 (hX : 5 ≤ Fintype.card X) (σ σ' : SpeciesTree X)
-    (h : σ.unrootedDist id = σ'.unrootedDist id) : σ.SameRootedMetricTree σ' := by
-  sorry
-
-/-- **Proposition 11** (Theorem 9 for nonbinary species trees, `|X| = 4`). -/
-theorem proposition11_theorem9_four (hX : Fintype.card X = 4) (σ σ' : SpeciesTree X) :
-    σ.unrootedDist id = σ'.unrootedDist id ↔ σ.SameUnrootedMetricTree σ' := by
-  sorry
-
-/-- **Proposition 11** (Corollary 10 for nonbinary species trees). -/
-theorem proposition11_corollary10 (ℓ : X → ℕ) (hℓ : ∀ x, 0 < ℓ x)
-    (hcond : (4 ≤ Fintype.card X ∧ ∃ x, 2 ≤ ℓ x) ∨
-      (Fintype.card X = 3 ∧ ∃ x y, x ≠ y ∧ 2 ≤ ℓ x ∧ 2 ≤ ℓ y))
-    (σ σ' : SpeciesTree X)
-    (h : σ.unrootedDist (Sigma.fst : (Σ x, Fin (ℓ x)) → X) =
-      σ'.unrootedDist (Sigma.fst : (Σ x, Fin (ℓ x)) → X)) :
-    σ.SameRootedMetricTree σ' ∧ ∀ x, 2 ≤ ℓ x → σ.length {x} = σ'.length {x} := by
-  sorry
-
-/-- **Table 6**: the inequalities between unrooted gene tree probabilities for the nonbinary
-5-taxon representatives (`u₁ > u₂` for `P₂`; `u₃ > u₁` for `P₃`; `u₁ > u₂ > u₇` for `P₄` and
-`P₈`; `u₁ > u₂, u₄ > u₅` for `P₅`; `u₁ > u₂, u₄ > u₅ > u₇` for `P₆`; `u₁ > u₂, u₈ > u₄` for `P₇`;
-`u₁, u₃ > u₂ > u₇` for `P₉`). -/
-theorem table6 (σ : SpeciesTree (Fin 5)) :
-    (σ.clusters = polytomy5 2 → u σ 1 > u σ 2) ∧
-    (σ.clusters = polytomy5 3 → u σ 3 > u σ 1) ∧
-    (σ.clusters = polytomy5 4 → u σ 1 > u σ 2 ∧ u σ 2 > u σ 7) ∧
-    (σ.clusters = polytomy5 5 → u σ 1 > u σ 2 ∧ u σ 1 > u σ 4 ∧ u σ 2 > u σ 5 ∧ u σ 4 > u σ 5) ∧
-    (σ.clusters = polytomy5 6 → u σ 1 > u σ 2 ∧ u σ 1 > u σ 4 ∧ u σ 2 > u σ 5 ∧ u σ 4 > u σ 5 ∧
-      u σ 5 > u σ 7) ∧
-    (σ.clusters = polytomy5 7 → u σ 1 > u σ 2 ∧ u σ 1 > u σ 8 ∧ u σ 2 > u σ 4 ∧ u σ 8 > u σ 4) ∧
-    (σ.clusters = polytomy5 8 → u σ 1 > u σ 2 ∧ u σ 2 > u σ 7) ∧
-    (σ.clusters = polytomy5 9 → u σ 1 > u σ 2 ∧ u σ 3 > u σ 2 ∧ u σ 2 > u σ 7) := by
-  sorry
-
-/-- **Table 7**: the equivalence classes of equiprobable gene trees and the unrooted gene tree
-distributions of the nonbinary 5-taxon representatives `P₁, …, P₉`, in terms of the transformed
-lengths of their internal edges. For each representative the value of `u_i` is given for every
-`i`; `X`, `Y`, `Z` denote `e^{-x}`, `e^{-y}`, `e^{-z}` for the edges labelled `x`, `y`, `z` in
-Table 6. -/
-theorem table7 (σ : SpeciesTree (Fin 5)) (i : ℕ) (hi : i ∈ Icc 1 15) :
-    (σ.clusters = polytomy5 1 → u σ i = 1 / 15) ∧
-    (σ.clusters = polytomy5 2 →
-      let Z := exp (-σ.length {3, 4})
-      u σ i = if i ∈ ({1, 4, 13} : Finset ℕ) then 1 / 3 - 4 / 15 * Z else 1 / 15 * Z) ∧
-    (σ.clusters = polytomy5 3 →
-      let Z := exp (-σ.length {0, 1, 2, 3})
-      u σ i = if i ∈ ({3, 6, 9} : Finset ℕ) then 1 / 9 - 2 / 45 * Z ^ 6
-        else 1 / 18 + 1 / 90 * Z ^ 6) ∧
-    (σ.clusters = polytomy5 4 →
-      let Y := exp (-σ.length {0, 1, 2})
-      u σ i = if i ∈ ({1, 4, 13} : Finset ℕ) then 1 / 3 - 1 / 3 * Y + 1 / 15 * Y ^ 3
-        else if i ∈ ({2, 3, 5, 6, 9, 12} : Finset ℕ) then 1 / 6 * Y - 1 / 10 * Y ^ 3
-        else 1 / 15 * Y ^ 3) ∧
-    (σ.clusters = polytomy5 5 →
-      let X := exp (-σ.length {0, 1})
-      let Y := exp (-σ.length {3, 4})
-      u σ i = if i = 1 then 1 - 2 / 3 * X - 2 / 3 * Y + 2 / 5 * X * Y
-        else if i ∈ ({2, 3} : Finset ℕ) then 1 / 3 * Y - 4 / 15 * X * Y
-        else if i ∈ ({4, 13} : Finset ℕ) then 1 / 3 * X - 4 / 15 * X * Y
-        else 1 / 15 * X * Y) ∧
-    (σ.clusters = polytomy5 6 →
-      let X := exp (-σ.length {0, 1})
-      let Y := exp (-σ.length {0, 1, 2})
-      u σ i = if i = 1 then 1 - 2 / 3 * X - 2 / 3 * Y + 1 / 3 * X * Y + 1 / 15 * X * Y ^ 3
-        else if i ∈ ({2, 3} : Finset ℕ) then 1 / 3 * Y - 1 / 6 * X * Y - 1 / 10 * X * Y ^ 3
-        else if i ∈ ({4, 13} : Finset ℕ) then 1 / 3 * X - 1 / 3 * X * Y + 1 / 15 * X * Y ^ 3
-        else if i ∈ ({5, 6, 9, 12} : Finset ℕ) then 1 / 6 * X * Y - 1 / 10 * X * Y ^ 3
-        else 1 / 15 * X * Y ^ 3) ∧
-    (σ.clusters = polytomy5 7 →
-      let X := exp (-σ.length {0, 1})
-      let Z := exp (-σ.length {0, 1, 3, 4})
-      u σ i = if i = 1 then 1 / 3 - 2 / 9 * X - 2 / 45 * X * Z ^ 6
-        else if i ∈ ({2, 3} : Finset ℕ) then 1 / 3 - 5 / 18 * X + 1 / 90 * X * Z ^ 6
-        else if i ∈ ({8, 11} : Finset ℕ) then 1 / 9 * X - 2 / 45 * X * Z ^ 6
-        else 1 / 18 * X + 1 / 90 * X * Z ^ 6) ∧
-    (σ.clusters = polytomy5 8 →
-      let Y := exp (-σ.length {0, 1, 2})
-      let Z := exp (-σ.length {3, 4})
-      u σ i = if i ∈ ({1, 4, 13} : Finset ℕ) then 1 / 3 - 1 / 3 * Y * Z + 1 / 15 * Y ^ 3 * Z
-        else if i ∈ ({2, 3, 5, 6, 9, 12} : Finset ℕ) then 1 / 6 * Y * Z - 1 / 10 * Y ^ 3 * Z
-        else 1 / 15 * Y ^ 3 * Z) ∧
-    (σ.clusters = polytomy5 9 →
-      let Y := exp (-σ.length {0, 1, 2})
-      let Z := exp (-σ.length {0, 1, 2, 3})
-      u σ i = if i ∈ ({1, 4, 13} : Finset ℕ) then
-          1 / 3 - 1 / 3 * Y + 1 / 18 * Y ^ 3 + 1 / 90 * Y ^ 3 * Z ^ 6
-        else if i ∈ ({2, 5, 12} : Finset ℕ) then
-          1 / 6 * Y - 1 / 9 * Y ^ 3 + 1 / 90 * Y ^ 3 * Z ^ 6
-        else if i ∈ ({3, 6, 9} : Finset ℕ) then
-          1 / 6 * Y - 1 / 18 * Y ^ 3 - 2 / 45 * Y ^ 3 * Z ^ 6
-        else 1 / 18 * Y ^ 3 + 1 / 90 * Y ^ 3 * Z ^ 6) := by
-  sorry
-
-open scoped Classical in
-/-- Appendix C (proof of Proposition 11): for every rooted 5-taxon species tree shape the least
-probable class `𝒞` of gene trees has probability strictly smaller than all others, and
-`|𝒞| = 15` for `P₁`, `12` for `P₂` and `P₃`, `10` for `P₅` and `P₇`, `8` for the resolved
-pseudocaterpillar, and `6` for the resolved caterpillar and balanced trees and for `P₄`, `P₆`,
-`P₈`, `P₉`. When `|𝒞| = 6`, the class with the second smallest probability has cardinality `2`
-only for the caterpillar, `3` only for `P₉`, `6` only for `P₄` and `P₈`, and `4` for the balanced
-tree and `P₆`. -/
-theorem appendixC_leastClass (σ : SpeciesTree (Fin 5)) :
-    let C := {i ∈ Icc 1 15 | ∀ j ∈ Icc 1 15, u σ i ≤ u σ j}
-    let C₂ := {i ∈ Icc 1 15 | i ∉ C ∧ ∀ j ∈ Icc 1 15, j ∉ C → u σ i ≤ u σ j}
-    (σ.clusters = polytomy5 1 → #C = 15) ∧
-    (σ.clusters = polytomy5 2 → #C = 12) ∧ (σ.clusters = polytomy5 3 → #C = 12) ∧
-    (σ.clusters = polytomy5 5 → #C = 10) ∧ (σ.clusters = polytomy5 7 → #C = 10) ∧
-    (σ.clusters = pseudocaterpillar5 → #C = 8) ∧
-    (σ.clusters = caterpillar5 → #C = 6 ∧ #C₂ = 2) ∧
-    (σ.clusters = balanced5 → #C = 6 ∧ #C₂ = 4) ∧
-    (σ.clusters = polytomy5 4 → #C = 6 ∧ #C₂ = 6) ∧
-    (σ.clusters = polytomy5 6 → #C = 6 ∧ #C₂ = 4) ∧
-    (σ.clusters = polytomy5 8 → #C = 6 ∧ #C₂ = 6) ∧
-    (σ.clusters = polytomy5 9 → #C = 6 ∧ #C₂ = 3) := by
+/-- Section 5: the gene tree probabilities of a nonbinary species tree are the limits of those of a
+binary resolution `H` of it as the lengths of the added edges tend to `0`. -/
+theorem section5_limit (σ : SpeciesTree X) {H : Finset (Finset X)} (hH : IsHierarchy H)
+    (hsub : σ.clusters ⊆ H) (T : Finset (Finset X)) :
+    Filter.Tendsto
+      (fun ε : ℝ => unrootedDistOf H (fun A => if A ∈ σ.clusters then σ.length A else ε) id T)
+      (nhdsWithin 0 (Set.Ioi 0)) (nhds (σ.unrootedDist id T)) := by
   sorry
 
 end ADR11

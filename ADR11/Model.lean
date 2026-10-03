@@ -1,6 +1,7 @@
 module
 
 public import ADR11.SmallTrees
+public import ADR11.MSC.Basic
 
 /-!
 # Section 3: the multispecies coalescent model
@@ -19,6 +20,9 @@ public import ADR11.SmallTrees
   constant depending only on the topologies times a product of `g`'s, as in equation (3).
 * `section3_polynomial`: rooted and unrooted gene tree probabilities are polynomials, with
   rational coefficients, in the transformed branch lengths `exp(-x_b)`.
+* `rootedDist_eq_of_sameRootedMetricTree`: with one lineage per taxon, pendant edge lengths do
+  not matter (Section 2).
+* `rootedDist_support`: gene trees are binary with probability `1` (Sections 1 and 5).
 -/
 
 @[expose] public section
@@ -109,9 +113,12 @@ theorem section3_example2 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = caterp
 topology `H` and a rooted gene tree `G`, there are finitely many coalescent histories `h`, with
 constants `c(h)` and numbers `i(h,b) ≥ j(h,b)` of lineages entering and leaving each internal
 population `b`, depending only on `H` and `G`, such that for every species tree with topology `H`,
-`ℙ(G) = ∑_h c(h) ∏_b g_{i(h,b) j(h,b)}(x_b)`. -/
+`ℙ(G) = ∑_h c(h) ∏_b g_{i(h,b) j(h,b)}(x_b)`, with `c(h) > 0` and
+`1 ≤ j(h,b) ≤ i(h,b) ≤ |b|`. -/
 theorem equation3 (H : Finset (Finset X)) (G : Finset (Finset X)) :
     ∃ (ι : Type) (_ : Fintype ι) (c : ι → ℚ) (i j : ι → Finset X → ℕ),
+      (∀ h, 0 < c h) ∧
+      (∀ h, ∀ b ∈ H, b ≠ univ → 2 ≤ #b → 1 ≤ j h b ∧ j h b ≤ i h b ∧ i h b ≤ #b) ∧
       ∀ σ : SpeciesTree X, σ.clusters = H →
         σ.rootedDist id G =
           ∑ h : ι, (c h : ℝ) * ∏ b ∈ H with b ≠ univ ∧ 2 ≤ #b,
@@ -120,11 +127,25 @@ theorem equation3 (H : Finset (Finset X)) (G : Finset (Finset X)) :
 
 /-- Gene tree probabilities, rooted and unrooted, are polynomials with rational coefficients in
 the transformed branch lengths `X_b = exp(-x_b)`, depending only on the topologies. -/
-theorem section3_polynomial (H : Finset (Finset X)) (G : Finset (Finset X)) :
+theorem section3_polynomial (H : Finset (Finset X)) (G T : Finset (Finset X)) :
     ∃ p q : MvPolynomial (Finset X) ℚ,
       ∀ σ : SpeciesTree X, σ.clusters = H →
         σ.rootedDist id G = MvPolynomial.aeval (fun b => exp (-σ.length b)) p ∧
-        σ.unrootedDist id G = MvPolynomial.aeval (fun b => exp (-σ.length b)) q := by
+        σ.unrootedDist id T = MvPolynomial.aeval (fun b => exp (-σ.length b)) q := by
+  sorry
+
+/-- Section 2: with one lineage sampled per taxon, pendant edge lengths do not affect the
+probability of any gene tree: the rooted (hence unrooted) gene tree distribution depends only on
+the rooted metric species tree `σ⁺`. -/
+theorem rootedDist_eq_of_sameRootedMetricTree {σ σ' : SpeciesTree X}
+    (h : σ.SameRootedMetricTree σ') : σ.rootedDist id = σ'.rootedDist id := by
+  sorry
+
+/-- Sections 1 and 5: gene trees are binary with probability `1`, even when the species tree has
+polytomies: a rooted gene tree with positive probability is a binary hierarchy on the lineages. -/
+theorem rootedDist_support {L : Type*} [Fintype L] [DecidableEq L] (σ : SpeciesTree X)
+    (s : L → X) {G : Finset (Finset L)} (hG : σ.rootedDist s G ≠ 0) :
+    IsHierarchy G ∧ ∀ A ∈ G, 2 ≤ #A → ∃ B ∈ G, ∃ C ∈ G, Disjoint B C ∧ B ∪ C = A := by
   sorry
 
 end ADR11

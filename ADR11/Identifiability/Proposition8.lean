@@ -3,15 +3,13 @@ module
 public import ADR11.FiveTaxa.Basic
 
 /-!
-# Section 4.3: species tree identifiability for 5 or more taxa
+# Propositions 7 and 8: five taxa
 
-* `corollary6`: for any `X`, `ℙ_{σ⁺}` determines `σ⁻`.
 * `proposition7`: for `|X| = 5`, `ℙ_{σ⁺}` determines the rooted topology `ψ⁺`.
-* `proposition8`: for `|X| = 5`, `ℙ_{σ⁺}` determines `σ⁺`; `equation7`, `equation8`,
-  `equation9` give the remaining branch length of the balanced, caterpillar and pseudocaterpillar
-  trees, with arguments of the logarithms greater than `1`.
-* `theorem9`, `theorem9_four`: the main theorem.
-* `corollary10`: several lineages sampled per taxon.
+* `proposition8`: for `|X| = 5`, `ℙ_{σ⁺}` determines `σ⁺`.
+* `equation7`, `equation8`, `equation9`: the remaining branch length of the balanced, caterpillar
+  and pseudocaterpillar trees (proof of Proposition 8), with arguments of the logarithms greater
+  than `1`.
 -/
 
 @[expose] public section
@@ -21,11 +19,6 @@ namespace ADR11
 open Finset Real
 
 variable {X : Type*} [Fintype X] [DecidableEq X]
-
-/-- **Corollary 6.** For any `X`, `ℙ_{σ⁺}` determines `σ⁻`. -/
-theorem corollary6 (σ σ' : SpeciesTree X) (hσ : σ.IsBinary) (hσ' : σ'.IsBinary)
-    (h : σ.unrootedDist id = σ'.unrootedDist id) : σ.SameUnrootedMetricTree σ' := by
-  sorry
 
 /-- **Proposition 7.** For `|X| = 5` the rooted species tree topology `ψ⁺` is determined by
 `ℙ_{σ⁺}`. -/
@@ -75,37 +68,6 @@ theorem equation9 (σ : SpeciesTree (Fin 5)) (hσ : σ.clusters = pseudocaterpil
         30 * u σ 5 - 15 * u σ 8 ∧
       σ.length {0, 1, 3, 4} = 1 / 6 * log ((4 * u σ 5 + u σ 8) / (10 * u σ 5 - 5 * u σ 8)) ∧
       1 < (4 * u σ 5 + u σ 8) / (10 * u σ 5 - 5 * u σ 8) := by
-  sorry
-
-/-- **Theorem 9** (`|X| ≥ 5`). The unrooted topological gene tree distribution `ℙ_{σ⁺}` arising
-from the multispecies coalescent model for samples of one lineage per taxon determines the metric
-species tree `σ⁺` provided `|X| ≥ 5`. -/
-theorem theorem9 (hX : 5 ≤ Fintype.card X) (σ σ' : SpeciesTree X) (hσ : σ.IsBinary)
-    (hσ' : σ'.IsBinary) (h : σ.unrootedDist id = σ'.unrootedDist id) :
-    σ.SameRootedMetricTree σ' := by
-  sorry
-
-/-- **Theorem 9** (`|X| = 4`). If `|X| = 4`, `ℙ_{σ⁺}` determines only the unrooted metric species
-tree `σ⁻`: two species trees have the same unrooted gene tree distribution exactly when they have
-the same unrooted metric tree. -/
-theorem theorem9_four (hX : Fintype.card X = 4) (σ σ' : SpeciesTree X) (hσ : σ.IsBinary)
-    (hσ' : σ'.IsBinary) :
-    σ.unrootedDist id = σ'.unrootedDist id ↔ σ.SameUnrootedMetricTree σ' := by
-  sorry
-
-/-- **Corollary 10.** Consider the distribution of unrooted topological gene trees under the
-multispecies coalescent with `ℓ_x > 0` lineages sampled from each taxon `x` (lineages
-`(x, k)`, `k < ℓ_x`). Suppose that either `|X| ≥ 4` and some `ℓ_x ≥ 2`, or `|X| = 3` and at least
-two of the `ℓ_x` are `≥ 2`. Then the gene tree distribution determines the species tree's rooted
-topology, its internal edge lengths, and the length of the pendant edge of every taxon `x` with
-`ℓ_x > 1`. -/
-theorem corollary10 (ℓ : X → ℕ) (hℓ : ∀ x, 0 < ℓ x)
-    (hcond : (4 ≤ Fintype.card X ∧ ∃ x, 2 ≤ ℓ x) ∨
-      (Fintype.card X = 3 ∧ ∃ x y, x ≠ y ∧ 2 ≤ ℓ x ∧ 2 ≤ ℓ y))
-    (σ σ' : SpeciesTree X) (hσ : σ.IsBinary) (hσ' : σ'.IsBinary)
-    (h : σ.unrootedDist (Sigma.fst : (Σ x, Fin (ℓ x)) → X) =
-      σ'.unrootedDist (Sigma.fst : (Σ x, Fin (ℓ x)) → X)) :
-    σ.SameRootedMetricTree σ' ∧ ∀ x, 2 ≤ ℓ x → σ.length {x} = σ'.length {x} := by
   sorry
 
 end ADR11

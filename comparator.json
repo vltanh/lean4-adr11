@@ -1,0 +1,20 @@
+{
+  "challenge_module": "Challenge",
+  "solution_module": "Solution",
+  "theorem_names": [
+    "ADR11.Challenge.unrootedDist_nonneg",
+    "ADR11.Challenge.unrootedDist_sum",
+    "ADR11.Challenge.fourTaxa_balanced",
+    "ADR11.Challenge.fourTaxa_caterpillar",
+    "ADR11.Challenge.theorem9",
+    "ADR11.Challenge.theorem9_four",
+    "ADR11.Challenge.proposition3",
+    "ADR11.Challenge.corollary10",
+    "ADR11.Challenge.proposition11_theorem9",
+    "ADR11.Challenge.proposition11_theorem9_four",
+    "ADR11.Challenge.proposition11_corollary10"
+  ],
+  "definition_names": [],
+  "permitted_axioms": ["propext", "Quot.sound", "Classical.choice"],
+  "enable_nanoda": true
+}
