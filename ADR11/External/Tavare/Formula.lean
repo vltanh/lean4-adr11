@@ -6,7 +6,7 @@ public import ADR11.Coalescent.Factorization
 # Tavaré's formula for the number of lineages in Kingman's coalescent
 
 [S. Tavaré, *Line-of-descent and genealogical processes, and their applications in population
-genetics models*, Theoret. Population Biol. 26 (1984) 119–164, equation (6.1)]
+genetics models*, Theoret. Population Biol. 26 (1984) 119–164]
 
 For `1 ≤ j ≤ i`, the probability that `i` lineages coalesce into `j` lineages within time `t` is
 `g_ij(t) = ∑_{k=j}^{i} exp(-k(k-1)t/2) a_ijk` with

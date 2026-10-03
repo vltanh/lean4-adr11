@@ -1,7 +1,7 @@
 # Tavaré's formula (equation (2) of the paper)
 
 **Source.** S. Tavaré, *Line-of-descent and genealogical processes, and their applications in
-population genetics models*, Theoret. Population Biol. 26 (1984) 119–164, equation (6.1).
+population genetics models*, Theoret. Population Biol. 26 (1984) 119–164.
 
 **Statement.** For `1 ≤ j ≤ i`, the probability that `i` lineages of Kingman's coalescent have
 coalesced into `j` lineages after a time `t` is

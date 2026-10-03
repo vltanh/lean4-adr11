@@ -102,8 +102,8 @@ namespace Audit
 there and, in a conditional formalization, the propositions assumed as hypotheses. The traversal
 stops at them. -/
 meta def externalResults : List (String × Name) :=
-  [("Tavaré 1984, eq. (6.1) (powers of the generator)", ``ADR11.deathPow_eq_tavare),
-   ("Tavaré 1984, eq. (6.1)", ``ADR11.deathProb_eq_tavare),
+  [("Tavaré 1984 (powers of the generator)", ``ADR11.deathPow_eq_tavare),
+   ("Tavaré 1984 (number of lineages)", ``ADR11.deathProb_eq_tavare),
    ("Steel 1992; Semple–Steel 2003, Thm 6.3.5 (splits from quartets)",
      ``ADR11.mem_unroot_iff_quartets),
    ("Steel 1992, Prop. 6 (distinguishing quartets)", ``ADR11.exists_distinguishing_quartet),
