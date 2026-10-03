@@ -11,9 +11,6 @@ public import ADR11.MSC.Basic
   for all `a, a' ∈ A` and `b ∉ A`, some cluster contains `a` and `a'` but not `b` (rooted
   triples determine a rooted tree).
 * `SpeciesTree.restrict_isBinary`: the induced subtree of a binary species tree is binary.
-* `SpeciesTree.sameRootedMetricTree_of_restrict`: on at least five taxa, two species trees whose
-  induced subtrees on every set of five taxa agree as metric trees agree as metric trees. This is
-  how Theorem 9 is assembled from Proposition 8.
 * `SpeciesTree.sameUnrootedMetricTree_of_card_le_three`: on at most three taxa all unrooted metric
   species trees agree (there is no internal edge).
 * `SpeciesTree.restrict_unroot`, `SpeciesTree.restrict_unrootedLength`: induced subtrees and
@@ -576,108 +573,6 @@ theorem SameUnrootedMetricTree.trans {σ σ' σ'' : SpeciesTree X}
     (h : σ.SameUnrootedMetricTree σ') (h' : σ'.SameUnrootedMetricTree σ'') :
     σ.SameUnrootedMetricTree σ'' :=
   ⟨h.1.trans h'.1, fun A hA h2 h2' => (h.2 A hA h2 h2').trans (h'.2 A (h.1 ▸ hA) h2 h2')⟩
-
-omit [DecidableEq X] in
-/-- A set of at most five taxa is contained in a set of exactly five taxa. -/
-private theorem hier_exists_five (hX : 5 ≤ Fintype.card X) {T : Finset X} (hT : #T ≤ 5) :
-    ∃ S, T ⊆ S ∧ #S = 5 := by
-  obtain ⟨S, hTS, -, hS⟩ := exists_subsuperset_card_eq (subset_univ T) hT (by rwa [card_univ])
-  exact ⟨S, hTS, hS⟩
-
-/-- One inclusion of the clusters in `sameRootedMetricTree_of_restrict`. -/
-private theorem hier_clusters_subset (hX : 5 ≤ Fintype.card X) (σ σ' : SpeciesTree X)
-    (h : ∀ S : Finset X, ∀ hS : S.Nonempty, #S = 5 →
-      (σ.restrict S hS).clusters = (σ'.restrict S hS).clusters) :
-    σ.clusters ⊆ σ'.clusters := by
-  intro A hA
-  apply σ'.mem_clusters_of_triples (σ.nonempty_of_mem A hA)
-  intro a ha a' ha' b hb
-  obtain ⟨S, hTS, hS5⟩ :=
-    hier_exists_five hX (T := {a, a', b}) (card_le_three.trans (by norm_num))
-  have haS : a ∈ S := hTS (by simp)
-  have ha'S : a' ∈ S := hTS (by simp)
-  have hbS : b ∈ S := hTS (by simp)
-  have hSne : S.Nonempty := ⟨a, haS⟩
-  have hmem : A.subtype (· ∈ S) ∈ (σ.restrict S hSne).clusters :=
-    subtype_mem_restrictClusters hA ⟨a, mem_inter.2 ⟨ha, haS⟩⟩
-  rw [h S hSne hS5, restrict_clusters] at hmem
-  obtain ⟨A', hA', -, hA'A⟩ := mem_restrictClusters.1 hmem
-  refine ⟨A', hA', ?_, ?_, ?_⟩
-  · have : (⟨a, haS⟩ : S) ∈ A.subtype (· ∈ S) := mem_subtype.2 ha
-    rw [← hA'A] at this
-    exact mem_subtype.1 this
-  · have : (⟨a', ha'S⟩ : S) ∈ A.subtype (· ∈ S) := mem_subtype.2 ha'
-    rw [← hA'A] at this
-    exact mem_subtype.1 this
-  · intro hbA'
-    have : (⟨b, hbS⟩ : S) ∈ A'.subtype (· ∈ S) := mem_subtype.2 hbA'
-    rw [hA'A] at this
-    exact hb (mem_subtype.1 this)
-
-/-- A cluster `A` with at least two taxa, other than the root, is the only cluster containing two
-taxa `a₁, a₂` of `A` (from different children of `A`) and not containing a taxon `b` (from the
-parent of `A`). -/
-private theorem hier_exists_witness {H : Finset (Finset X)} (hH : IsHierarchy H) {A : Finset X}
-    (hA : A ∈ H) (hAu : A ≠ univ) (h2 : 2 ≤ #A) :
-    ∃ a₁ ∈ A, ∃ a₂ ∈ A, ∃ b ∉ A, a₁ ≠ a₂ ∧ ∀ B ∈ H, a₁ ∈ B → a₂ ∈ B → b ∉ B → B = A := by
-  obtain ⟨a₁, ha₁⟩ : A.Nonempty := card_pos.1 (by omega)
-  obtain ⟨B₁, hB₁, ha₁B₁⟩ := hH.exists_mem_childClusters h2 ha₁
-  obtain ⟨a₂, ha₂, ha₂B₁⟩ := exists_of_ssubset (mem_childClusters.1 hB₁).2.1
-  obtain ⟨b, hbP, hbA⟩ := exists_of_ssubset (hH.ssubset_parentCluster hA hAu)
-  refine ⟨a₁, ha₁, a₂, ha₂, b, hbA, fun e => ha₂B₁ (e ▸ ha₁B₁),
-    fun B hB ha₁B ha₂B hbB => ?_⟩
-  rcases hH.subset_or_subset_of_mem hB hA ha₁B ha₁ with h | h
-  · by_contra hne
-    have hBA : B ⊂ A := ssubset_of_subset_not_subset h fun h' => hne (Subset.antisymm h h')
-    exact ha₂B₁ (hH.subset_of_mem_childClusters hB₁ hB hBA
-      (not_disjoint_iff.2 ⟨a₁, ha₁B₁, ha₁B⟩) ha₂B)
-  · by_contra hne
-    have hAB : A ⊂ B := ssubset_of_subset_not_subset h fun h' => hne (Subset.antisymm h' h)
-    exact hbB (parentCluster_subset hB hAB hbP)
-
-/-- Theorem 9's assembly: on at least five taxa, agreement of all induced 5-taxon metric trees
-implies agreement of the metric trees. -/
-theorem sameRootedMetricTree_of_restrict (hX : 5 ≤ Fintype.card X) (σ σ' : SpeciesTree X)
-    (h : ∀ S : Finset X, ∀ hS : S.Nonempty, #S = 5 →
-      (σ.restrict S hS).SameRootedMetricTree (σ'.restrict S hS)) :
-    σ.SameRootedMetricTree σ' := by
-  have hcl : σ.clusters = σ'.clusters :=
-    Subset.antisymm (hier_clusters_subset hX σ σ' fun S hS h5 => (h S hS h5).1)
-      (hier_clusters_subset hX σ' σ fun S hS h5 => (h S hS h5).1.symm)
-  refine ⟨hcl, fun A hA h2 hAu => ?_⟩
-  obtain ⟨a₁, ha₁, a₂, ha₂, b, hb, ha12, huniq⟩ := hier_exists_witness σ.isHierarchy hA hAu h2
-  obtain ⟨S, hTS, hS5⟩ :=
-    hier_exists_five hX (T := {a₁, a₂, b}) (card_le_three.trans (by norm_num))
-  have ha₁S : a₁ ∈ S := hTS (by simp)
-  have ha₂S : a₂ ∈ S := hTS (by simp)
-  have hbS : b ∈ S := hTS (by simp)
-  have hSne : S.Nonempty := ⟨a₁, ha₁S⟩
-  -- `A` is the only cluster (of `σ`, and of `σ'`) whose trace on `S` is that of `A`
-  have huniq' : ∀ B ∈ σ.clusters, B.subtype (· ∈ S) = A.subtype (· ∈ S) → B = A := by
-    intro B hB hBA
-    refine huniq B hB ?_ ?_ ?_
-    · have : (⟨a₁, ha₁S⟩ : S) ∈ A.subtype (· ∈ S) := mem_subtype.2 ha₁
-      rw [← hBA] at this
-      exact mem_subtype.1 this
-    · have : (⟨a₂, ha₂S⟩ : S) ∈ A.subtype (· ∈ S) := mem_subtype.2 ha₂
-      rw [← hBA] at this
-      exact mem_subtype.1 this
-    · intro hbB
-      have : (⟨b, hbS⟩ : S) ∈ B.subtype (· ∈ S) := mem_subtype.2 hbB
-      rw [hBA] at this
-      exact hb (mem_subtype.1 this)
-  have hC : A.subtype (· ∈ S) ∈ (σ.restrict S hSne).clusters :=
-    subtype_mem_restrictClusters hA ⟨a₁, mem_inter.2 ⟨ha₁, ha₁S⟩⟩
-  have hC2 : 2 ≤ #(A.subtype (· ∈ S)) := by
-    refine one_lt_card.2 ⟨⟨a₁, ha₁S⟩, mem_subtype.2 ha₁, ⟨a₂, ha₂S⟩, mem_subtype.2 ha₂, ?_⟩
-    intro e
-    exact ha12 (congrArg Subtype.val e)
-  have hCu : A.subtype (· ∈ S) ≠ univ :=
-    subtype_ne_univ_iff.2 ⟨b, mem_inter.2 ⟨mem_compl.2 hb, hbS⟩⟩
-  have := (h S hSne hS5).2 _ hC hC2 hCu
-  rw [restrict_length, restrict_length, σ.restrictLength_subtype_eq hA hAu huniq',
-    σ'.restrictLength_subtype_eq (hcl ▸ hA) hAu (fun B hB => huniq' B (hcl ▸ hB))] at this
-  exact this
 
 /-- On at most three taxa, the sides of the splits of `σ⁻` are all the proper nonempty subsets. -/
 private theorem hier_mem_unroot_of_card_le_three (hX : Fintype.card X ≤ 3) (σ : SpeciesTree X)
