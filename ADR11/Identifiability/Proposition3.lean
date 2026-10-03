@@ -26,8 +26,9 @@ theorem fourTaxa_recovery (hX : Fintype.card X = 4) (σ : SpeciesTree X) (hσ : 
     (A : Finset X) (hA : A ∈ unroot σ.clusters) (hA2 : #A = 2) :
     (∀ B : Finset X, #B = 2 → B ≠ A → B ≠ Aᶜ →
         σ.unrootedDist id (treeOfClusters {B}) < σ.unrootedDist id (treeOfClusters {A})) ∧
-      σ.unrootedLength A = -log (3 / 2 * (1 - σ.unrootedDist id (treeOfClusters {A}))) := by
-  sorry
+      σ.unrootedLength A = -log (3 / 2 * (1 - σ.unrootedDist id (treeOfClusters {A}))) :=
+  -- the binarity of `σ` is not needed: a split of `σ⁻` has positive length
+  four_recovery hX σ hA hA2
 
 /-- **Proposition 3.** For `|X| = 4` taxa, `σ⁻` is identifiable from `ℙ_{σ⁺}`, but `σ⁺` is not. -/
 theorem proposition3 (hX : Fintype.card X = 4) :
