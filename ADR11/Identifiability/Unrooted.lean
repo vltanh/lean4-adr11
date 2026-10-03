@@ -2,7 +2,7 @@ module
 
 public import ADR11.Identifiability.FourTaxaAnalysis
 public import ADR11.Identifiability.Lemma5
-public import ADR11.External.Quartets.Steel
+public import ADR11.Identifiability.Quartets
 
 /-!
 # The unrooted metric species tree is identifiable (Corollary 6)

@@ -20,8 +20,9 @@ unrooted trees `σ⁻` of species trees:
   only if every quartet `aa'|bb'` with `a, a' ∈ A` and `b, b' ∈ Aᶜ` is displayed by `σ⁻`.
 * `exists_distinguishing_quartet`: every internal edge of `σ⁻` is the only edge of `σ⁻` separating
   some quartet `aa'|bb'` (Steel's Proposition 6, for trees that need not be binary).
-* `SpeciesTree.sameUnrootedMetricTree_of_restrict`: two species trees whose induced unrooted
-  metric trees agree on every set of four taxa have the same unrooted metric tree.
+
+Corollary 6 combines them with its own argument for the edge lengths
+(`ADR11.Identifiability.Quartets`).
 
 ## Proofs
 
@@ -31,9 +32,6 @@ unrooted trees `σ⁻` of species trees:
 * `exists_distinguishing_quartet`: for a cluster `A` of `σ`, take `a, a'` in different children
   of `A`; if the parent `P` of `A` is not the root, take `b ∈ P \ A` and `b' ∉ P`, and otherwise
   take `b, b' ∈ Aᶜ` such that no cluster strictly contained in `Aᶜ` contains both.
-* `SpeciesTree.sameUnrootedMetricTree_of_restrict`: the splits of `σ⁻` are compared through their
-  quartets (`SpeciesTree.restrict_unroot`), and the length of a split through a distinguishing
-  quartet, whose induced split is induced by no other split (`SpeciesTree.restrict_unrootedLength`).
 -/
 
 @[expose] public section
@@ -295,165 +293,5 @@ theorem exists_distinguishing_quartet (σ : SpeciesTree X) {A : Finset X}
     have := h Cᶜ (steel_compl_mem_unroot hC) (mem_compl.2 haC) (mem_compl.2 ha'C)
       (fun h' => mem_compl.1 h' hbC) (fun h' => mem_compl.1 h' hb'C)
     exact compl_injective this
-
-omit [Fintype X] in
-/-- Two sets with the same trace on `S` contain the same taxa of `S`. -/
-private theorem steel_mem_iff_of_subtype_eq {S A C : Finset X}
-    (h : C.subtype (· ∈ S) = A.subtype (· ∈ S)) {x : X} (hx : x ∈ S) : x ∈ C ↔ x ∈ A := by
-  have h1 : (⟨x, hx⟩ : S) ∈ C.subtype (· ∈ S) ↔ (⟨x, hx⟩ : S) ∈ A.subtype (· ∈ S) := by
-    rw [h]
-  simpa only [mem_subtype] using h1
-
-/-- The trace of a complement is the complement of the trace. -/
-private theorem steel_subtype_compl (S A : Finset X) :
-    Aᶜ.subtype (· ∈ S) = (A.subtype (· ∈ S))ᶜ := by
-  ext ⟨x, hx⟩
-  simp
-
-/-- The two sides of a split have the same unrooted length. -/
-private theorem steel_unrootedLength_compl (τ : SpeciesTree X) (A : Finset X) :
-    τ.unrootedLength Aᶜ = τ.unrootedLength A := by
-  unfold SpeciesTree.unrootedLength
-  rw [compl_compl]
-  refine sum_congr ?_ fun _ _ => rfl
-  ext C
-  simp only [mem_filter]
-  tauto
-
-omit [Fintype X] in
-/-- Four distinct taxa form a set of four taxa. -/
-private theorem steel_card_quartet {a a' b b' : X} (haa : a ≠ a') (hab : a ≠ b) (hab' : a ≠ b')
-    (ha'b : a' ≠ b) (ha'b' : a' ≠ b') (hbb : b ≠ b') : #({a, a', b, b'} : Finset X) = 4 := by
-  rw [card_insert_of_notMem, card_insert_of_notMem, card_pair hbb]
-  · simp [ha'b, ha'b']
-  · simp [haa, hab, hab']
-
-/-- If a split `A` of `σ⁻` separates `aa'|bb'`, and `σ` and `σ'` induce the same unrooted tree on
-a set `Q` containing `a, a', b, b'`, then some split of `σ'⁻` separates `aa'|bb'`. -/
-private theorem steel_separating_of_restrict (σ σ' : SpeciesTree X) {A : Finset X}
-    (hA : A ∈ unroot σ.clusters) {a a' b b' : X} (ha : a ∈ A) (ha' : a' ∈ A) (hb : b ∉ A)
-    (hb' : b' ∉ A) {Q : Finset X} (hQ : Q.Nonempty) (haQ : a ∈ Q) (ha'Q : a' ∈ Q)
-    (hbQ : b ∈ Q) (hb'Q : b' ∈ Q)
-    (hU : unroot (σ.restrict Q hQ).clusters = unroot (σ'.restrict Q hQ).clusters) :
-    ∃ C ∈ unroot σ'.clusters, a ∈ C ∧ a' ∈ C ∧ b ∉ C ∧ b' ∉ C := by
-  have h1 : A.subtype (· ∈ Q) ∈ restrictSplits Q (unroot σ'.clusters) := by
-    rw [← SpeciesTree.restrict_unroot σ' Q hQ, ← hU, SpeciesTree.restrict_unroot]
-    exact mem_image.2 ⟨A, mem_filter.2 ⟨hA, ⟨a, mem_inter.2 ⟨ha, haQ⟩⟩,
-      ⟨b, mem_inter.2 ⟨mem_compl.2 hb, hbQ⟩⟩⟩, rfl⟩
-  unfold restrictSplits at h1
-  obtain ⟨C, hC, hCA⟩ := mem_image.1 h1
-  have key : ∀ x ∈ Q, x ∈ C ↔ x ∈ A := fun x hx => steel_mem_iff_of_subtype_eq hCA hx
-  exact ⟨C, (mem_filter.1 hC).1, (key a haQ).2 ha, (key a' ha'Q).2 ha',
-    fun h => hb ((key b hbQ).1 h), fun h => hb' ((key b' hb'Q).1 h)⟩
-
-/-- If `σ` and `σ'` induce the same unrooted trees on all sets of four taxa, every split of `σ⁻`
-is a split of `σ'⁻`. -/
-private theorem steel_unroot_subset (σ σ' : SpeciesTree X)
-    (h : ∀ Q : Finset X, ∀ hQ : Q.Nonempty, #Q = 4 →
-      unroot (σ.restrict Q hQ).clusters = unroot (σ'.restrict Q hQ).clusters) :
-    unroot σ.clusters ⊆ unroot σ'.clusters := by
-  intro A hA
-  have hAne := steel_nonempty_of_mem_unroot σ hA
-  have hAcne := steel_nonempty_of_mem_unroot σ (steel_compl_mem_unroot hA)
-  by_cases h1 : #A ≤ 1
-  · obtain ⟨x, rfl⟩ := card_eq_one.1 (le_antisymm h1 (card_pos.2 hAne))
-    refine steel_mem_unroot.2 (Or.inl ⟨σ'.singleton_mem x, ?_⟩)
-    intro hu
-    rw [hu, compl_univ] at hAcne
-    exact not_nonempty_empty hAcne
-  by_cases h2 : #Aᶜ ≤ 1
-  · obtain ⟨x, hx⟩ := card_eq_one.1 (le_antisymm h2 (card_pos.2 hAcne))
-    refine steel_mem_unroot.2 (Or.inr ⟨hx ▸ σ'.singleton_mem x, ?_⟩)
-    intro hu
-    have : A = ∅ := by rw [← compl_compl A, hu, compl_univ]
-    exact hAne.ne_empty this
-  rw [mem_unroot_iff_quartets σ' (by omega) (by omega)]
-  intro a ha a' ha' b hb b' hb' haa hbb
-  rw [mem_compl] at hb hb'
-  have hQ : ({a, a', b, b'} : Finset X).Nonempty := insert_nonempty _ _
-  have hab : a ≠ b := by rintro rfl; exact hb ha
-  have hab' : a ≠ b' := by rintro rfl; exact hb' ha
-  have ha'b : a' ≠ b := by rintro rfl; exact hb ha'
-  have ha'b' : a' ≠ b' := by rintro rfl; exact hb' ha'
-  exact steel_separating_of_restrict σ σ' hA ha ha' hb hb' hQ (by simp) (by simp) (by simp)
-    (by simp) (h _ hQ (steel_card_quartet haa hab hab' ha'b ha'b' hbb))
-
-/-- Unrooted metric trees are determined by their quartets. -/
-theorem SpeciesTree.sameUnrootedMetricTree_of_restrict (σ σ' : SpeciesTree X)
-    (h : ∀ Q : Finset X, ∀ hQ : Q.Nonempty, #Q = 4 →
-      (σ.restrict Q hQ).SameUnrootedMetricTree (σ'.restrict Q hQ)) :
-    σ.SameUnrootedMetricTree σ' := by
-  have hU : unroot σ.clusters = unroot σ'.clusters :=
-    Subset.antisymm (steel_unroot_subset σ σ' fun Q hQ hQ4 => (h Q hQ hQ4).1)
-      (steel_unroot_subset σ' σ fun Q hQ hQ4 => (h Q hQ hQ4).1.symm)
-  refine ⟨hU, ?_⟩
-  intro A hA hA₁ hA₂
-  have hAne := steel_nonempty_of_mem_unroot σ hA
-  obtain ⟨a, ha, a', ha', b, hb, b', hb', haa, hbb, huniq⟩ :=
-    exists_distinguishing_quartet σ hA hA₁ hA₂
-  rw [mem_compl] at hb hb'
-  have hab : a ≠ b := by rintro rfl; exact hb ha
-  have hab' : a ≠ b' := by rintro rfl; exact hb' ha
-  have ha'b : a' ≠ b := by rintro rfl; exact hb ha'
-  have ha'b' : a' ≠ b' := by rintro rfl; exact hb' ha'
-  obtain ⟨Q, hQdef⟩ : ∃ Q : Finset X, Q = {a, a', b, b'} := ⟨_, rfl⟩
-  have hQ : Q.Nonempty := hQdef ▸ insert_nonempty _ _
-  have haQ : a ∈ Q := by simp [hQdef]
-  have ha'Q : a' ∈ Q := by simp [hQdef]
-  have hbQ : b ∈ Q := by simp [hQdef]
-  have hb'Q : b' ∈ Q := by simp [hQdef]
-  obtain ⟨hUQ, hLQ⟩ := h Q hQ (hQdef ▸ steel_card_quartet haa hab hab' ha'b ha'b' hbb)
-  -- the split of the induced quartet tree induced by `A`
-  have hC₀ : A.subtype (· ∈ Q) ∈ unroot (σ.restrict Q hQ).clusters := by
-    rw [SpeciesTree.restrict_unroot]
-    exact mem_image.2 ⟨A, mem_filter.2 ⟨hA, ⟨a, mem_inter.2 ⟨ha, haQ⟩⟩,
-      ⟨b, mem_inter.2 ⟨mem_compl.2 hb, hbQ⟩⟩⟩, rfl⟩
-  have hC₀₁ : 2 ≤ #(A.subtype (· ∈ Q)) :=
-    one_lt_card.2 ⟨⟨a, haQ⟩, mem_subtype.2 ha, ⟨a', ha'Q⟩, mem_subtype.2 ha',
-      fun h => haa (congrArg Subtype.val h)⟩
-  have hC₀₂ : 2 ≤ #(A.subtype (· ∈ Q))ᶜ :=
-    one_lt_card.2 ⟨⟨b, hbQ⟩, by simp [hb], ⟨b', hb'Q⟩, by simp [hb'],
-      fun h => hbb (congrArg Subtype.val h)⟩
-  have hAA : A ≠ Aᶜ := by
-    intro h
-    obtain ⟨x, hx⟩ := hAne
-    have hx' := hx
-    rw [h] at hx'
-    exact mem_compl.1 hx' hx
-  -- the length of the split induced by `A` in an induced quartet tree is the length of `A`
-  have hlen : ∀ τ : SpeciesTree X, A ∈ unroot τ.clusters →
-      (∀ C ∈ unroot τ.clusters, a ∈ C → a' ∈ C → b ∉ C → b' ∉ C → C = A) →
-      A.subtype (· ∈ Q) ∈ unroot (τ.restrict Q hQ).clusters →
-      (τ.restrict Q hQ).unrootedLength (A.subtype (· ∈ Q)) = τ.unrootedLength A := by
-    intro τ hAτ huniqτ hCτ
-    rw [τ.restrict_unrootedLength Q hQ _ hCτ hC₀₁ hC₀₂]
-    have hfilter : (unroot τ.clusters).filter (fun B => B.subtype (· ∈ Q) = A.subtype (· ∈ Q) ∨
-        B.subtype (· ∈ Q) = (A.subtype (· ∈ Q))ᶜ) = {A, Aᶜ} := by
-      ext B
-      rw [mem_filter, mem_insert, mem_singleton]
-      constructor
-      · rintro ⟨hB, hB1 | hB1⟩
-        · left
-          have key : ∀ x ∈ Q, x ∈ B ↔ x ∈ A := fun x hx => steel_mem_iff_of_subtype_eq hB1 hx
-          exact huniqτ B hB ((key a haQ).2 ha) ((key a' ha'Q).2 ha')
-            (fun h => hb ((key b hbQ).1 h)) (fun h => hb' ((key b' hb'Q).1 h))
-        · right
-          have hB2 : Bᶜ.subtype (· ∈ Q) = A.subtype (· ∈ Q) := by
-            rw [steel_subtype_compl, hB1, compl_compl]
-          have key : ∀ x ∈ Q, x ∈ Bᶜ ↔ x ∈ A := fun x hx => steel_mem_iff_of_subtype_eq hB2 hx
-          have := huniqτ Bᶜ (steel_compl_mem_unroot hB) ((key a haQ).2 ha) ((key a' ha'Q).2 ha')
-            (fun h => hb ((key b hbQ).1 h)) (fun h => hb' ((key b' hb'Q).1 h))
-          rw [← this, compl_compl]
-      · rintro (rfl | rfl)
-        · exact ⟨hAτ, Or.inl rfl⟩
-        · exact ⟨steel_compl_mem_unroot hAτ, Or.inr (steel_subtype_compl _ _)⟩
-    rw [hfilter, sum_pair hAA, steel_unrootedLength_compl]
-    ring
-  have hA' : A ∈ unroot σ'.clusters := hU ▸ hA
-  have huniq' : ∀ C ∈ unroot σ'.clusters, a ∈ C → a' ∈ C → b ∉ C → b' ∉ C → C = A := by
-    rw [← hU]
-    exact huniq
-  rw [← hlen σ hA huniq hC₀, ← hlen σ' hA' huniq' (hUQ ▸ hC₀)]
-  exact hLQ _ hC₀ hC₀₁ hC₀₂
 
 end ADR11

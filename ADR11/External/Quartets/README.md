@@ -20,9 +20,10 @@ trees that need not be binary:
 - `mem_unroot_iff_quartets`: `A | Aᶜ`, with both sides of size at least 2, is a split of `σ⁻` if
   and only if every quartet `aa'|bb'` with `a, a' ∈ A` and `b, b' ∉ A` is displayed by `σ⁻`;
 - `exists_distinguishing_quartet`: every internal edge of `σ⁻` is the only edge separating some
-  quartet;
-- `SpeciesTree.sameUnrootedMetricTree_of_restrict`: two species trees whose induced unrooted
-  metric trees agree on every set of four taxa have the same unrooted metric tree.
+  quartet (the quartet that "distinguishes" the edge, as the paper uses Steel's Proposition 6 in
+  the proof of Theorem 9).
 
-The paper uses these facts in exactly these forms; the last one combines the first two with the
-lengths of the edges.
+The paper uses these facts in exactly these forms. Corollary 6 combines them with its own argument
+for the edge lengths ("each internal edge of `ψ⁻` is the internal edge for some induced quartet
+tree"), which is `SpeciesTree.sameUnrootedMetricTree_of_restrict` in
+`ADR11/Identifiability/Quartets.lean`.

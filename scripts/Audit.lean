@@ -107,8 +107,6 @@ meta def externalResults : List (String × Name) :=
    ("Steel 1992; Semple–Steel 2003, Thm 6.3.5 (splits from quartets)",
      ``ADR11.mem_unroot_iff_quartets),
    ("Steel 1992, Prop. 6 (distinguishing quartets)", ``ADR11.exists_distinguishing_quartet),
-   ("Steel 1992; Bandelt–Dress 1986 (quartets determine the unrooted metric tree)",
-     ``ADR11.SpeciesTree.sameUnrootedMetricTree_of_restrict),
    ("Cayley 1857 (rooted shapes)", ``ADR11.cayley_shapes)]
 
 /-- The numbered results of the paper, in the order of the paper. -/
