@@ -5,9 +5,18 @@ of the standard unrooted trees on four and five taxa (`ADR11.rootings4`, `ADR11.
 Usage: python3 scripts/gen_rootings.py > ADR11/Rootings/Statements.lean
 
 The formulas are computed exactly (sympy) by `scripts/msc_model.py`, an independent
-implementation of the multispecies coalescent (Tavare's g_ij and the jump chain on forests); the
-Lean file only states them, and the proofs are separate. Each statement gives the probabilities
-of all gene trees in terms of `exp (-τ.length C)` for the internal clusters `C` of the rooting."""
+implementation of the multispecies coalescent (Tavare's g_ij and the jump chain on forests). Each
+statement gives the probabilities of all gene trees in terms of `exp (-τ.length C)` for the
+internal clusters `C` of the rooting.
+
+Proofs: each closed form is proved by the verified computation engine of
+`ADR11.Computation.Engine`, through `ADR11.root_u5` / `ADR11.root_q4` (`ADR11/Rootings/Proofs.lean`):
+the script emits the tree shape (`PTree`) of the rooting and the expected polynomials in the
+engine's format (a list of (coefficient, monomial), a monomial being the list of (code of a
+cluster, exponent) in post-order of the tree shape, zero exponents omitted); the kernel checks the
+certificate (`decide +kernel`), and the tactic `root_finish` matches the polynomials with the
+statement. The support statements are `ADR11.root_unrootedDist_eq_zero_four` / `_five`
+(`ADR11/Rootings/Support.lean`)."""
 import sys
 import sympy as sp
 sys.path.insert(0, __import__('os').path.dirname(__file__))
@@ -93,18 +102,125 @@ rootings5 = {2: [[(0,1),(0,1,2),(0,1,2,3)], [(0,1),(0,1,2),(0,1,2,4)], [(3,4),(2
              1: [[(0,1)], [(2,3,4)], [(0,1),(2,3,4)], [(2,3,4),(1,2,3,4)], [(2,3,4),(0,2,3,4)], [(0,1),(0,1,3,4)], [(0,1),(0,1,2,4)], [(0,1),(0,1,2,3)]],
              0: [[], [(1,2,3,4)], [(0,2,3,4)], [(0,1,3,4)], [(0,1,2,4)], [(0,1,2,3)]]}
 
+def code(C):
+    """Bitmask code of a cluster (bit i = taxon i)."""
+    return sum(1 << i for i in C)
+
+def shape(n, clusters):
+    """The tree shape of the hierarchy with nontrivial clusters `clusters`: (code, children) or
+    ('leaf', x); children are the maximal clusters (ordered by size, then lexicographically),
+    then the uncovered taxa."""
+    cl = sorted(set(clusters), key=lambda c: (len(c), c))
+    def build(A):
+        kids = [C for C in cl if set(C) < set(A) and not any(set(C) < set(D) < set(A) for D in cl)]
+        covered = set().union(*[set(C) for C in kids]) if kids else set()
+        return (code(A), [build(C) for C in kids] + [('leaf', x) for x in sorted(set(A) - covered)])
+    return build(tuple(range(n)))
+
+def lean_shape(node):
+    if node[0] == 'leaf':
+        return f'.leaf {node[1]}'
+    return f'.node {node[0]} [' + ', '.join(lean_shape(c) for c in node[1]) + ']'
+
+def postorder(node, n):
+    """Codes of the non-root internal nodes, children before parents."""
+    if node[0] == 'leaf':
+        return []
+    out = [c for k in node[1] for c in postorder(k, n)]
+    return out + ([node[0]] if node[0] != 2 ** n - 1 else [])
+
+def lean_rat(q):
+    q = sp.Rational(q)
+    return f'{q.p}' if q.q == 1 else f'{q.p} / {q.q}'
+
+def engine_poly(expr, syms, n, node):
+    """The polynomial `expr` in the format of the engine (`ADR11.Computation.evalPoly`)."""
+    expr = sp.expand(expr)
+    if expr == 0:
+        return '[]'
+    order = postorder(node, n)
+    clusters = list(syms)
+    symlist = [syms[C] for C in clusters]
+    terms = sp.Poly(expr, *symlist).terms() if symlist else [((), expr)]
+    out = []
+    for monom, coeff in terms:
+        exps = {code(C): e for C, e in zip(clusters, monom)}
+        assert all(c in order or e == 0 for c, e in exps.items())
+        key = ', '.join(f'({c}, {exps[c]})' for c in order if exps.get(c, 0) > 0)
+        out.append(f'({lean_rat(coeff)}, [{key}])')
+    return '[' + ', '.join(out) + ']'
+
+def wrap(items, first, indent, width=100):
+    """Join `items` with ', ' after the prefix `first`, wrapping lines at `width`."""
+    lines, cur = [], first
+    for k, it in enumerate(items):
+        piece = it + (', ' if k < len(items) - 1 else '')
+        if len(cur) + len(piece.rstrip()) > width and cur.strip():
+            lines.append(cur.rstrip())
+            cur = ' ' * indent
+        cur += piece
+    lines.append(cur.rstrip())
+    return '\n'.join(lines)
+
+def lean_list_arg(name, poly, indent):
+    """`(name := [...])`, wrapped."""
+    if poly == '[]':
+        return ' ' * indent + f'({name} := [])'
+    inner = poly[1:-1]
+    items, depth, cur = [], 0, ''
+    for ch in inner:
+        if ch == '(':
+            depth += 1
+        if ch == ')':
+            depth -= 1
+        if ch == ',' and depth == 0:
+            items.append(cur.strip())
+            cur = ''
+            continue
+        cur += ch
+    items.append(cur.strip())
+    return wrap(items, ' ' * indent + f'({name} := [', indent + 2) + '])'
+
+SUB = '₀₁₂₃₄₅₆₇₈₉'
+
+def sub(i):
+    return ''.join(SUB[int(d)] for d in str(i))
+
+def proof4(cl, syms, res):
+    node = shape(4, cl)
+    ps = [engine_poly(res.get(side_key(sides, 4), 0), syms, 4, node) for sides in Q4.values()]
+    lines = ['  obtain ⟨h1, h2, h3⟩ :=',
+             f'    root_q4 τ hτ ({lean_shape(node)})',
+             '      (by decide +kernel) rfl (by decide +kernel)']
+    lines += [lean_list_arg(f'P{sub(k + 1)}', P, 6) for k, P in enumerate(ps)]
+    lines.append('  root_finish')
+    return '\n'.join(lines)
+
+def proof5(cl, syms, res):
+    node = shape(5, cl)
+    ps = [engine_poly(res.get(side_key(T5[i], 5), 0), syms, 5, node) for i in range(1, 16)]
+    lines = ['  obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=',
+             f'    root_u5 τ hτ ({lean_shape(node)})',
+             '      (by decide +kernel) rfl (by decide +kernel)']
+    lines += [lean_list_arg(f'P{sub(k + 1)}', P, 6) for k, P in enumerate(ps)]
+    lines.append('  root_finish')
+    return '\n'.join(lines)
+
 def hier(clusters):
     return 'hierarchyOf {' + ', '.join(lean_set(C) for C in clusters) + '}' if clusters else 'hierarchyOf ∅'
 
 print('''module
 
 public import ADR11.SmallTrees
+public import ADR11.Rootings.Proofs
 
 /-!
 # The gene tree distributions of all rootings of the standard unrooted trees on four and five taxa
 
 This file is generated by `scripts/gen_rootings.py`; do not edit it by hand. The formulas were
-computed exactly by an independent implementation of the model (`scripts/msc_model.py`).
+computed exactly by an independent implementation of the model (`scripts/msc_model.py`), and are
+proved with the verified computation engine of `ADR11.Computation.Engine` (`ADR11.root_u5`,
+`ADR11.root_q4`; the script provides the tree shapes and the polynomials in the engine's format).
 
 For each hierarchy `H` in `ADR11.rootings4 k` (four taxa) or `ADR11.rootings5 k` (five taxa), the
 theorem `rootingDist4_k_j` / `rootingDist5_k_j` (`j` = position of `H` in the list) gives the
@@ -126,12 +242,12 @@ print('''/-- On four taxa, only the three quartet trees have positive probabilit
 theorem unrootedDist_eq_zero_four (τ : SpeciesTree (Fin 4)) (T : Finset (Finset (Fin 4)))
     (hT : T ≠ treeOfClusters {{0, 1}} ∧ T ≠ treeOfClusters {{0, 2}} ∧ T ≠ treeOfClusters {{0, 3}}) :
     τ.unrootedDist id T = 0 := by
-  sorry
+  exact root_unrootedDist_eq_zero_four τ T hT
 
 /-- On five taxa, only the fifteen trees `T5 i` have positive probability. -/
 theorem unrootedDist_eq_zero_five (τ : SpeciesTree (Fin 5)) (T : Finset (Finset (Fin 5)))
     (hT : ∀ i ∈ Icc 1 15, T ≠ T5 i) : τ.unrootedDist id T = 0 := by
-  sorry
+  exact root_unrootedDist_eq_zero_five τ T hT
 ''')
 for k in [1, 0]:
     for j, cl in enumerate(rootings4[k]):
@@ -145,7 +261,7 @@ for k in [1, 0]:
         for tname, sides in Q4.items():
             key = side_key(sides, 4)
             concl.append(f'τ.unrootedDist id (treeOfClusters {tname}) = {lean_poly(res.get(key, 0), symlist)}')
-        print('\n'.join(lines + lets) + '\n    ' + ' ∧\n    '.join(concl) + ' := by\n  sorry\n')
+        print('\n'.join(lines + lets) + '\n    ' + ' ∧\n    '.join(concl) + ' := by\n' + proof4(cl, syms, res) + '\n')
 for k in [2, 1, 0]:
     for j, cl in enumerate(rootings5[k]):
         syms, res = dist(5, cl)
@@ -158,5 +274,5 @@ for k in [2, 1, 0]:
         for i in range(1, 16):
             key = side_key(T5[i], 5)
             concl.append(f'u τ {i} = {lean_poly(res.get(key, 0), symlist)}')
-        print('\n'.join(lines + lets) + '\n    ' + ' ∧\n    '.join(concl) + ' := by\n  sorry\n')
+        print('\n'.join(lines + lets) + '\n    ' + ' ∧\n    '.join(concl) + ' := by\n' + proof5(cl, syms, res) + '\n')
 print('end ADR11')

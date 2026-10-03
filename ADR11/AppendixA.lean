@@ -1,6 +1,7 @@
 module
 
 public import ADR11.SmallTrees
+public import ADR11.Rootings.Support
 
 /-!
 # Appendix A: the rooted and unrooted 5-taxon gene trees (Tables 4 and 5)
@@ -14,6 +15,9 @@ by hand.
   five taxa is one of them.
 * `table5`: each unrooted gene tree probability `u_i` is the sum of the seven rooted gene tree
   probabilities `r_j = ℙ(R_j)` listed in Table 5.
+
+The proofs use the codes `R5code j` of the clusters of `R5 j` (bit `i` of a code is taxon `i`) and
+the verified enumeration of the binary hierarchies of `ADR11.Rootings.Support`.
 -/
 
 @[expose] public section
@@ -135,13 +139,129 @@ def R5 : ℕ → Finset (Finset (Fin 5))
 noncomputable def r (σ : SpeciesTree (Fin 5)) (j : ℕ) : ℝ :=
   σ.rootedDist id (R5 j)
 
+/-- The codes of the clusters of `R5 j` (bit `i` of a code is taxon `i`): the nontrivial clusters,
+the singletons and the root. -/
+private def R5code : ℕ → List ℕ
+  | 1 => [3, 7, 15, 1, 2, 4, 8, 16, 31]
+  | 2 => [3, 7, 23, 1, 2, 4, 8, 16, 31]
+  | 3 => [3, 11, 15, 1, 2, 4, 8, 16, 31]
+  | 4 => [3, 11, 27, 1, 2, 4, 8, 16, 31]
+  | 5 => [3, 19, 23, 1, 2, 4, 8, 16, 31]
+  | 6 => [3, 19, 27, 1, 2, 4, 8, 16, 31]
+  | 7 => [5, 7, 15, 1, 2, 4, 8, 16, 31]
+  | 8 => [5, 7, 23, 1, 2, 4, 8, 16, 31]
+  | 9 => [5, 13, 15, 1, 2, 4, 8, 16, 31]
+  | 10 => [5, 13, 29, 1, 2, 4, 8, 16, 31]
+  | 11 => [5, 21, 23, 1, 2, 4, 8, 16, 31]
+  | 12 => [5, 21, 29, 1, 2, 4, 8, 16, 31]
+  | 13 => [9, 11, 15, 1, 2, 4, 8, 16, 31]
+  | 14 => [9, 11, 27, 1, 2, 4, 8, 16, 31]
+  | 15 => [9, 13, 15, 1, 2, 4, 8, 16, 31]
+  | 16 => [9, 13, 29, 1, 2, 4, 8, 16, 31]
+  | 17 => [9, 25, 27, 1, 2, 4, 8, 16, 31]
+  | 18 => [9, 25, 29, 1, 2, 4, 8, 16, 31]
+  | 19 => [17, 19, 23, 1, 2, 4, 8, 16, 31]
+  | 20 => [17, 19, 27, 1, 2, 4, 8, 16, 31]
+  | 21 => [17, 21, 23, 1, 2, 4, 8, 16, 31]
+  | 22 => [17, 21, 29, 1, 2, 4, 8, 16, 31]
+  | 23 => [17, 25, 27, 1, 2, 4, 8, 16, 31]
+  | 24 => [17, 25, 29, 1, 2, 4, 8, 16, 31]
+  | 25 => [6, 7, 15, 1, 2, 4, 8, 16, 31]
+  | 26 => [6, 7, 23, 1, 2, 4, 8, 16, 31]
+  | 27 => [6, 14, 15, 1, 2, 4, 8, 16, 31]
+  | 28 => [6, 14, 30, 1, 2, 4, 8, 16, 31]
+  | 29 => [6, 22, 23, 1, 2, 4, 8, 16, 31]
+  | 30 => [6, 22, 30, 1, 2, 4, 8, 16, 31]
+  | 31 => [10, 11, 15, 1, 2, 4, 8, 16, 31]
+  | 32 => [10, 11, 27, 1, 2, 4, 8, 16, 31]
+  | 33 => [10, 14, 15, 1, 2, 4, 8, 16, 31]
+  | 34 => [10, 14, 30, 1, 2, 4, 8, 16, 31]
+  | 35 => [10, 26, 27, 1, 2, 4, 8, 16, 31]
+  | 36 => [10, 26, 30, 1, 2, 4, 8, 16, 31]
+  | 37 => [18, 19, 23, 1, 2, 4, 8, 16, 31]
+  | 38 => [18, 19, 27, 1, 2, 4, 8, 16, 31]
+  | 39 => [18, 22, 23, 1, 2, 4, 8, 16, 31]
+  | 40 => [18, 22, 30, 1, 2, 4, 8, 16, 31]
+  | 41 => [18, 26, 27, 1, 2, 4, 8, 16, 31]
+  | 42 => [18, 26, 30, 1, 2, 4, 8, 16, 31]
+  | 43 => [12, 13, 15, 1, 2, 4, 8, 16, 31]
+  | 44 => [12, 13, 29, 1, 2, 4, 8, 16, 31]
+  | 45 => [12, 14, 15, 1, 2, 4, 8, 16, 31]
+  | 46 => [12, 14, 30, 1, 2, 4, 8, 16, 31]
+  | 47 => [12, 28, 29, 1, 2, 4, 8, 16, 31]
+  | 48 => [12, 28, 30, 1, 2, 4, 8, 16, 31]
+  | 49 => [20, 21, 23, 1, 2, 4, 8, 16, 31]
+  | 50 => [20, 21, 29, 1, 2, 4, 8, 16, 31]
+  | 51 => [20, 22, 23, 1, 2, 4, 8, 16, 31]
+  | 52 => [20, 22, 30, 1, 2, 4, 8, 16, 31]
+  | 53 => [20, 28, 29, 1, 2, 4, 8, 16, 31]
+  | 54 => [20, 28, 30, 1, 2, 4, 8, 16, 31]
+  | 55 => [24, 25, 27, 1, 2, 4, 8, 16, 31]
+  | 56 => [24, 25, 29, 1, 2, 4, 8, 16, 31]
+  | 57 => [24, 26, 27, 1, 2, 4, 8, 16, 31]
+  | 58 => [24, 26, 30, 1, 2, 4, 8, 16, 31]
+  | 59 => [24, 28, 29, 1, 2, 4, 8, 16, 31]
+  | 60 => [24, 28, 30, 1, 2, 4, 8, 16, 31]
+  | 61 => [3, 12, 15, 1, 2, 4, 8, 16, 31]
+  | 62 => [5, 10, 15, 1, 2, 4, 8, 16, 31]
+  | 63 => [9, 6, 15, 1, 2, 4, 8, 16, 31]
+  | 64 => [3, 20, 23, 1, 2, 4, 8, 16, 31]
+  | 65 => [5, 18, 23, 1, 2, 4, 8, 16, 31]
+  | 66 => [17, 6, 23, 1, 2, 4, 8, 16, 31]
+  | 67 => [3, 24, 27, 1, 2, 4, 8, 16, 31]
+  | 68 => [9, 18, 27, 1, 2, 4, 8, 16, 31]
+  | 69 => [17, 10, 27, 1, 2, 4, 8, 16, 31]
+  | 70 => [5, 24, 29, 1, 2, 4, 8, 16, 31]
+  | 71 => [9, 20, 29, 1, 2, 4, 8, 16, 31]
+  | 72 => [17, 12, 29, 1, 2, 4, 8, 16, 31]
+  | 73 => [6, 24, 30, 1, 2, 4, 8, 16, 31]
+  | 74 => [10, 20, 30, 1, 2, 4, 8, 16, 31]
+  | 75 => [18, 12, 30, 1, 2, 4, 8, 16, 31]
+  | 76 => [3, 24, 7, 1, 2, 4, 8, 16, 31]
+  | 77 => [5, 24, 7, 1, 2, 4, 8, 16, 31]
+  | 78 => [6, 24, 7, 1, 2, 4, 8, 16, 31]
+  | 79 => [3, 20, 11, 1, 2, 4, 8, 16, 31]
+  | 80 => [9, 20, 11, 1, 2, 4, 8, 16, 31]
+  | 81 => [10, 20, 11, 1, 2, 4, 8, 16, 31]
+  | 82 => [5, 18, 13, 1, 2, 4, 8, 16, 31]
+  | 83 => [9, 18, 13, 1, 2, 4, 8, 16, 31]
+  | 84 => [18, 12, 13, 1, 2, 4, 8, 16, 31]
+  | 85 => [17, 6, 14, 1, 2, 4, 8, 16, 31]
+  | 86 => [17, 10, 14, 1, 2, 4, 8, 16, 31]
+  | 87 => [17, 12, 14, 1, 2, 4, 8, 16, 31]
+  | 88 => [3, 12, 19, 1, 2, 4, 8, 16, 31]
+  | 89 => [17, 12, 19, 1, 2, 4, 8, 16, 31]
+  | 90 => [18, 12, 19, 1, 2, 4, 8, 16, 31]
+  | 91 => [5, 10, 21, 1, 2, 4, 8, 16, 31]
+  | 92 => [17, 10, 21, 1, 2, 4, 8, 16, 31]
+  | 93 => [10, 20, 21, 1, 2, 4, 8, 16, 31]
+  | 94 => [9, 6, 22, 1, 2, 4, 8, 16, 31]
+  | 95 => [9, 18, 22, 1, 2, 4, 8, 16, 31]
+  | 96 => [9, 20, 22, 1, 2, 4, 8, 16, 31]
+  | 97 => [9, 6, 25, 1, 2, 4, 8, 16, 31]
+  | 98 => [17, 6, 25, 1, 2, 4, 8, 16, 31]
+  | 99 => [6, 24, 25, 1, 2, 4, 8, 16, 31]
+  | 100 => [5, 10, 26, 1, 2, 4, 8, 16, 31]
+  | 101 => [5, 18, 26, 1, 2, 4, 8, 16, 31]
+  | 102 => [5, 24, 26, 1, 2, 4, 8, 16, 31]
+  | 103 => [3, 12, 28, 1, 2, 4, 8, 16, 31]
+  | 104 => [3, 20, 28, 1, 2, 4, 8, 16, 31]
+  | 105 => [3, 24, 28, 1, 2, 4, 8, 16, 31]
+  | _ => []
+
+private theorem R5_eq_decF : ∀ j ∈ Icc 1 105, R5 j = Computation.decF 5 (R5code j) := by
+  decide +kernel
+
+private theorem R5_tableB : root_tableB 5 ((List.range' 1 105).map R5code) = true := by
+  decide +kernel
+
 /-- **Table 4.** The trees `R₁, …, R₁₀₅` are distinct, and they are exactly the rooted binary
 trees on five taxa. -/
 theorem table4 :
     Set.InjOn R5 (Icc 1 105 : Finset ℕ) ∧
       ∀ G : Finset (Finset (Fin 5)),
         (∃ τ : SpeciesTree (Fin 5), τ.clusters = G ∧ τ.IsBinary) ↔ ∃ j ∈ Icc 1 105, R5 j = G := by
-  sorry
+  exact root_table R5 R5code 105 R5_eq_decF R5_tableB
 
 /-- **Table 5.** Each unrooted gene tree probability `u_i = ℙ(T_i)` is the sum of the
 probabilities of its seven rooted versions listed in the table. -/
@@ -161,6 +281,53 @@ theorem table5 (σ : SpeciesTree (Fin 5)) :
     u σ 13 = r σ 25 + r σ 26 + r σ 55 + r σ 56 + r σ 73 + r σ 78 + r σ 99 ∧
     u σ 14 = r σ 31 + r σ 32 + r σ 49 + r σ 50 + r σ 74 + r σ 81 + r σ 93 ∧
     u σ 15 = r σ 37 + r σ 38 + r σ 43 + r σ 44 + r σ 75 + r σ 84 + r σ 90 := by
-  sorry
+  have h := fun (i : ℕ) (hi : i ∈ Icc 1 15) (js : List ℕ) hjs =>
+    root_u_eq_sum σ R5 R5code 105 R5_eq_decF R5_tableB (i := i) hi (js := js) hjs
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · rw [h 1 (by decide) [1, 2, 59, 60, 67, 76, 105] (by decide +kernel)]
+    simp only [r, List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
+    ring
+  · rw [h 2 (by decide) [3, 4, 53, 54, 64, 79, 104] (by decide +kernel)]
+    simp only [r, List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
+    ring
+  · rw [h 3 (by decide) [5, 6, 47, 48, 61, 88, 103] (by decide +kernel)]
+    simp only [r, List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
+    ring
+  · rw [h 4 (by decide) [7, 8, 57, 58, 70, 77, 102] (by decide +kernel)]
+    simp only [r, List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
+    ring
+  · rw [h 5 (by decide) [9, 10, 41, 42, 65, 82, 101] (by decide +kernel)]
+    simp only [r, List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
+    ring
+  · rw [h 6 (by decide) [11, 12, 35, 36, 62, 91, 100] (by decide +kernel)]
+    simp only [r, List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
+    ring
+  · rw [h 7 (by decide) [13, 14, 51, 52, 71, 80, 96] (by decide +kernel)]
+    simp only [r, List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
+    ring
+  · rw [h 8 (by decide) [15, 16, 39, 40, 68, 83, 95] (by decide +kernel)]
+    simp only [r, List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
+    ring
+  · rw [h 9 (by decide) [17, 18, 29, 30, 63, 94, 97] (by decide +kernel)]
+    simp only [r, List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
+    ring
+  · rw [h 10 (by decide) [19, 20, 45, 46, 72, 87, 89] (by decide +kernel)]
+    simp only [r, List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
+    ring
+  · rw [h 11 (by decide) [21, 22, 33, 34, 69, 86, 92] (by decide +kernel)]
+    simp only [r, List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
+    ring
+  · rw [h 12 (by decide) [23, 24, 27, 28, 66, 85, 98] (by decide +kernel)]
+    simp only [r, List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
+    ring
+  · rw [h 13 (by decide) [25, 26, 55, 56, 73, 78, 99] (by decide +kernel)]
+    simp only [r, List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
+    ring
+  · rw [h 14 (by decide) [31, 32, 49, 50, 74, 81, 93] (by decide +kernel)]
+    simp only [r, List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
+    ring
+  · rw [h 15 (by decide) [37, 38, 43, 44, 75, 84, 90] (by decide +kernel)]
+    simp only [r, List.map_cons, List.map_nil, List.sum_cons, List.sum_nil]
+    ring
 
 end ADR11
