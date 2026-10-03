@@ -125,6 +125,30 @@ theorem proposition11_theorem9 (hX : 5 ≤ Fintype.card X) (σ σ' : SpeciesTree
   SpeciesTree.sameRootedMetricTree_of_restrict hX σ σ' fun S hS hS5 =>
     proposition11_proposition8 (by simpa using hS5) _ _ (unrootedDist_restrict_eq h S hS)
 
+/-- The fibre of `Sigma.fst` over `x` in `Σ x, Fin (n x)` has `n x` elements. -/
+theorem card_filter_sigma_fst (n : X → ℕ) (x : X) :
+    #(univ.filter fun p : (Σ y, Fin (n y)) => p.1 = x) = n x := by
+  have : (univ.filter fun p : (Σ y, Fin (n y)) => p.1 = x) =
+      (univ : Finset (Fin (n x))).map ⟨Sigma.mk x, sigma_mk_injective⟩ := by
+    ext ⟨y, i⟩
+    simp only [mem_filter, mem_univ, true_and, mem_map, Function.Embedding.coeFn_mk]
+    constructor
+    · rintro rfl
+      exact ⟨i, rfl⟩
+    · rintro ⟨j, hj⟩
+      exact (Sigma.mk.inj_iff.1 hj).1.symm
+  rw [this, card_map, card_univ, Fintype.card_fin]
+
+/-- Keeping at most two lineages of each taxon. -/
+def keepTwo (ℓ : X → ℕ) : (Σ x, Fin (min (ℓ x) 2)) ↪ (Σ x, Fin (ℓ x)) where
+  toFun p := ⟨p.1, Fin.castLE (min_le_left _ _) p.2⟩
+  inj' := by
+    rintro ⟨x, i⟩ ⟨y, j⟩ h
+    simp only [Sigma.mk.inj_iff] at h
+    obtain ⟨rfl, h⟩ := h
+    simp only [heq_eq_eq, Fin.castLE_inj] at h
+    rw [h]
+
 /-- **Proposition 11** (Corollary 10 for nonbinary species trees). -/
 theorem proposition11_corollary10 (ℓ : X → ℕ) (hℓ : ∀ x, 0 < ℓ x)
     (hcond : (4 ≤ Fintype.card X ∧ ∃ x, 2 ≤ ℓ x) ∨
@@ -133,6 +157,54 @@ theorem proposition11_corollary10 (ℓ : X → ℕ) (hℓ : ∀ x, 0 < ℓ x)
     (h : σ.unrootedDist (Sigma.fst : (Σ x, Fin (ℓ x)) → X) =
       σ'.unrootedDist (Sigma.fst : (Σ x, Fin (ℓ x)) → X)) :
     σ.SameRootedMetricTree σ' ∧ ∀ x, 2 ≤ ℓ x → σ.length {x} = σ'.length {x} := by
-  sorry
+  -- keep at most two lineages per taxon
+  set s' : (Σ x, Fin (min (ℓ x) 2)) → X := Sigma.fst with hs'def
+  have hcomp : (Sigma.fst : (Σ x, Fin (ℓ x)) → X) ∘ keepTwo ℓ = s' := rfl
+  have h' : σ.unrootedDist s' = σ'.unrootedDist s' := by
+    funext T'
+    rw [← hcomp, σ.unrootedDist_comp_embedding, σ'.unrootedDist_comp_embedding, h]
+  have hsurj : Function.Surjective s' := fun x =>
+    ⟨⟨x, ⟨0, lt_min (hℓ x) (by norm_num)⟩⟩, rfl⟩
+  have hfib : ∀ x, #(univ.filter fun l => s' l = x) = min (ℓ x) 2 :=
+    card_filter_sigma_fst (fun y => min (ℓ y) 2)
+  have h2 : ∀ x, #(univ.filter fun l => s' l = x) ≤ 2 := fun x => by
+    rw [hfib]; exact min_le_right _ _
+  -- the extended species trees
+  have hext : (σ.extend s' hsurj).unrootedDist id = (σ'.extend s' hsurj).unrootedDist id := by
+    have e1 : ∀ τ : SpeciesTree X, (τ.extend s' hsurj).unrootedDist id = τ.unrootedDist s' := by
+      intro τ
+      funext T
+      unfold SpeciesTree.unrootedDist
+      simp_rw [← τ.rootedDist_extend hsurj h2]
+    rw [e1, e1, h']
+  have hcardX : 3 ≤ Fintype.card X := by omega
+  have hcardL : 5 ≤ Fintype.card (Σ x, Fin (min (ℓ x) 2)) := by
+    rw [Fintype.card_sigma]
+    simp only [Fintype.card_fin]
+    have hone : ∀ x, 1 ≤ min (ℓ x) 2 := fun x => le_min (hℓ x) (by norm_num)
+    rcases hcond with ⟨h4, x, hx⟩ | ⟨h3, x, y, hxy, hx, hy⟩
+    · have hx2 : min (ℓ x) 2 = 2 := min_eq_right hx
+      calc 5 ≤ ∑ z ∈ univ.erase x, 1 + 2 := by
+              rw [sum_const, card_erase_of_mem (mem_univ x), card_univ, smul_eq_mul, mul_one]
+              omega
+        _ ≤ ∑ z ∈ univ.erase x, min (ℓ z) 2 + min (ℓ x) 2 := by
+              rw [hx2]; exact Nat.add_le_add_right (sum_le_sum fun z _ => hone z) 2
+        _ = ∑ z, min (ℓ z) 2 := sum_erase_add _ _ (mem_univ x)
+    · have hx2 : min (ℓ x) 2 = 2 := min_eq_right hx
+      have hy2 : min (ℓ y) 2 = 2 := min_eq_right hy
+      have hyx : y ∈ univ.erase x := mem_erase.2 ⟨hxy.symm, mem_univ y⟩
+      calc 5 ≤ ∑ z ∈ (univ.erase x).erase y, 1 + 2 + 2 := by
+              rw [sum_const, card_erase_of_mem hyx, card_erase_of_mem (mem_univ x), card_univ,
+                smul_eq_mul, mul_one]
+              omega
+        _ ≤ ∑ z ∈ (univ.erase x).erase y, min (ℓ z) 2 + min (ℓ y) 2 + min (ℓ x) 2 := by
+              rw [hx2, hy2]
+              exact Nat.add_le_add_right (Nat.add_le_add_right (sum_le_sum fun z _ => hone z) 2) 2
+        _ = ∑ z, min (ℓ z) 2 := by
+              rw [sum_erase_add _ _ hyx, sum_erase_add _ _ (mem_univ x)]
+  have hsame := proposition11_theorem9 hcardL _ _ hext
+  obtain ⟨hc, hlen⟩ := SpeciesTree.sameRootedMetricTree_of_extend (by omega) σ σ' hsurj hsame
+  refine ⟨hc, fun x hx => hlen x ?_⟩
+  rw [hfib, min_eq_right hx]
 
 end ADR11
