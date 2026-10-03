@@ -70,7 +70,11 @@ theorem proposition11_proposition3 (hX : Fintype.card X = 4) :
   exact ⟨τ.relabel e, τ'.relabel e, (SpeciesTree.unrootedDist_relabel_eq_iff τ τ' e).2 hd,
     fun hs => hn ((SpeciesTree.sameRootedMetricTree_relabel_iff τ τ' e).1 hs)⟩
 
-/-- **Proposition 11** (`prop:nonbinary`), Theorem 9 for nonbinary species trees, `|X| ≥ 5`. -/
+/-- **Proposition 11** (`prop:nonbinary`), Theorem 9 for nonbinary species trees, `|X| ≥ 5`.
+
+Departure from the paper: as in `theorem9`, no quartet distinguishes a pendant edge, so for a
+pendant edge the five-taxon set that locates the root is chosen differently
+(`rl_nb_theorem9`, audit item E4). -/
 theorem proposition11_theorem9 (hX : 5 ≤ Fintype.card X) (σ σ' : SpeciesTree X)
     (h : σ.unrootedDist id = σ'.unrootedDist id) : σ.SameRootedMetricTree σ' :=
   rl_nb_theorem9 hX σ σ' h fun _ _ hS5 hd => proposition11_proposition8 (by simpa using hS5) _ _ hd
