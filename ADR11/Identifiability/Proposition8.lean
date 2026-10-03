@@ -1,6 +1,7 @@
 module
 
 public import ADR11.FiveTaxa.Basic
+public import ADR11.Nonbinary.Proposition11
 
 /-!
 # Propositions 7 and 8: five taxa
@@ -24,14 +25,14 @@ variable {X : Type*} [Fintype X] [DecidableEq X]
 `ℙ_{σ⁺}`. -/
 theorem proposition7 (hX : Fintype.card X = 5) (σ σ' : SpeciesTree X) (hσ : σ.IsBinary)
     (hσ' : σ'.IsBinary) (h : σ.unrootedDist id = σ'.unrootedDist id) :
-    σ.clusters = σ'.clusters := by
-  sorry
+    σ.clusters = σ'.clusters :=
+  proposition11_proposition7 hX σ σ' h
 
 /-- **Proposition 8.** For `|X| = 5`, `ℙ_{σ⁺}` determines `σ⁺ = (ψ⁺, λ⁺)`. -/
 theorem proposition8 (hX : Fintype.card X = 5) (σ σ' : SpeciesTree X) (hσ : σ.IsBinary)
     (hσ' : σ'.IsBinary) (h : σ.unrootedDist id = σ'.unrootedDist id) :
-    σ.SameRootedMetricTree σ' := by
-  sorry
+    σ.SameRootedMetricTree σ' :=
+  proposition11_proposition8 hX σ σ' h
 
 /-- **Equation (7)** (proof of Proposition 8, balanced case): for `(((a,b):x,c):y,(d,e):z)`,
 `XYZ = 6u₅ + 9u₇`, `XY³Z = 15u₇`, hence `y = (1/2) log((2u₅ + 3u₇)/(5u₇))`, and the argument of

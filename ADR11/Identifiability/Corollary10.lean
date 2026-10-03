@@ -1,6 +1,7 @@
 module
 
 public import ADR11.Basic
+public import ADR11.Nonbinary.Proposition11
 
 /-!
 # Corollary 10: several lineages per taxon
@@ -31,7 +32,7 @@ theorem corollary10 (ℓ : X → ℕ) (hℓ : ∀ x, 0 < ℓ x)
     (σ σ' : SpeciesTree X) (hσ : σ.IsBinary) (hσ' : σ'.IsBinary)
     (h : σ.unrootedDist (Sigma.fst : (Σ x, Fin (ℓ x)) → X) =
       σ'.unrootedDist (Sigma.fst : (Σ x, Fin (ℓ x)) → X)) :
-    σ.SameRootedMetricTree σ' ∧ ∀ x, 2 ≤ ℓ x → σ.length {x} = σ'.length {x} := by
-  sorry
+    σ.SameRootedMetricTree σ' ∧ ∀ x, 2 ≤ ℓ x → σ.length {x} = σ'.length {x} :=
+  proposition11_corollary10 ℓ hℓ hcond σ σ' h
 
 end ADR11

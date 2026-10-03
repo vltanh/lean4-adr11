@@ -1,12 +1,30 @@
 module
 
-public import ADR11.Basic
+public import ADR11.Identifiability.Lemma5
+public import ADR11.External.Quartets.Steel
+public import ADR11.MSC.MultiSample
+public import ADR11.FourTaxa
+public import ADR11.MSC.Relabel
 
 /-!
 # Proposition 11: nonbinary species trees
 
 Proposition 3, Corollary 6, Propositions 7 and 8, Theorem 9 and Corollary 10 remain valid if the
 species tree `σ⁺` is nonbinary.
+
+The binary statements of Section 4 are the special cases of these (`ADR11.Identifiability`). The
+proofs assemble the four- and five-taxon analyses with the marginalization of Lemma 5:
+
+* Theorem 9 (`|X| ≥ 5`): by Lemma 5 the distribution of every induced 5-taxon tree is determined,
+  hence (Proposition 8) every induced 5-taxon metric tree, hence the metric tree
+  (`SpeciesTree.sameRootedMetricTree_of_restrict`, through rooted triples).
+* Corollary 6: by Lemma 5 and the four-taxon case every induced quartet metric tree is determined,
+  hence the unrooted metric tree (`SpeciesTree.sameUnrootedMetricTree_of_restrict`, after
+  [Steel 1992]).
+* Proposition 3: the four-taxon case gives `σ⁻`; the rooted trees `(((a,b),c),d)` and
+  `(((a,b),d),c)` of Section 4.1 have the same distribution.
+* Corollary 10: dropping lineages (Lemma 5's first step) reduces to at most two lineages per
+  taxon, which is one lineage per leaf of the extended species tree, on at least five leaves.
 -/
 
 @[expose] public section
@@ -17,6 +35,87 @@ open Finset Real
 
 variable {X : Type*} [Fintype X] [DecidableEq X]
 
+/-- **Proposition 11** (Proposition 8 for nonbinary species trees). -/
+theorem proposition11_proposition8 (hX : Fintype.card X = 5) (σ σ' : SpeciesTree X)
+    (h : σ.unrootedDist id = σ'.unrootedDist id) : σ.SameRootedMetricTree σ' := by
+  sorry
+
+/-- **Proposition 11** (Proposition 7 for nonbinary species trees). -/
+theorem proposition11_proposition7 (hX : Fintype.card X = 5) (σ σ' : SpeciesTree X)
+    (h : σ.unrootedDist id = σ'.unrootedDist id) : σ.clusters = σ'.clusters :=
+  (proposition11_proposition8 hX σ σ' h).1
+
+/-- **Proposition 11** (Theorem 9 for nonbinary species trees, `|X| = 4`). -/
+theorem proposition11_theorem9_four (hX : Fintype.card X = 4) (σ σ' : SpeciesTree X) :
+    σ.unrootedDist id = σ'.unrootedDist id ↔ σ.SameUnrootedMetricTree σ' := by
+  sorry
+
+/-- Equal unrooted gene tree distributions give equal distributions on every induced subtree
+(Lemma 5). -/
+theorem unrootedDist_restrict_eq {σ σ' : SpeciesTree X}
+    (h : σ.unrootedDist id = σ'.unrootedDist id) (S : Finset X) (hS : S.Nonempty) :
+    (σ.restrict S hS).unrootedDist id = (σ'.restrict S hS).unrootedDist id := by
+  funext T'
+  rw [lemma5, lemma5, h]
+
+/-- **Proposition 11** (Corollary 6 for nonbinary species trees). For any `X`, `ℙ_{σ⁺}` determines
+`σ⁻`. -/
+theorem proposition11_corollary6 (σ σ' : SpeciesTree X)
+    (h : σ.unrootedDist id = σ'.unrootedDist id) : σ.SameUnrootedMetricTree σ' :=
+  SpeciesTree.sameUnrootedMetricTree_of_restrict σ σ' fun Q hQ hQ4 =>
+    (proposition11_theorem9_four (by simpa using hQ4) _ _).1 (unrootedDist_restrict_eq h Q hQ)
+
+/-- Two rooted species trees on four taxa with the same unrooted gene tree distribution and
+different rooted topologies: `(((a,b):1,c):1,d)` and `(((a,b):1,d):1,c)` (Section 4.1). -/
+theorem exists_sameUnrootedDist_not_sameRooted_four :
+    ∃ σ σ' : SpeciesTree (Fin 4), σ.IsBinary ∧ σ'.IsBinary ∧
+      σ.unrootedDist id = σ'.unrootedDist id ∧ ¬ σ.SameRootedMetricTree σ' := by
+  let σ₁ := SpeciesTree.ofLengths (X := Fin 4) (hierarchyOf {{0, 1}, {0, 1, 2}}) (fun _ => 1) (by decide)
+    (by decide) (by decide) (by decide) (fun _ _ _ _ => one_pos)
+  let σ₂ := SpeciesTree.ofLengths (X := Fin 4) (hierarchyOf {{0, 1}, {0, 1, 3}}) (fun _ => 1) (by decide)
+    (by decide) (by decide) (by decide) (fun _ _ _ _ => one_pos)
+  let σ₃ := SpeciesTree.ofLengths (X := Fin 4) (hierarchyOf {{2, 3}, {0, 2, 3}}) (fun _ => 1) (by decide)
+    (by decide) (by decide) (by decide) (fun _ _ _ _ => one_pos)
+  let σ₄ := SpeciesTree.ofLengths (X := Fin 4) (hierarchyOf {{2, 3}, {1, 2, 3}}) (fun _ => 1) (by decide)
+    (by decide) (by decide) (by decide) (fun _ _ _ _ => one_pos)
+  let σ₅ := SpeciesTree.ofLengths (X := Fin 4) (hierarchyOf {{0, 1}, {2, 3}}) (fun _ => 1 / 2) (by decide)
+    (by decide) (by decide) (by decide) (fun _ _ _ _ => by norm_num)
+  have h01 : ¬ #({0, 1} : Finset (Fin 4)) ≤ 1 := by decide
+  have h23 : ¬ #({2, 3} : Finset (Fin 4)) ≤ 1 := by decide
+  have e₁ : σ₁.length {0, 1} = 1 := by
+    show (if #({0, 1} : Finset (Fin 4)) ≤ 1 then (1 : ℝ) else 1) = 1
+    rw [if_neg h01]
+  have e₂ : σ₂.length {0, 1} = 1 := by
+    show (if #({0, 1} : Finset (Fin 4)) ≤ 1 then (1 : ℝ) else 1) = 1
+    rw [if_neg h01]
+  have e₃ : σ₃.length {2, 3} = 1 := by
+    show (if #({2, 3} : Finset (Fin 4)) ≤ 1 then (1 : ℝ) else 1) = 1
+    rw [if_neg h23]
+  have e₄ : σ₄.length {2, 3} = 1 := by
+    show (if #({2, 3} : Finset (Fin 4)) ≤ 1 then (1 : ℝ) else 1) = 1
+    rw [if_neg h23]
+  have e₅ : σ₅.length {0, 1} + σ₅.length {2, 3} = 1 := by
+    show (if #({0, 1} : Finset (Fin 4)) ≤ 1 then (1 : ℝ) else 1 / 2) +
+      (if #({2, 3} : Finset (Fin 4)) ≤ 1 then (1 : ℝ) else 1 / 2) = 1
+    rw [if_neg h01, if_neg h23]
+    norm_num
+  have key := fourTaxa_sameDistribution σ₁ σ₂ σ₃ σ₄ σ₅ rfl rfl rfl rfl rfl
+    (e₂.trans e₁.symm) (e₃.trans e₁.symm) (e₄.trans e₁.symm) (e₅.trans e₁.symm)
+  have hb₁ : ∀ A ∈ (hierarchyOf {{0, 1}, {0, 1, 2}} : Finset (Finset (Fin 4))), 2 ≤ #A →
+      ∃ B ∈ (hierarchyOf {{0, 1}, {0, 1, 2}} : Finset (Finset (Fin 4))),
+        ∃ C ∈ (hierarchyOf {{0, 1}, {0, 1, 2}} : Finset (Finset (Fin 4))),
+          Disjoint B C ∧ B ∪ C = A := by
+    decide
+  have hb₂ : ∀ A ∈ (hierarchyOf {{0, 1}, {0, 1, 3}} : Finset (Finset (Fin 4))), 2 ≤ #A →
+      ∃ B ∈ (hierarchyOf {{0, 1}, {0, 1, 3}} : Finset (Finset (Fin 4))),
+        ∃ C ∈ (hierarchyOf {{0, 1}, {0, 1, 3}} : Finset (Finset (Fin 4))),
+          Disjoint B C ∧ B ∪ C = A := by
+    decide
+  have hne : (hierarchyOf {{0, 1}, {0, 1, 2}} : Finset (Finset (Fin 4))) ≠
+      hierarchyOf {{0, 1}, {0, 1, 3}} := by
+    decide
+  exact ⟨σ₁, σ₂, hb₁, hb₂, key.1.symm, fun hs => hne hs.1⟩
+
 /-- **Proposition 11** (Proposition 3 for nonbinary species trees). For `|X| = 4`, `σ⁻` is
 identifiable from `ℙ_{σ⁺}`, but `σ⁺` is not. -/
 theorem proposition11_proposition3 (hX : Fintype.card X = 4) :
@@ -24,33 +123,17 @@ theorem proposition11_proposition3 (hX : Fintype.card X = 4) :
         σ.SameUnrootedMetricTree σ') ∧
       ∃ σ σ' : SpeciesTree X, σ.unrootedDist id = σ'.unrootedDist id ∧
         ¬ σ.SameRootedMetricTree σ' := by
-  sorry
-
-/-- **Proposition 11** (Corollary 6 for nonbinary species trees). For any `X`, `ℙ_{σ⁺}` determines
-`σ⁻`. -/
-theorem proposition11_corollary6 (σ σ' : SpeciesTree X)
-    (h : σ.unrootedDist id = σ'.unrootedDist id) : σ.SameUnrootedMetricTree σ' := by
-  sorry
-
-/-- **Proposition 11** (Proposition 7 for nonbinary species trees). -/
-theorem proposition11_proposition7 (hX : Fintype.card X = 5) (σ σ' : SpeciesTree X)
-    (h : σ.unrootedDist id = σ'.unrootedDist id) : σ.clusters = σ'.clusters := by
-  sorry
-
-/-- **Proposition 11** (Proposition 8 for nonbinary species trees). -/
-theorem proposition11_proposition8 (hX : Fintype.card X = 5) (σ σ' : SpeciesTree X)
-    (h : σ.unrootedDist id = σ'.unrootedDist id) : σ.SameRootedMetricTree σ' := by
-  sorry
+  refine ⟨fun σ σ' h => (proposition11_theorem9_four hX σ σ').1 h, ?_⟩
+  obtain ⟨τ, τ', -, -, hd, hn⟩ := exists_sameUnrootedDist_not_sameRooted_four
+  let e : Fin 4 ≃ X := (Fintype.equivFinOfCardEq hX).symm
+  exact ⟨τ.relabel e, τ'.relabel e, (SpeciesTree.unrootedDist_relabel_eq_iff τ τ' e).2 hd,
+    fun hs => hn ((SpeciesTree.sameRootedMetricTree_relabel_iff τ τ' e).1 hs)⟩
 
 /-- **Proposition 11** (Theorem 9 for nonbinary species trees, `|X| ≥ 5`). -/
 theorem proposition11_theorem9 (hX : 5 ≤ Fintype.card X) (σ σ' : SpeciesTree X)
-    (h : σ.unrootedDist id = σ'.unrootedDist id) : σ.SameRootedMetricTree σ' := by
-  sorry
-
-/-- **Proposition 11** (Theorem 9 for nonbinary species trees, `|X| = 4`). -/
-theorem proposition11_theorem9_four (hX : Fintype.card X = 4) (σ σ' : SpeciesTree X) :
-    σ.unrootedDist id = σ'.unrootedDist id ↔ σ.SameUnrootedMetricTree σ' := by
-  sorry
+    (h : σ.unrootedDist id = σ'.unrootedDist id) : σ.SameRootedMetricTree σ' :=
+  SpeciesTree.sameRootedMetricTree_of_restrict hX σ σ' fun S hS hS5 =>
+    proposition11_proposition8 (by simpa using hS5) _ _ (unrootedDist_restrict_eq h S hS)
 
 /-- **Proposition 11** (Corollary 10 for nonbinary species trees). -/
 theorem proposition11_corollary10 (ℓ : X → ℕ) (hℓ : ∀ x, 0 < ℓ x)

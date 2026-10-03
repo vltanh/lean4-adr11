@@ -1,6 +1,7 @@
 module
 
 public import ADR11.Identifiability.Lemma5
+public import ADR11.Nonbinary.Proposition11
 
 /-!
 # Theorem 9: the main theorem
@@ -23,15 +24,15 @@ from the multispecies coalescent model for samples of one lineage per taxon dete
 species tree `σ⁺` provided `|X| ≥ 5`. -/
 theorem theorem9 (hX : 5 ≤ Fintype.card X) (σ σ' : SpeciesTree X) (hσ : σ.IsBinary)
     (hσ' : σ'.IsBinary) (h : σ.unrootedDist id = σ'.unrootedDist id) :
-    σ.SameRootedMetricTree σ' := by
-  sorry
+    σ.SameRootedMetricTree σ' :=
+  proposition11_theorem9 hX σ σ' h
 
 /-- **Theorem 9** (`|X| = 4`). If `|X| = 4`, `ℙ_{σ⁺}` determines only the unrooted metric species
 tree `σ⁻`: two species trees have the same unrooted gene tree distribution exactly when they have
 the same unrooted metric tree. -/
 theorem theorem9_four (hX : Fintype.card X = 4) (σ σ' : SpeciesTree X) (hσ : σ.IsBinary)
     (hσ' : σ'.IsBinary) :
-    σ.unrootedDist id = σ'.unrootedDist id ↔ σ.SameUnrootedMetricTree σ' := by
-  sorry
+    σ.unrootedDist id = σ'.unrootedDist id ↔ σ.SameUnrootedMetricTree σ' :=
+  proposition11_theorem9_four hX σ σ'
 
 end ADR11
