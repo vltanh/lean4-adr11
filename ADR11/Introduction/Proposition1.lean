@@ -500,7 +500,7 @@ theorem triple_sameRootedMetricTree (σ σ' : SpeciesTree X)
 
 -- The hypothesis `hX` (at least three taxa) is not needed in the proof.
 set_option linter.unusedVariables false in
-/-- **Proposition 1.** For a species tree with `n ≥ 3` taxa, the probabilities of rooted triple
+/-- **Proposition 1** (`prop:rootedtriple`). For a species tree with `n ≥ 3` taxa, the probabilities of rooted triple
 gene tree topologies determine the species tree topology and internal branch lengths. -/
 theorem proposition1 (hX : 3 ≤ Fintype.card X) (σ σ' : SpeciesTree X) (hσ : σ.IsBinary)
     (hσ' : σ'.IsBinary)
@@ -510,7 +510,7 @@ theorem proposition1 (hX : 3 ≤ Fintype.card X) (σ σ' : SpeciesTree X) (hσ :
     (fun _ _ _ hab hac hbc => triple_resolved_iff_of_isBinary hσ hab hac hbc)
     (fun _ _ _ hab hac hbc => triple_resolved_iff_of_isBinary hσ' hab hac hbc) h
 
-/-- **Corollary 2.** For a species tree with `n ≥ 3` taxa, the distribution of rooted gene tree
+/-- **Corollary 2** (`cor:rgt`). For a species tree with `n ≥ 3` taxa, the distribution of rooted gene tree
 topologies determines the species tree topology and internal branch lengths. -/
 theorem corollary2 (hX : 3 ≤ Fintype.card X) (σ σ' : SpeciesTree X) (hσ : σ.IsBinary)
     (hσ' : σ'.IsBinary) (h : σ.rootedDist id = σ'.rootedDist id) :

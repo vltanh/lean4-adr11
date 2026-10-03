@@ -24,14 +24,14 @@ open Finset Real
 
 variable {X : Type*} [Fintype X] [DecidableEq X]
 
-/-- **Proposition 7.** For `|X| = 5` the rooted species tree topology `ψ⁺` is determined by
+/-- **Proposition 7** (`prop:cases`). For `|X| = 5` the rooted species tree topology `ψ⁺` is determined by
 `ℙ_{σ⁺}`. -/
 theorem proposition7 (hX : Fintype.card X = 5) (σ σ' : SpeciesTree X) (hσ : σ.IsBinary)
     (hσ' : σ'.IsBinary) (h : σ.unrootedDist id = σ'.unrootedDist id) :
     σ.clusters = σ'.clusters :=
   proposition11_proposition7 hX σ σ' h
 
-/-- **Proposition 8.** For `|X| = 5`, `ℙ_{σ⁺}` determines `σ⁺ = (ψ⁺, λ⁺)`. -/
+/-- **Proposition 8** (`prop:5taxa`). For `|X| = 5`, `ℙ_{σ⁺}` determines `σ⁺ = (ψ⁺, λ⁺)`. -/
 theorem proposition8 (hX : Fintype.card X = 5) (σ σ' : SpeciesTree X) (hσ : σ.IsBinary)
     (hσ' : σ'.IsBinary) (h : σ.unrootedDist id = σ'.unrootedDist id) :
     σ.SameRootedMetricTree σ' :=

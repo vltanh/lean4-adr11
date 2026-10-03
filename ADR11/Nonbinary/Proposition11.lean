@@ -34,22 +34,22 @@ open Finset Real
 
 variable {X : Type*} [Fintype X] [DecidableEq X]
 
-/-- **Proposition 11** (Proposition 8 for nonbinary species trees). -/
+/-- **Proposition 11** (`prop:nonbinary`), Proposition 8 for nonbinary species trees. -/
 theorem proposition11_proposition8 (hX : Fintype.card X = 5) (σ σ' : SpeciesTree X)
     (h : σ.unrootedDist id = σ'.unrootedDist id) : σ.SameRootedMetricTree σ' :=
   sameRootedMetricTree_of_unrootedDist_eq_five hX σ σ' h
 
-/-- **Proposition 11** (Proposition 7 for nonbinary species trees). -/
+/-- **Proposition 11** (`prop:nonbinary`), Proposition 7 for nonbinary species trees. -/
 theorem proposition11_proposition7 (hX : Fintype.card X = 5) (σ σ' : SpeciesTree X)
     (h : σ.unrootedDist id = σ'.unrootedDist id) : σ.clusters = σ'.clusters :=
   (proposition11_proposition8 hX σ σ' h).1
 
-/-- **Proposition 11** (Theorem 9 for nonbinary species trees, `|X| = 4`). -/
+/-- **Proposition 11** (`prop:nonbinary`), Theorem 9 for nonbinary species trees, `|X| = 4`. -/
 theorem proposition11_theorem9_four (hX : Fintype.card X = 4) (σ σ' : SpeciesTree X) :
     σ.unrootedDist id = σ'.unrootedDist id ↔ σ.SameUnrootedMetricTree σ' :=
   unrootedDist_eq_iff_four hX σ σ'
 
-/-- **Proposition 11** (Corollary 6 for nonbinary species trees). For any `X`, `ℙ_{σ⁺}` determines
+/-- **Proposition 11** (`prop:nonbinary`), Corollary 6 for nonbinary species trees. For any `X`, `ℙ_{σ⁺}` determines
 `σ⁻`. -/
 theorem proposition11_corollary6 (σ σ' : SpeciesTree X)
     (h : σ.unrootedDist id = σ'.unrootedDist id) : σ.SameUnrootedMetricTree σ' :=
@@ -106,7 +106,7 @@ theorem exists_sameUnrootedDist_not_sameRooted_four :
     decide
   exact ⟨σ₁, σ₂, hb₁, hb₂, key.1.symm, fun hs => hne hs.1⟩
 
-/-- **Proposition 11** (Proposition 3 for nonbinary species trees). For `|X| = 4`, `σ⁻` is
+/-- **Proposition 11** (`prop:nonbinary`), Proposition 3 for nonbinary species trees. For `|X| = 4`, `σ⁻` is
 identifiable from `ℙ_{σ⁺}`, but `σ⁺` is not. -/
 theorem proposition11_proposition3 (hX : Fintype.card X = 4) :
     (∀ σ σ' : SpeciesTree X, σ.unrootedDist id = σ'.unrootedDist id →
@@ -119,7 +119,7 @@ theorem proposition11_proposition3 (hX : Fintype.card X = 4) :
   exact ⟨τ.relabel e, τ'.relabel e, (SpeciesTree.unrootedDist_relabel_eq_iff τ τ' e).2 hd,
     fun hs => hn ((SpeciesTree.sameRootedMetricTree_relabel_iff τ τ' e).1 hs)⟩
 
-/-- **Proposition 11** (Theorem 9 for nonbinary species trees, `|X| ≥ 5`). -/
+/-- **Proposition 11** (`prop:nonbinary`), Theorem 9 for nonbinary species trees, `|X| ≥ 5`. -/
 theorem proposition11_theorem9 (hX : 5 ≤ Fintype.card X) (σ σ' : SpeciesTree X)
     (h : σ.unrootedDist id = σ'.unrootedDist id) : σ.SameRootedMetricTree σ' :=
   SpeciesTree.sameRootedMetricTree_of_restrict hX σ σ' fun S hS hS5 =>
@@ -149,7 +149,7 @@ def keepTwo (ℓ : X → ℕ) : (Σ x, Fin (min (ℓ x) 2)) ↪ (Σ x, Fin (ℓ 
     simp only [heq_eq_eq, Fin.castLE_inj] at h
     rw [h]
 
-/-- **Proposition 11** (Corollary 10 for nonbinary species trees). -/
+/-- **Proposition 11** (`prop:nonbinary`), Corollary 10 for nonbinary species trees. -/
 theorem proposition11_corollary10 (ℓ : X → ℕ) (hℓ : ∀ x, 0 < ℓ x)
     (hcond : (4 ≤ Fintype.card X ∧ ∃ x, 2 ≤ ℓ x) ∨
       (Fintype.card X = 3 ∧ ∃ x y, x ≠ y ∧ 2 ≤ ℓ x ∧ 2 ≤ ℓ y))

@@ -62,7 +62,7 @@ private theorem absorb_count_six :
       (12, 8) := by
   decide +kernel
 
-/-- **Lemma 4.** If all coalescent events occur above the root of a 5-taxon species tree, all 15
+/-- **Lemma 4** (`lem:aboveroot`). If all coalescent events occur above the root of a 5-taxon species tree, all 15
 unrooted topological gene trees are equally likely: starting from five uncoalesced lineages, the
 population above the root produces each `T_i` with probability `1/15`. -/
 theorem lemma4 (i : ℕ) (hi : i ∈ Icc 1 15) :

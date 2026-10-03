@@ -19,7 +19,7 @@ open Finset Real
 
 variable {X : Type*} [Fintype X] [DecidableEq X]
 
-/-- **Theorem 9** (`|X| ≥ 5`). The unrooted topological gene tree distribution `ℙ_{σ⁺}` arising
+/-- **Theorem 9** (`thm:main`), `|X| ≥ 5`. The unrooted topological gene tree distribution `ℙ_{σ⁺}` arising
 from the multispecies coalescent model for samples of one lineage per taxon determines the metric
 species tree `σ⁺` provided `|X| ≥ 5`. -/
 theorem theorem9 (hX : 5 ≤ Fintype.card X) (σ σ' : SpeciesTree X) (hσ : σ.IsBinary)
@@ -27,7 +27,7 @@ theorem theorem9 (hX : 5 ≤ Fintype.card X) (σ σ' : SpeciesTree X) (hσ : σ.
     σ.SameRootedMetricTree σ' :=
   proposition11_theorem9 hX σ σ' h
 
-/-- **Theorem 9** (`|X| = 4`). If `|X| = 4`, `ℙ_{σ⁺}` determines only the unrooted metric species
+/-- **Theorem 9** (`thm:main`), `|X| = 4`. If `|X| = 4`, `ℙ_{σ⁺}` determines only the unrooted metric species
 tree `σ⁻`: two species trees have the same unrooted gene tree distribution exactly when they have
 the same unrooted metric tree. -/
 theorem theorem9_four (hX : Fintype.card X = 4) (σ σ' : SpeciesTree X) (hσ : σ.IsBinary)

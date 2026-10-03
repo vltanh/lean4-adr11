@@ -20,7 +20,7 @@ open Finset Real
 
 variable {X : Type*} [Fintype X] [DecidableEq X]
 
-/-- **Corollary 10.** Consider the distribution of unrooted topological gene trees under the
+/-- **Corollary 10** (`cor:intra`). Consider the distribution of unrooted topological gene trees under the
 multispecies coalescent with `ℓ_x > 0` lineages sampled from each taxon `x` (lineages
 `(x, k)`, `k < ℓ_x`). Suppose that either `|X| ≥ 4` and some `ℓ_x ≥ 2`, or `|X| = 3` and at least
 two of the `ℓ_x` are `≥ 2`. Then the gene tree distribution determines the species tree's rooted

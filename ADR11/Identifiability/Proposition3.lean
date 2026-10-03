@@ -30,7 +30,7 @@ theorem fourTaxa_recovery (hX : Fintype.card X = 4) (σ : SpeciesTree X) (hσ : 
   -- the binarity of `σ` is not needed: a split of `σ⁻` has positive length
   four_recovery hX σ hA hA2
 
-/-- **Proposition 3.** For `|X| = 4` taxa, `σ⁻` is identifiable from `ℙ_{σ⁺}`, but `σ⁺` is not. -/
+/-- **Proposition 3** (`prop:4taxa`). For `|X| = 4` taxa, `σ⁻` is identifiable from `ℙ_{σ⁺}`, but `σ⁺` is not. -/
 theorem proposition3 (hX : Fintype.card X = 4) :
     (∀ σ σ' : SpeciesTree X, σ.IsBinary → σ'.IsBinary →
         σ.unrootedDist id = σ'.unrootedDist id → σ.SameUnrootedMetricTree σ') ∧

@@ -64,7 +64,7 @@ private theorem lemma5_restrictUnrooted_subtype (S : Finset X) (T : Finset (Fins
   rw [filter_congr fun A _ => and_congr (lemma5_exists_iff S A) (h A)]
   exact image_congr fun A _ => lemma5_trace S A
 
-/-- **Lemma 5.** If `S ⊆ X` and `T' ∈ 𝒯_S`, then
+/-- **Lemma 5** (`lem:margin`). If `S ⊆ X` and `T' ∈ 𝒯_S`, then
 `ℙ_{σ⁺(S)}(T') = ∑_{T ∈ 𝒯_X, T(S) = T'} ℙ_{σ⁺}(T)`. -/
 theorem lemma5 (σ : SpeciesTree X) (S : Finset X) (hS : S.Nonempty) (T' : Finset (Finset S)) :
     (σ.restrict S hS).unrootedDist id T' =
@@ -77,7 +77,7 @@ theorem lemma5 (σ : SpeciesTree X) (S : Finset X) (hS : S.Nonempty) (T' : Finse
   rw [h1, σ.unrootedDist_comp_embedding id (Function.Embedding.subtype (· ∈ S)) T']
   simp_rw [lemma5_restrictUnrooted_subtype]
 
-/-- The analogue of Lemma 5 for rooted gene trees. -/
+/-- **Lemma 5** (`lem:margin`), for rooted gene trees, as the paper remarks before the lemma. -/
 theorem lemma5_rooted (σ : SpeciesTree X) (S : Finset X) (hS : S.Nonempty)
     (G' : Finset (Finset S)) :
     (σ.restrict S hS).rootedDist id G' =

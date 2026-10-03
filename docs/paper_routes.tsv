@@ -1,0 +1,12 @@
+# label	environment	proved	cited statements (from route_check.py extract)
+prop:rootedtriple	prop	0	
+cor:rgt	cor	0	
+prop:4taxa	prop	0	
+lem:aboveroot	lem	1	
+lem:margin	lem	0	
+cor:unroot	cor	1	lem:margin,prop:4taxa
+prop:cases	prop	1	cor:unroot
+prop:5taxa	prop	1	cor:unroot,prop:cases
+thm:main	thm	1	cor:unroot,lem:margin,prop:4taxa,prop:5taxa
+cor:intra	cor	1	thm:main
+prop:nonbinary	prop	1	cor:intra,cor:unroot,prop:4taxa,prop:5taxa,prop:cases,thm:main

@@ -17,7 +17,7 @@ open Finset Real
 
 variable {X : Type*} [Fintype X] [DecidableEq X]
 
-/-- **Corollary 6.** For any `X`, `ℙ_{σ⁺}` determines `σ⁻`. -/
+/-- **Corollary 6** (`cor:unroot`). For any `X`, `ℙ_{σ⁺}` determines `σ⁻`. -/
 theorem corollary6 (σ σ' : SpeciesTree X) (hσ : σ.IsBinary) (hσ' : σ'.IsBinary)
     (h : σ.unrootedDist id = σ'.unrootedDist id) : σ.SameUnrootedMetricTree σ' :=
   proposition11_corollary6 σ σ' h
