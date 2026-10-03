@@ -2,6 +2,7 @@ module
 
 public import ADR11.SmallTrees
 public import ADR11.MSC.Basic
+public import ADR11.Model.History
 
 /-!
 # Section 3: the multispecies coalescent model
@@ -36,26 +37,28 @@ variable {X : Type*} [Fintype X] [DecidableEq X]
 /-- The multispecies coalescent defines a probability distribution on rooted gene trees: the
 probabilities are nonnegative. -/
 theorem rootedDist_nonneg {L : Type*} [Fintype L] [DecidableEq L] (σ : SpeciesTree X)
-    (s : L → X) (G : Finset (Finset L)) : 0 ≤ σ.rootedDist s G := by
-  sorry
+    (s : L → X) (G : Finset (Finset L)) : 0 ≤ σ.rootedDist s G :=
+  σ.forestDist_nonneg_of_mem s σ.univ_mem G
 
 /-- The multispecies coalescent defines a probability distribution on rooted gene trees: the
 probabilities sum to `1`. -/
 theorem rootedDist_sum {L : Type*} [Fintype L] [DecidableEq L] (σ : SpeciesTree X) (s : L → X) :
-    ∑ G, σ.rootedDist s G = 1 := by
-  sorry
+    ∑ G, σ.rootedDist s G = 1 :=
+  σ.forestDist_sum_eq_one s σ.univ_mem
 
 /-- Section 1: the unrooted gene tree probabilities form a well-defined probability distribution:
 they are nonnegative ... -/
 theorem unrootedDist_nonneg {L : Type*} [Fintype L] [DecidableEq L] (σ : SpeciesTree X)
-    (s : L → X) (T : Finset (Finset L)) : 0 ≤ σ.unrootedDist s T := by
-  sorry
+    (s : L → X) (T : Finset (Finset L)) : 0 ≤ σ.unrootedDist s T :=
+  unrootedDistOf_nonneg σ.isHierarchy (fun A hA hAu => (σ.length_pos A hA hAu).le) s T
 
 /-- ... and sum to `1`. -/
 theorem unrootedDist_sum {L : Type*} [Fintype L] [DecidableEq L] (σ : SpeciesTree X)
-    (s : L → X) : ∑ T, σ.unrootedDist s T = 1 := by
-  sorry
+    (s : L → X) : ∑ T, σ.unrootedDist s T = 1 :=
+  unrootedDistOf_sum σ.isHierarchy σ.length s
 
+-- The hypothesis `ht` (`t > 0`, as in the paper) is not needed in the proof.
+set_option linter.unusedVariables false in
 /-- **Equation (2)** [Tavaré 1984]: for `1 ≤ j ≤ i` and `t > 0`,
 `g_ij(t) = ∑_{k=j}^{i} exp(-k(k-1)t/2) (2k-1)(-1)^{k-j} / (j!(k-j)!(j+k-1)) ∏_{m=0}^{k-1}
 (j+m)(i-m)/(i+m)`. -/
@@ -64,31 +67,51 @@ theorem equation2 (i j : ℕ) (hj : 1 ≤ j) (hji : j ≤ i) (t : ℝ) (ht : 0 <
       ∑ k ∈ Icc j i, exp (-((k.choose 2 : ℕ) : ℝ) * t) *
         ((2 * k - 1) * (-1) ^ (k - j) / ((j.factorial : ℝ) * (k - j).factorial * (j + k - 1))) *
           ∏ m ∈ range k, (((j : ℝ) + m) * ((i : ℝ) - m) / ((i : ℝ) + m)) := by
-  sorry
+  rw [coalescenceProb_eq_deathProb, deathProb_eq_tavare i j hj hji t]
+  refine sum_congr rfl fun k _ => ?_
+  rw [tavareCoeff, neg_mul]
+  exact (mul_assoc _ _ _).symm
 
 /-- The `g_ij(t)` are nonnegative. -/
 theorem coalescenceProb_nonneg (i j : ℕ) (t : ℝ) (ht : 0 < t) : 0 ≤ coalescenceProb i j t := by
-  sorry
+  rw [coalescenceProb_eq_deathProb]
+  exact deathProb_nonneg i j ht.le
 
+-- The hypothesis `ht` (`t > 0`, as in the paper) is not needed in the proof.
+set_option linter.unusedVariables false in
 /-- For `i > 1` and `t > 0`, the `g_ij(t)`, `j = 1, …, i`, form a probability distribution. -/
 theorem coalescenceProb_sum (i : ℕ) (hi : 1 < i) (t : ℝ) (ht : 0 < t) :
     ∑ j ∈ Icc 1 i, coalescenceProb i j t = 1 := by
-  sorry
+  simp_rw [coalescenceProb_eq_deathProb]
+  exact deathProb_sum_Icc hi.le t
 
 /-- Given enough time, all lineages coalesce: `g_i1(t) → 1` as `t → ∞`, for `i > 1`. -/
 theorem tendsto_coalescenceProb_one (i : ℕ) (hi : 1 < i) :
     Tendsto (coalescenceProb i 1) atTop (𝓝 1) := by
-  sorry
+  have h := tendsto_deathProb i 1 hi.le
+  rw [ite_eq_left rfl] at h
+  have e : coalescenceProb i 1 = deathProb i 1 :=
+    funext fun t => coalescenceProb_eq_deathProb i 1 t
+  rw [e]
+  exact h
 
 /-- Over short times no coalescence is likely: `g_ii(t) → 1` as `t → 0⁺`. -/
 theorem tendsto_coalescenceProb_self (i : ℕ) :
     Tendsto (coalescenceProb i i) (𝓝[>] 0) (𝓝 1) := by
-  sorry
+  have e : coalescenceProb i i = fun t => exp (-(((i.choose 2 : ℕ) : ℝ) * t)) :=
+    funext fun t => by rw [coalescenceProb_eq_deathProb, deathProb_self]
+  rw [e]
+  refine tendsto_nhdsWithin_of_tendsto_nhds ?_
+  have hc : Continuous fun t : ℝ => exp (-(((i.choose 2 : ℕ) : ℝ) * t)) := by fun_prop
+  simpa using hc.tendsto 0
 
+-- The hypothesis `ht` (`t > 0`, as in the paper) is not needed in the proof.
+set_option linter.unusedVariables false in
 /-- `g_ii(t) = exp(-i(i-1)t/2)`. -/
 theorem coalescenceProb_self (i : ℕ) (t : ℝ) (ht : 0 < t) :
     coalescenceProb i i t = exp (-((i : ℝ) * (i - 1) * t / 2)) := by
-  sorry
+  rw [coalescenceProb_eq_deathProb, deathProb_self, Nat.cast_choose_two]
+  ring_nf
 
 /-- First worked example of Section 3: in the caterpillar species tree
 `((((a,b):x,c):y,d):z,e)`, the rooted gene tree `((((B,E),A),C),D)` has probability
@@ -122,8 +145,8 @@ theorem equation3 (H : Finset (Finset X)) (G : Finset (Finset X)) :
       ∀ σ : SpeciesTree X, σ.clusters = H →
         σ.rootedDist id G =
           ∑ h : ι, (c h : ℝ) * ∏ b ∈ H with b ≠ univ ∧ 2 ≤ #b,
-            coalescenceProb (i h b) (j h b) (σ.length b) := by
-  sorry
+            coalescenceProb (i h b) (j h b) (σ.length b) :=
+  model_equation3 H G
 
 /-- Gene tree probabilities, rooted and unrooted, are polynomials with rational coefficients in
 the transformed branch lengths `X_b = exp(-x_b)`, depending only on the topologies. -/
@@ -131,21 +154,22 @@ theorem section3_polynomial (H : Finset (Finset X)) (G T : Finset (Finset X)) :
     ∃ p q : MvPolynomial (Finset X) ℚ,
       ∀ σ : SpeciesTree X, σ.clusters = H →
         σ.rootedDist id G = MvPolynomial.aeval (fun b => exp (-σ.length b)) p ∧
-        σ.unrootedDist id T = MvPolynomial.aeval (fun b => exp (-σ.length b)) q := by
-  sorry
+        σ.unrootedDist id T = MvPolynomial.aeval (fun b => exp (-σ.length b)) q :=
+  model_section3_polynomial H G T
 
 /-- Section 2: with one lineage sampled per taxon, pendant edge lengths do not affect the
 probability of any gene tree: the rooted (hence unrooted) gene tree distribution depends only on
 the rooted metric species tree `σ⁺`. -/
 theorem rootedDist_eq_of_sameRootedMetricTree {σ σ' : SpeciesTree X}
-    (h : σ.SameRootedMetricTree σ') : σ.rootedDist id = σ'.rootedDist id := by
-  sorry
+    (h : σ.SameRootedMetricTree σ') : σ.rootedDist id = σ'.rootedDist id :=
+  model_rootedDist_eq_of_sameRootedMetricTree h
 
 /-- Sections 1 and 5: gene trees are binary with probability `1`, even when the species tree has
-polytomies: a rooted gene tree with positive probability is a binary hierarchy on the lineages. -/
-theorem rootedDist_support {L : Type*} [Fintype L] [DecidableEq L] (σ : SpeciesTree X)
-    (s : L → X) {G : Finset (Finset L)} (hG : σ.rootedDist s G ≠ 0) :
-    IsHierarchy G ∧ ∀ A ∈ G, 2 ≤ #A → ∃ B ∈ G, ∃ C ∈ G, Disjoint B C ∧ B ∪ C = A := by
-  sorry
+polytomies: a rooted gene tree with positive probability is a binary hierarchy on the lineages
+(at least one lineage being sampled). -/
+theorem rootedDist_support {L : Type*} [Fintype L] [DecidableEq L] [Nonempty L]
+    (σ : SpeciesTree X) (s : L → X) {G : Finset (Finset L)} (hG : σ.rootedDist s G ≠ 0) :
+    IsHierarchy G ∧ ∀ A ∈ G, 2 ≤ #A → ∃ B ∈ G, ∃ C ∈ G, Disjoint B C ∧ B ∪ C = A :=
+  model_rootedDist_support σ s hG
 
 end ADR11
