@@ -26,20 +26,20 @@ import all ADR11.External.Tavare.Formula
 import all ADR11.FiveTaxa.Balanced
 import all ADR11.FiveTaxa.Basic
 import all ADR11.FiveTaxa.Caterpillar
+import all ADR11.FiveTaxa.Explanations
 import all ADR11.FiveTaxa.Lemma4
 import all ADR11.FiveTaxa.Pseudocaterpillar
 import all ADR11.FourTaxa
 import all ADR11.Identifiability.Corollary10
 import all ADR11.Identifiability.Corollary6
+import all ADR11.Identifiability.FiveTaxa.Binary
+import all ADR11.Identifiability.FiveTaxa.Classes
 import all ADR11.Identifiability.FiveTaxa.Common
-import all ADR11.Identifiability.FiveTaxa.OneSplit
-import all ADR11.Identifiability.FiveTaxa.Star
-import all ADR11.Identifiability.FiveTaxa.TwoSplits
-import all ADR11.Identifiability.FiveTaxaAnalysis
 import all ADR11.Identifiability.FourTaxaAnalysis
 import all ADR11.Identifiability.Lemma5
 import all ADR11.Identifiability.Proposition3
 import all ADR11.Identifiability.Proposition8
+import all ADR11.Identifiability.Quartets
 import all ADR11.Identifiability.Theorem9
 import all ADR11.Identifiability.Unrooted
 import all ADR11.Introduction
@@ -54,7 +54,12 @@ import all ADR11.Model
 import all ADR11.Model.History
 import all ADR11.Nonbinary
 import all ADR11.Nonbinary.AppendixC
+import all ADR11.Nonbinary.FiveTaxa
+import all ADR11.Nonbinary.FiveTaxa.Ac1Classes
+import all ADR11.Nonbinary.FiveTaxa.StarOneSplit
+import all ADR11.Nonbinary.FiveTaxa.TwoSplits
 import all ADR11.Nonbinary.Proposition11
+import all ADR11.Nonbinary.Theorem9
 import all ADR11.Nonbinary.Triples
 import all ADR11.Rootings.Proofs
 import all ADR11.Rootings.Statements
@@ -62,6 +67,7 @@ import all ADR11.Rootings.Support
 import all ADR11.SmallTrees
 import all ADR11.Trees.Classify
 import all ADR11.Trees.Hierarchy
+import all ADR11.Trees.RootLocation
 import all Solution
 
 /-!
