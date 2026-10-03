@@ -8,10 +8,8 @@ public import ADR11.MSC.Basic
 
 * `section5_threeTaxa`: for the unresolved 3-taxon species tree the three rooted gene trees are
   equiprobable; for a resolved one exactly one has probability greater than `1/3`.
-* `section5_triples`: a species tree has no cluster separating one of three taxa from the other
-  two exactly when the three rooted triples on them are equiprobable.
-* `section5_proposition1`, `section5_corollary2`: Proposition 1 and Corollary 2 for species trees
-  that need not be binary.
+* `section5_triples`, `section5_proposition1`, `section5_corollary2` are in
+  `ADR11.Nonbinary.Triples`.
 * `section5_limit`: the distributions of a nonbinary species tree are limits of those of a binary
   resolution as the added branch lengths tend to `0`.
 * `section5_fourTaxa`: `(a,b,c,d)` and `((a,b,c):y,d)` give the same unrooted distribution, and so
@@ -38,17 +36,6 @@ theorem section5_threeTaxa (σ σ' : SpeciesTree (Fin 3)) (hσ : σ.clusters = h
         σ'.rootedDist id (rootedTree3 {1, 2}) < 1 / 3) := by
   sorry
 
-/-- Section 5: polytomies are identified by rooted triples. For distinct taxa `a, b, c`, no cluster
-of the species tree contains exactly two of them if and only if the three rooted triples on them
-are equiprobable. -/
-theorem section5_triples (σ : SpeciesTree X) (a b c : X) (hab : a ≠ b) (hac : a ≠ c)
-    (hbc : b ≠ c) :
-    (∀ C ∈ σ.clusters, ¬ ((a ∈ C ∧ b ∈ C ∧ c ∉ C) ∨ (a ∈ C ∧ c ∈ C ∧ b ∉ C) ∨
-        (b ∈ C ∧ c ∈ C ∧ a ∉ C))) ↔
-      (σ.rootedTripleProb a b c = σ.rootedTripleProb a c b ∧
-        σ.rootedTripleProb a b c = σ.rootedTripleProb b c a) := by
-  sorry
-
 /-- Section 5, four taxa: `(a,b,c,d)` and `((a,b,c):y,d)` give the same unrooted gene tree
 distribution, and so do `(((a,b):x,c):y,d)` and `((a,b):x,c,d)` (with the same `x`), with
 `ℙ(T_{AB|CD}) = 1 - (2/3) e^{-x}`. -/
@@ -58,19 +45,6 @@ theorem section5_fourTaxa (σ₁ σ₂ σ₃ σ₄ : SpeciesTree (Fin 4))
     (hx : σ₄.length {0, 1} = σ₃.length {0, 1}) :
     σ₁.unrootedDist id = σ₂.unrootedDist id ∧ σ₃.unrootedDist id = σ₄.unrootedDist id ∧
       σ₄.unrootedDist id (treeOfClusters {{0, 1}}) = 1 - 2 / 3 * exp (-σ₄.length {0, 1}) := by
-  sorry
-
-/-- Section 5: polytomies are identified by rooted triples, so Proposition 1 holds for species trees
-that need not be binary: the probabilities of rooted triples determine the species tree topology
-and its internal branch lengths. -/
-theorem section5_proposition1 (hX : 3 ≤ Fintype.card X) (σ σ' : SpeciesTree X)
-    (h : ∀ a b c : X, a ≠ b → a ≠ c → b ≠ c → σ.rootedTripleProb a b c = σ'.rootedTripleProb a b c) :
-    σ.SameRootedMetricTree σ' := by
-  sorry
-
-/-- Section 5: Corollary 2 for species trees that need not be binary. -/
-theorem section5_corollary2 (hX : 3 ≤ Fintype.card X) (σ σ' : SpeciesTree X)
-    (h : σ.rootedDist id = σ'.rootedDist id) : σ.SameRootedMetricTree σ' := by
   sorry
 
 /-- Section 5: the gene tree probabilities of a nonbinary species tree are the limits of those of a

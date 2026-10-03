@@ -11,9 +11,7 @@ public import ADR11.SmallTrees
   distribution of a binary 3-taxon species tree exactly when its topology is `((a,b),c)`.
 * `introduction_tripleLength`: `t = -log((3/2)(1-p))` for the probability `p` of the rooted triple
   matching the species tree.
-* `proposition1`: the probabilities of rooted triples determine the species tree topology and its
-  internal branch lengths (`n ≥ 3`).
-* `corollary2`: so does the distribution of rooted gene trees.
+* `proposition1` and `corollary2` are in `ADR11.Introduction.Proposition1`.
 -/
 
 @[expose] public section
@@ -46,21 +44,6 @@ theorem equation1_iff (σ : SpeciesTree (Fin 3)) (hσ : σ.IsBinary) :
 probability `p` that the rooted gene tree has `A` and `B` as a cherry: `t = -log((3/2)(1-p))`. -/
 theorem introduction_tripleLength (σ : SpeciesTree (Fin 3)) (hσ : σ.clusters = clusters3) :
     σ.length {0, 1} = -log (3 / 2 * (1 - σ.rootedDist id (rootedTree3 {0, 1}))) := by
-  sorry
-
-/-- **Proposition 1.** For a species tree with `n ≥ 3` taxa, the probabilities of rooted triple
-gene tree topologies determine the species tree topology and internal branch lengths. -/
-theorem proposition1 (hX : 3 ≤ Fintype.card X) (σ σ' : SpeciesTree X) (hσ : σ.IsBinary)
-    (hσ' : σ'.IsBinary)
-    (h : ∀ a b c : X, a ≠ b → a ≠ c → b ≠ c → σ.rootedTripleProb a b c = σ'.rootedTripleProb a b c) :
-    σ.SameRootedMetricTree σ' := by
-  sorry
-
-/-- **Corollary 2.** For a species tree with `n ≥ 3` taxa, the distribution of rooted gene tree
-topologies determines the species tree topology and internal branch lengths. -/
-theorem corollary2 (hX : 3 ≤ Fintype.card X) (σ σ' : SpeciesTree X) (hσ : σ.IsBinary)
-    (hσ' : σ'.IsBinary) (h : σ.rootedDist id = σ'.rootedDist id) :
-    σ.SameRootedMetricTree σ' := by
   sorry
 
 end ADR11
