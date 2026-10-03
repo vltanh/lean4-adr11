@@ -1,7 +1,6 @@
 module
 
-public import ADR11.Identifiability.Lemma5
-public import ADR11.External.Quartets.Steel
+public import ADR11.Identifiability.FiveTaxaAnalysis
 public import ADR11.MSC.MultiSample
 public import ADR11.FourTaxa
 public import ADR11.MSC.Relabel
@@ -37,8 +36,8 @@ variable {X : Type*} [Fintype X] [DecidableEq X]
 
 /-- **Proposition 11** (Proposition 8 for nonbinary species trees). -/
 theorem proposition11_proposition8 (hX : Fintype.card X = 5) (σ σ' : SpeciesTree X)
-    (h : σ.unrootedDist id = σ'.unrootedDist id) : σ.SameRootedMetricTree σ' := by
-  sorry
+    (h : σ.unrootedDist id = σ'.unrootedDist id) : σ.SameRootedMetricTree σ' :=
+  sameRootedMetricTree_of_unrootedDist_eq_five hX σ σ' h
 
 /-- **Proposition 11** (Proposition 7 for nonbinary species trees). -/
 theorem proposition11_proposition7 (hX : Fintype.card X = 5) (σ σ' : SpeciesTree X)
@@ -47,23 +46,14 @@ theorem proposition11_proposition7 (hX : Fintype.card X = 5) (σ σ' : SpeciesTr
 
 /-- **Proposition 11** (Theorem 9 for nonbinary species trees, `|X| = 4`). -/
 theorem proposition11_theorem9_four (hX : Fintype.card X = 4) (σ σ' : SpeciesTree X) :
-    σ.unrootedDist id = σ'.unrootedDist id ↔ σ.SameUnrootedMetricTree σ' := by
-  sorry
-
-/-- Equal unrooted gene tree distributions give equal distributions on every induced subtree
-(Lemma 5). -/
-theorem unrootedDist_restrict_eq {σ σ' : SpeciesTree X}
-    (h : σ.unrootedDist id = σ'.unrootedDist id) (S : Finset X) (hS : S.Nonempty) :
-    (σ.restrict S hS).unrootedDist id = (σ'.restrict S hS).unrootedDist id := by
-  funext T'
-  rw [lemma5, lemma5, h]
+    σ.unrootedDist id = σ'.unrootedDist id ↔ σ.SameUnrootedMetricTree σ' :=
+  unrootedDist_eq_iff_four hX σ σ'
 
 /-- **Proposition 11** (Corollary 6 for nonbinary species trees). For any `X`, `ℙ_{σ⁺}` determines
 `σ⁻`. -/
 theorem proposition11_corollary6 (σ σ' : SpeciesTree X)
     (h : σ.unrootedDist id = σ'.unrootedDist id) : σ.SameUnrootedMetricTree σ' :=
-  SpeciesTree.sameUnrootedMetricTree_of_restrict σ σ' fun Q hQ hQ4 =>
-    (proposition11_theorem9_four (by simpa using hQ4) _ _).1 (unrootedDist_restrict_eq h Q hQ)
+  sameUnrootedMetricTree_of_unrootedDist_eq σ σ' h
 
 /-- Two rooted species trees on four taxa with the same unrooted gene tree distribution and
 different rooted topologies: `(((a,b):1,c):1,d)` and `(((a,b):1,d):1,c)` (Section 4.1). -/
