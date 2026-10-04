@@ -4,9 +4,10 @@ public import ADR11.Rootings.Statements
 public import ADR11.Trees.Classify
 
 /-!
-# The five-taxon analysis: common helpers
+# Five taxa: common helpers
 
-Helpers for `ADR11.Identifiability.FiveTaxaAnalysis`:
+Helpers for the five-taxon arguments (Proposition 8, `ADR11.Identifiability.Proposition8`, and
+Appendix C, `ADR11.Nonbinary.FiveTaxa`):
 
 * `five_exp_bounds`: `0 < exp (-ℓ) < 1` for the length `ℓ` of an edge of a species tree;
 * `five_unrootedLength_mem`, `five_unrootedLength_compl_mem`, `five_unrootedLength_both`: the
