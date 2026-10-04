@@ -15,9 +15,9 @@ the paper is a sum of products of the `g_ij`.
 
 **In Lean.** `Formula.lean` proves the formula for `deathProb i j t`, the transition probability
 of the pure death process on the number of lineages with rates `k(k-1)/2`
-(`deathProb_eq_tavare`), through the entries of the powers of its generator
-(`deathPow_eq_tavare`), which a telescoping identity computes. The paper's `g_ij` is defined from
-the coalescent on forests (`coalescenceProb`), and `ADR11/Coalescent/Factorization.lean`
+([`deathProb_eq_tavare`](Formula.lean#L163)), through the entries of the powers of its generator
+([`deathPow_eq_tavare`](Formula.lean#L133)), which a telescoping identity computes. The paper's `g_ij` is defined from
+the coalescent on forests ([`coalescenceProb`](../../Basic.lean#L123)), and [`ADR11/Coalescent/Factorization.lean`](../../Coalescent/Factorization.lean)
 identifies the number of lineages of that chain with the death process; equation (2) itself is
-`equation2` in `ADR11/Model.lean`. The formula is proved for every real `t`; the paper states it
+[`equation2`](../../Model.lean#L64) in [`ADR11/Model.lean`](../../Model.lean). The formula is proved for every real `t`; the paper states it
 for `t > 0`.

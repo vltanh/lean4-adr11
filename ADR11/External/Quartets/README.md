@@ -14,16 +14,16 @@ edge lengths), the proof of Theorem 9 (Steel's Proposition 6) and, for nonbinary
 Appendix C (Proposition 11).
 
 **In Lean.** `Steel.lean` states the results for the unrooted trees `σ⁻` of species trees, in the
-representation of `ADR11.unroot` (an unrooted tree is the set of the sides of its splits), for
+representation of [`ADR11.unroot`](../../../Challenge.lean#L146) (an unrooted tree is the set of the sides of its splits), for
 trees that need not be binary:
 
-- `mem_unroot_iff_quartets`: `A | Aᶜ`, with both sides of size at least 2, is a split of `σ⁻` if
+- [`mem_unroot_iff_quartets`](Steel.lean#L106): `A | Aᶜ`, with both sides of size at least 2, is a split of `σ⁻` if
   and only if every quartet `aa'|bb'` with `a, a' ∈ A` and `b, b' ∉ A` is displayed by `σ⁻`;
-- `exists_distinguishing_quartet`: every internal edge of `σ⁻` is the only edge separating some
+- [`exists_distinguishing_quartet`](Steel.lean#L282): every internal edge of `σ⁻` is the only edge separating some
   quartet (the quartet that "distinguishes" the edge, as the paper uses Steel's Proposition 6 in
   the proof of Theorem 9).
 
 The paper uses these facts in exactly these forms. Corollary 6 combines them with its own argument
 for the edge lengths ("each internal edge of `ψ⁻` is the internal edge for some induced quartet
-tree"), which is `SpeciesTree.sameUnrootedMetricTree_of_restrict` in
-`ADR11/Identifiability/Quartets.lean`.
+tree"), which is [`SpeciesTree.sameUnrootedMetricTree_of_restrict`](../../Identifiability/Quartets.lean#L147) in
+[`ADR11/Identifiability/Quartets.lean`](../../Identifiability/Quartets.lean).
