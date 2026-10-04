@@ -135,7 +135,7 @@ theorem triple_isHierarchy_of_rootedDist_ne_zero [Nonempty X] (σ : SpeciesTree 
   have hk : #(roots G) = 1 := by
     have := (roots_nonempty_iff.2 ⟨_, hsing (Classical.arbitrary X)⟩).card_pos
     omega
-  have huniv : (univ : Finset X) ∈ G := h3 ▸ h1.lineages_mem_of_card_roots_eq_one hk
+  have huniv : (univ : Finset X) ∈ G := h3 ▸ lineages_mem_of_card_roots_eq_one hk
   exact ⟨huniv, hsing, h1.1, h1.2⟩
 
 /-! ### Three taxa -/

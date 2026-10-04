@@ -340,7 +340,7 @@ theorem roots_eq_singleton_lineages {F : Finset (Finset L)}
   obtain ⟨R, hR⟩ := card_eq_one.1 h
   rw [hR, ← lineages_roots, hR, lineages_singleton]
 
-theorem IsForest.lineages_mem_of_card_roots_eq_one {F : Finset (Finset L)} (hF : IsForest F)
+theorem lineages_mem_of_card_roots_eq_one {F : Finset (Finset L)}
     (h : #(roots F) = 1) : lineages F ∈ F :=
   roots_subset F (by rw [roots_eq_singleton_lineages h]; exact mem_singleton_self _)
 

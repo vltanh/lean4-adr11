@@ -580,7 +580,7 @@ theorem model_rootedDist_support [Nonempty L] (σ : SpeciesTree X) (s : L → X)
     have := (roots_nonempty_iff.2 ⟨_, hsing (Classical.arbitrary L)⟩).card_pos
     have h4 := (forestDist_univ_support σ.isHierarchy σ.length s hG).2.2.2
     omega
-  have huniv : (univ : Finset L) ∈ G := h3 ▸ h1.lineages_mem_of_card_roots_eq_one hk
+  have huniv : (univ : Finset L) ∈ G := h3 ▸ lineages_mem_of_card_roots_eq_one hk
   exact ⟨⟨huniv, hsing, h1.1, h1.2⟩,
     model_isBinaryForest_of_forestDist σ.isHierarchy σ.length s σ.univ_mem hG⟩
 
