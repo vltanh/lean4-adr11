@@ -88,7 +88,6 @@ private theorem marg_tr_eq_empty (e : L' ↪ L) {A : Finset L} (h : ¬ ∃ l, e 
   simp only [mem_filter, mem_univ, true_and, notMem_empty, iff_false]
   exact fun hl => h ⟨l, hl⟩
 
-set_option linter.unusedSectionVars false in
 theorem IsForest.restrictForest {F : Finset (Finset L)} (hF : IsForest F) (e : L' ↪ L) :
     IsForest (restrictForest e F) := by
   refine ⟨fun D hD => ?_, fun D hD D' hD' => ?_⟩
@@ -135,7 +134,7 @@ private theorem marg_mem_roots_restrictForest {F : Finset (Finset L)} (hF : IsFo
   · intro hD
     obtain ⟨hDF, hmax⟩ := mem_roots.1 hD
     obtain ⟨A, hA, hmeet, rfl⟩ := (marg_mem_restrictForest e).1 hDF
-    obtain ⟨R, hR, hAR⟩ := hF.exists_mem_roots_subset hA
+    obtain ⟨R, hR, hAR⟩ := exists_mem_roots_subset hA
     obtain ⟨l, hl⟩ := hmeet
     have hRmeet : ∃ l, e l ∈ R := ⟨l, hAR hl⟩
     refine ⟨R, hR, hRmeet, ?_⟩
@@ -143,7 +142,7 @@ private theorem marg_mem_roots_restrictForest {F : Finset (Finset L)} (hF : IsFo
   · rintro ⟨A, hA, hmeet, rfl⟩
     refine mem_roots.2 ⟨marg_tr_mem_restrictForest e (roots_subset F hA) hmeet, fun D hD hAD => ?_⟩
     obtain ⟨B, hB, hBmeet, rfl⟩ := (marg_mem_restrictForest e).1 hD
-    obtain ⟨R, hR, hBR⟩ := hF.exists_mem_roots_subset hB
+    obtain ⟨R, hR, hBR⟩ := exists_mem_roots_subset hB
     obtain ⟨l, hl⟩ := hmeet
     have hlB : e l ∈ B := (mem_filter.1 (hAD (mem_filter.2 ⟨mem_univ l, hl⟩))).2
     have hAR : A = R := marg_eq_of_tr hF e hA hR hl (hBR hlB)
@@ -200,7 +199,7 @@ private theorem marg_mem_merges_ne {F : Finset (Finset L)} (hF : IsForest F) (e 
     have hrB := (marg_mem_roots_restrictForest hF e).2 ⟨B, hB, hBm, rfl⟩
     have hne : (univ.filter fun l => e l ∈ A) ≠ univ.filter fun l => e l ∈ B :=
       fun h' => hAB (marg_tr_inj hF e hA hB hAm h')
-    exact (hF.restrictForest e).union_not_mem hrA hrB hne (h ▸ mem_insert_self _ _)
+    exact union_not_mem_of_mem_roots hrA hrB hne (h ▸ mem_insert_self _ _)
 
 /-- The key count behind lumpability: summing a function of the restriction over the merges of
 `F` gives the sum over the merges of the restriction, plus the merges that do not change the
@@ -253,7 +252,7 @@ private theorem marg_sum_merges {F : Finset (Finset L)} (hF : IsForest F) (e : L
         univ.filter fun l => e l ∈ B₁) rF
       rcases mem_insert.1 hmem with h | h
       · exact h
-      · exact absurd h (hrFf.union_not_mem (hr hA₁ hA₁m) (hr hB₁ hB₁m)
+      · exact absurd h (union_not_mem_of_mem_roots (hr hA₁ hA₁m) (hr hB₁ hB₁m)
           (fun h' => hAB₁ (marg_tr_inj hF e hA₁ hB₁ hA₁m h')))
     -- each of `A₁`, `B₁` is one of `A₂`, `B₂`
     have hin : ∀ {C}, C ∈ roots F → (∃ l, e l ∈ C) →
@@ -304,7 +303,7 @@ private theorem marg_sum_kingmanGenerator {F : Finset (Finset L)} (hF : IsForest
 /-- The generator is supported on the forest itself and its merges. -/
 private theorem marg_kingmanGenerator_ne_zero {F G : Finset (Finset L)} (hF : IsForest F)
     (h : kingmanGenerator F G ≠ 0) : IsForest G := by
-  rw [kingmanGenerator_apply_of_isForest hF] at h
+  rw [kingmanGenerator_apply_of_isForest] at h
   split_ifs at h with h1 h2
   · exact h1 ▸ hF
   · exact (hF.of_mem_merges h2).1
@@ -1107,10 +1106,8 @@ private theorem marg_unroot_restrictForest (e : L' ↪ L) (G : Finset (Finset L)
       obtain ⟨l, hl⟩ := hAm
       exact ⟨l, fun h => mem_compl.1 h hl⟩
 
-set_option linter.unusedVariables false in
 /-- Unrooting commutes with restricting a complete gene tree to a subset of the lineages. -/
-theorem unroot_restrictForest {G : Finset (Finset L)} (hG : IsForest G) (hroot : univ ∈ G)
-    (e : L' ↪ L) [Nonempty L'] :
+theorem unroot_restrictForest {G : Finset (Finset L)}     (e : L' ↪ L) [Nonempty L'] :
     unroot (restrictForest e G) =
       ((unroot G).filter fun A => (∃ l, e l ∈ A) ∧ ∃ l, e l ∉ A).image
         fun A => univ.filter fun l => e l ∈ A :=

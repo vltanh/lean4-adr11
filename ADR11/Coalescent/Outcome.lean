@@ -159,14 +159,14 @@ theorem absorb_unroot_eq_of_kingmanAbsorption_ne_zero {F : Finset (Finset L)} (h
     split_ifs at hG with hFG
     · rw [hFG]
     · exact absurd rfl hG
-  · rw [h, show 2 - 1 = 1 from rfl, pow_one, jumpMatrix_apply_of_isForest hF (by omega)] at hG
+  · rw [h, show 2 - 1 = 1 from rfl, pow_one, jumpMatrix_apply_of_isForest (by omega)] at hG
     split_ifs at hG with hm
     · rw [absorb_merges_of_card_roots_eq_two hF hcov h hm, absorb_unroot_insert_univ]
     · exact absurd rfl hG
   · rw [h, show 3 - 1 = 1 + 1 from rfl, jumpMatrix_pow_succ_apply hF (by omega)] at hG
     obtain ⟨F', hF', hne⟩ := exists_ne_zero_of_sum_ne_zero (right_ne_zero_of_mul hG)
     obtain ⟨hF'f, hcard, -, -, hlin⟩ := hF.of_mem_merges hF'
-    rw [pow_one, jumpMatrix_apply_of_isForest hF'f (by omega)] at hne
+    rw [pow_one, jumpMatrix_apply_of_isForest (by omega)] at hne
     split_ifs at hne with hm
     · rw [absorb_merges_of_card_roots_eq_two hF'f (hlin.trans hcov) (by omega) hm,
         absorb_unroot_insert_univ]

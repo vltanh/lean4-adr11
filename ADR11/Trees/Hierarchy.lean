@@ -634,12 +634,10 @@ theorem restrict_unroot (σ : SpeciesTree X) (S : Finset X) (hS : S.Nonempty) :
       · rw [← subtype_compl]
         exact subtype_ne_univ_iff.2 (by rwa [compl_compl])
 
--- The hypothesis `hC` (that `C | Cᶜ` is a split of `σ⁻(S)`) is not needed in the proof.
-set_option linter.unusedVariables false in
 /-- The length of an internal edge of the unrooted induced subtree `σ⁻(S)`: the sum of the
 unrooted lengths of the splits of `σ⁻` that induce its split. -/
 theorem restrict_unrootedLength (σ : SpeciesTree X) (S : Finset X) (hS : S.Nonempty)
-    (C : Finset S) (hC : C ∈ unroot (σ.restrict S hS).clusters) (hC₁ : 2 ≤ #C)
+    (C : Finset S) (hC₁ : 2 ≤ #C)
     (hC₂ : 2 ≤ #Cᶜ) :
     (σ.restrict S hS).unrootedLength C =
       (1 / 2 : ℝ) * ∑ A ∈ unroot σ.clusters with A.subtype (· ∈ S) = C ∨ A.subtype (· ∈ S) = Cᶜ,
@@ -748,7 +746,7 @@ theorem restrict_unrootedLength_eq_of_unique (σ : SpeciesTree X) (S : Finset X)
     refine ⟨A, hA, ?_, subtype_ne_univ_iff.1 (hAC ▸ hCu), hAC⟩
     rw [← subtype_nonempty_iff, hAC]
     exact card_pos.1 (by omega)
-  rw [restrict_unrootedLength σ S hS C hCmem hC₁ hC₂]
+  rw [restrict_unrootedLength σ S hS C hC₁ hC₂]
   have hset : (unroot σ.clusters).filter
       (fun B => B.subtype (· ∈ S) = C ∨ B.subtype (· ∈ S) = Cᶜ) = {A, Aᶜ} := by
     ext B

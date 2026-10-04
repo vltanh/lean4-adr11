@@ -191,7 +191,7 @@ theorem SpeciesTree.sameUnrootedMetricTree_of_restrict (σ σ' : SpeciesTree X)
       A.subtype (· ∈ Q) ∈ unroot (τ.restrict Q hQ).clusters →
       (τ.restrict Q hQ).unrootedLength (A.subtype (· ∈ Q)) = τ.unrootedLength A := by
     intro τ hAτ huniqτ hCτ
-    rw [τ.restrict_unrootedLength Q hQ _ hCτ hC₀₁ hC₀₂]
+    rw [τ.restrict_unrootedLength Q hQ _ hC₀₁ hC₀₂]
     have hfilter : (unroot τ.clusters).filter (fun B => B.subtype (· ∈ Q) = A.subtype (· ∈ Q) ∨
         B.subtype (· ∈ Q) = (A.subtype (· ∈ Q))ᶜ) = {A, Aᶜ} := by
       ext B

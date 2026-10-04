@@ -113,12 +113,10 @@ theorem section5_triples (σ : SpeciesTree X) (a b c : X) (hab : a ≠ b) (hac :
       have := triple_lt_one_third_of_resolved_right σ hab hac hbc ⟨C, hC, hC'⟩
       linarith
 
--- The hypothesis `hX` (at least three taxa) is not needed in the proof.
-set_option linter.unusedVariables false in
 /-- Section 5: polytomies are identified by rooted triples, so Proposition 1 holds for species trees
 that need not be binary: the probabilities of rooted triples determine the species tree topology
 and its internal branch lengths. -/
-theorem section5_proposition1 (hX : 3 ≤ Fintype.card X) (σ σ' : SpeciesTree X)
+theorem section5_proposition1 (σ σ' : SpeciesTree X)
     (h : ∀ a b c : X, a ≠ b → a ≠ c → b ≠ c → σ.rootedTripleProb a b c = σ'.rootedTripleProb a b c) :
     σ.SameRootedMetricTree σ' :=
   triple_sameRootedMetricTree σ σ' (fun _ _ _ hab hac hbc => triple_resolved_iff σ hab hac hbc)
@@ -127,7 +125,7 @@ theorem section5_proposition1 (hX : 3 ≤ Fintype.card X) (σ σ' : SpeciesTree 
 /-- Section 5: Corollary 2 for species trees that need not be binary. -/
 theorem section5_corollary2 (hX : 3 ≤ Fintype.card X) (σ σ' : SpeciesTree X)
     (h : σ.rootedDist id = σ'.rootedDist id) : σ.SameRootedMetricTree σ' := by
-  refine section5_proposition1 hX σ σ' fun a b c _ _ _ => ?_
+  refine section5_proposition1 σ σ' fun a b c _ _ _ => ?_
   unfold SpeciesTree.rootedTripleProb
   rw [h]
 

@@ -523,7 +523,7 @@ theorem model_isBinaryForest_of_jumpMatrix_pow {F G : Finset (Finset L)} (hF : I
       exact ih hF hb hJn
     · have hmem : F' ∈ merges F := by
         by_contra hne
-        exact hJ (by rw [jumpMatrix_apply_of_isForest hF (by omega), ite_eq_right hne])
+        exact hJ (by rw [jumpMatrix_apply_of_isForest (by omega), ite_eq_right hne])
       exact ih (hF.of_mem_merges hmem).1 (model_isBinaryForest_merge hF hb hmem) hJn
 
 theorem model_isBinaryForest_of_populationKernel {len : Finset X → ℝ} {A : Finset X}

@@ -336,14 +336,14 @@ theorem nodup_merge {n : ℕ} {F : List ℕ} (hv : Valid n F) (hnd : F.Nodup)
     ((p.1 ||| p.2) :: F).Nodup := by
   refine List.nodup_cons.2 ⟨fun h => ?_, hnd⟩
   obtain ⟨ha, hb, hne⟩ := roots_pair_of_mem_pairsL hv hnd hp
-  exact hF.union_not_mem ha hb hne (decC_or n p.1 p.2 ▸ decC_mem_decF h)
+  exact union_not_mem_of_mem_roots ha hb hne (decC_or n p.1 p.2 ▸ decC_mem_decF h)
 
 theorem isForest_merge {n : ℕ} {F : List ℕ} (hv : Valid n F) (hnd : F.Nodup)
     (hF : IsForest (decF n F)) {p : ℕ × ℕ} (hp : p ∈ pairsL (rootsL F)) :
     IsForest (decF n ((p.1 ||| p.2) :: F)) := by
   obtain ⟨ha, hb, hne⟩ := roots_pair_of_mem_pairsL hv hnd hp
   rw [decF_merge]
-  exact hF.isForest_merge ha hb hne
+  exact hF.isForest_merge ha hb
 
 /-! ### List sums -/
 

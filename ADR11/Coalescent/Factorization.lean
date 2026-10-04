@@ -66,8 +66,7 @@ def deathPow : ℕ → ℕ → ℕ → ℝ
 noncomputable def deathProb (k j : ℕ) (t : ℝ) : ℝ :=
   ∑' m : ℕ, t ^ m / (m.factorial : ℝ) * deathPow m k j
 
-set_option linter.unusedVariables false in
-theorem jumpMatrix_apply_of_isForest {F : Finset (Finset L)} (hF : IsForest F)
+theorem jumpMatrix_apply_of_isForest {F : Finset (Finset L)}
     (hk : 2 ≤ #(roots F)) (G : Finset (Finset L)) :
     jumpMatrix F G = if G ∈ merges F then (((#(roots F)).choose 2 : ℕ) : ℝ)⁻¹ else 0 := by
   have hk' : ¬ #(roots F) ≤ 1 := by omega
@@ -96,7 +95,7 @@ theorem jumpMatrix_pow_succ_apply {F : Finset (Finset L)} (hF : IsForest F) (hk 
     (jumpMatrix ^ (n + 1)) F G =
       (((#(roots F)).choose 2 : ℕ) : ℝ)⁻¹ * ∑ F' ∈ merges F, (jumpMatrix ^ n) F' G := by
   rw [pow_succ', Matrix.mul_apply]
-  simp_rw [jumpMatrix_apply_of_isForest hF hk, ite_mul, zero_mul]
+  simp_rw [jumpMatrix_apply_of_isForest hk, ite_mul, zero_mul]
   rw [Finset.sum_ite_mem, Finset.univ_inter, Finset.mul_sum]
 
 theorem jumpMatrix_pow_of_card_roots_le_one {F : Finset (Finset L)} (hk : #(roots F) ≤ 1)
@@ -128,7 +127,7 @@ theorem jumpMatrix_pow_sum {F : Finset (Finset L)} (hF : IsForest F) (n : ℕ) :
     · simp_rw [fact_jumpMatrix_apply_of_le_one hk, ite_mul, one_mul, zero_mul]
       rw [Finset.sum_ite_eq', ite_eq_left (Finset.mem_univ F), ih hF]
     · replace hk : 2 ≤ #(roots F) := by omega
-      simp_rw [jumpMatrix_apply_of_isForest hF hk, ite_mul, zero_mul]
+      simp_rw [jumpMatrix_apply_of_isForest hk, ite_mul, zero_mul]
       rw [Finset.sum_ite_mem, Finset.univ_inter,
         Finset.sum_congr rfl (fun F' hF' => by rw [ih (hF.of_mem_merges hF').1, mul_one]),
         Finset.sum_const, hF.card_merges, nsmul_eq_mul]
@@ -167,7 +166,7 @@ theorem jumpMatrix_pow_support {F G : Finset (Finset L)} (hF : IsForest F) {n : 
     · replace hk : 2 ≤ #(roots F) := by omega
       have hmem : F' ∈ merges F := by
         by_contra hne
-        exact hJ (by rw [jumpMatrix_apply_of_isForest hF hk, ite_eq_right hne])
+        exact hJ (by rw [jumpMatrix_apply_of_isForest hk, ite_eq_right hne])
       obtain ⟨hF'f, hcard, hsub, -, hlin⟩ := hF.of_mem_merges hmem
       obtain ⟨h1, h2, h3, h4⟩ := ih hF'f hJn
       refine ⟨h1, hsub.trans h2, h3.trans hlin, ?_⟩

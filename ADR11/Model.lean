@@ -58,12 +58,10 @@ theorem unrootedDist_sum {L : Type*} [Fintype L] [DecidableEq L] (σ : SpeciesTr
     (s : L → X) : ∑ T, σ.unrootedDist s T = 1 :=
   unrootedDistOf_sum σ.isHierarchy σ.length s
 
--- The hypothesis `ht` (`t > 0`, as in the paper) is not needed in the proof.
-set_option linter.unusedVariables false in
 /-- **Equation (2)** [Tavaré 1984]: for `1 ≤ j ≤ i` and `t > 0`,
 `g_ij(t) = ∑_{k=j}^{i} exp(-k(k-1)t/2) (2k-1)(-1)^{k-j} / (j!(k-j)!(j+k-1)) ∏_{m=0}^{k-1}
 (j+m)(i-m)/(i+m)`. -/
-theorem equation2 (i j : ℕ) (hj : 1 ≤ j) (hji : j ≤ i) (t : ℝ) (ht : 0 < t) :
+theorem equation2 (i j : ℕ) (hj : 1 ≤ j) (hji : j ≤ i) (t : ℝ) :
     coalescenceProb i j t =
       ∑ k ∈ Icc j i, exp (-((k.choose 2 : ℕ) : ℝ) * t) *
         ((2 * k - 1) * (-1) ^ (k - j) / ((j.factorial : ℝ) * (k - j).factorial * (j + k - 1))) *
@@ -78,10 +76,8 @@ theorem coalescenceProb_nonneg (i j : ℕ) (t : ℝ) (ht : 0 < t) : 0 ≤ coales
   rw [coalescenceProb_eq_deathProb]
   exact deathProb_nonneg i j ht.le
 
--- The hypothesis `ht` (`t > 0`, as in the paper) is not needed in the proof.
-set_option linter.unusedVariables false in
 /-- For `i > 1` and `t > 0`, the `g_ij(t)`, `j = 1, …, i`, form a probability distribution. -/
-theorem coalescenceProb_sum (i : ℕ) (hi : 1 < i) (t : ℝ) (ht : 0 < t) :
+theorem coalescenceProb_sum (i : ℕ) (hi : 1 < i) (t : ℝ) :
     ∑ j ∈ Icc 1 i, coalescenceProb i j t = 1 := by
   simp_rw [coalescenceProb_eq_deathProb]
   exact deathProb_sum_Icc hi.le t
@@ -106,10 +102,8 @@ theorem tendsto_coalescenceProb_self (i : ℕ) :
   have hc : Continuous fun t : ℝ => exp (-(((i.choose 2 : ℕ) : ℝ) * t)) := by fun_prop
   simpa using hc.tendsto 0
 
--- The hypothesis `ht` (`t > 0`, as in the paper) is not needed in the proof.
-set_option linter.unusedVariables false in
 /-- `g_ii(t) = exp(-i(i-1)t/2)`. -/
-theorem coalescenceProb_self (i : ℕ) (t : ℝ) (ht : 0 < t) :
+theorem coalescenceProb_self (i : ℕ) (t : ℝ) :
     coalescenceProb i i t = exp (-((i : ℝ) * (i - 1) * t / 2)) := by
   rw [coalescenceProb_eq_deathProb, deathProb_self, Nat.cast_choose_two]
   ring_nf
