@@ -211,7 +211,7 @@ Proof (the paper's): by Lemma 5 on `S = {b,c,d,e}` (`ex_lemma5_T5`), the probabi
 quartet trees `BD|CE` and `BE|CD` under the induced species tree `σ⁺(S) = (((b,c),d),e)` are the
 sums of the `u_i` over the gene trees inducing them, `T₂, T₆, T₇, T₁₁, T₁₄` and
 `T₃, T₅, T₈, T₁₀, T₁₅` (checked by `decide`). On four taxa the two quartet trees inconsistent with
-the species tree are equiprobable (Section 4.1, `four_unrootedDist_of_ne`), which gives the first
+the species tree are equiprobable (Section 4.1, `four_unrootedDist_of_ne_of_isBinary`), which gives the first
 equation. The last three terms on each side are equal to `u₁₅` (near the root and `(ab)`,
 `ex_caterpillar_rows`); cancelling them, and replacing `u₆` by `u₉` and `u₅` by `u₁₂` (`(ab)`),
 gives `u₂ - u₃ + u₉ - u₁₂ = 0`. -/
@@ -228,7 +228,13 @@ theorem caterpillar_marginalization (σ : SpeciesTree (Fin 5)) (hσ : σ.cluster
     show ex_catQ {1, 2} ∈ unroot (restrictClusters ex_catS σ.clusters)
     rw [hσ]
     decide +kernel
-  rw [four_unrootedDist_of_ne h4 _ hA (by decide) (by decide) (by decide) (by decide)] at hBD hBE
+  have hb : (σ.restrict ex_catS ex_catS_nonempty).IsBinary :=
+    SpeciesTree.restrict_isBinary (fun A hA h2 => by
+      rw [hσ] at hA ⊢
+      exact (by decide : ∀ A ∈ caterpillar5, 2 ≤ #A →
+        ∃ B ∈ caterpillar5, ∃ C ∈ caterpillar5, Disjoint B C ∧ B ∪ C = A) A hA h2) _ _
+  rw [four_unrootedDist_of_ne_of_isBinary h4 _ hb hA (by decide) (by decide) (by decide)
+    (by decide)] at hBD hBE
   have hmarg : u σ 2 + u σ 6 + u σ 7 + u σ 11 + u σ 14 =
       u σ 3 + u σ 5 + u σ 8 + u σ 10 + u σ 15 := by
     rw [hBD] at hBE

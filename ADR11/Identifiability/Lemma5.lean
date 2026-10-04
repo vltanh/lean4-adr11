@@ -15,6 +15,9 @@ of the lineages of `S` on `σ` is the coalescent on `σ(S)`) with dropping the l
 (`SpeciesTree.rootedDist_comp_embedding`, `SpeciesTree.unrootedDist_comp_embedding`, along the
 inclusion `S ↪ X`, for which `restrictForest` is `restrictClusters S` and `restrictUnrooted` is
 `restrictSplits S`).
+
+`unrootedDist_restrict_eq`: equal unrooted gene tree distributions give equal distributions on
+every induced subtree.
 -/
 
 @[expose] public section
@@ -86,5 +89,13 @@ theorem lemma5_rooted (σ : SpeciesTree X) (S : Finset X) (hS : S.Nonempty)
   have h := σ.rootedDist_comp_embedding id (Function.Embedding.subtype (· ∈ S)) G'
   simp_rw [lemma5_restrictForest_subtype] at h
   exact h
+
+/-- Equal unrooted gene tree distributions give equal distributions on every induced subtree
+(Lemma 5). -/
+theorem unrootedDist_restrict_eq {σ σ' : SpeciesTree X}
+    (h : σ.unrootedDist id = σ'.unrootedDist id) (S : Finset X) (hS : S.Nonempty) :
+    (σ.restrict S hS).unrootedDist id = (σ'.restrict S hS).unrootedDist id := by
+  funext T'
+  rw [lemma5, lemma5, h]
 
 end ADR11

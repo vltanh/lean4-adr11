@@ -3,7 +3,6 @@ module
 public import ADR11.Identifiability.Corollary6
 public import ADR11.Identifiability.Proposition3
 public import ADR11.Identifiability.Proposition8
-public import ADR11.Identifiability.Unrooted
 public import ADR11.Trees.RootLocation
 
 /-!
@@ -242,6 +241,6 @@ Proposition 3 gives the case `|X| = 4`: `ℙ_{σ⁺}` determines `σ⁻`; and it
 theorem theorem9_four (hX : Fintype.card X = 4) (σ σ' : SpeciesTree X) (hσ : σ.IsBinary)
     (hσ' : σ'.IsBinary) :
     σ.unrootedDist id = σ'.unrootedDist id ↔ σ.SameUnrootedMetricTree σ' :=
-  ⟨(proposition3 hX).1 σ σ' hσ hσ', (unrootedDist_eq_iff_four hX σ σ').2⟩
+  ⟨(proposition3 hX).1 σ σ' hσ hσ', four_unrootedDist_eq_of_sameUnrootedMetricTree hX hσ hσ'⟩
 
 end ADR11

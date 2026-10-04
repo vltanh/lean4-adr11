@@ -1,8 +1,10 @@
 module
 
 public import ADR11.Nonbinary.FiveTaxa
+public import ADR11.Nonbinary.FourTaxa
 public import ADR11.Nonbinary.Theorem9
 public import ADR11.Identifiability.Proposition3
+public import ADR11.Identifiability.Unrooted
 
 /-!
 # Proposition 11: nonbinary species trees

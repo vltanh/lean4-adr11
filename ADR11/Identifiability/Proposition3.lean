@@ -46,8 +46,7 @@ theorem fourTaxa_recovery (hX : Fintype.card X = 4) (σ : SpeciesTree X) (hσ : 
     (∀ B : Finset X, #B = 2 → B ≠ A → B ≠ Aᶜ →
         σ.unrootedDist id (treeOfClusters {B}) < σ.unrootedDist id (treeOfClusters {A})) ∧
       σ.unrootedLength A = -log (3 / 2 * (1 - σ.unrootedDist id (treeOfClusters {A}))) :=
-  -- the binarity of `σ` is not needed: a split of `σ⁻` has positive length
-  four_recovery hX σ hA hA2
+  four_recovery hX σ hσ hA hA2
 
 /-- A binary species tree on four taxa has a nontrivial split `A | Aᶜ` with `#A = 2`: the two
 children of the root have two taxa each, or one and three taxa, and then the child with three

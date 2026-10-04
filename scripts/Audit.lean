@@ -59,6 +59,7 @@ import all ADR11.Nonbinary.FiveTaxa.Ac1Classes
 import all ADR11.Nonbinary.FiveTaxa.Shapes
 import all ADR11.Nonbinary.FiveTaxa.StarOneSplit
 import all ADR11.Nonbinary.FiveTaxa.TwoSplits
+import all ADR11.Nonbinary.FourTaxa
 import all ADR11.Nonbinary.Proposition11
 import all ADR11.Nonbinary.Theorem9
 import all ADR11.Nonbinary.Triples

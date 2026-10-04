@@ -1,7 +1,8 @@
 module
 
 public import ADR11.Identifiability.Proposition3
-public import ADR11.Identifiability.Unrooted
+public import ADR11.Identifiability.Lemma5
+public import ADR11.Identifiability.Quartets
 
 /-!
 # Corollary 6: the unrooted metric species tree is identifiable
