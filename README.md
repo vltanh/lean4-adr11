@@ -1,5 +1,7 @@
 # Identifying the rooted species tree from unrooted gene trees, in Lean 4
 
+[![Lean Action CI](https://github.com/vltanh/lean4-adr11/actions/workflows/lean_action_ci.yml/badge.svg)](https://github.com/vltanh/lean4-adr11/actions/workflows/lean_action_ci.yml)
+
 A formalization in Lean 4 and Mathlib of
 
 > Elizabeth S. Allman, James H. Degnan, John A. Rhodes, *Identifying the rooted species tree from
