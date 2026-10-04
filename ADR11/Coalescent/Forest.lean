@@ -323,7 +323,7 @@ theorem roots_nonempty_iff {F : Finset (Finset L)} : (roots F).Nonempty ↔ F.No
   rw [nonempty_iff_ne_empty, nonempty_iff_ne_empty, Ne, Ne, roots_eq_empty_iff]
 
 /-- Every lineage of a forest lies in a root. -/
-theorem IsForest.exists_mem_roots_of_mem_lineages {F : Finset (Finset L)} (hF : IsForest F)
+theorem exists_mem_roots_of_mem_lineages {F : Finset (Finset L)}
     {l : L} (hl : l ∈ lineages F) : ∃ R ∈ roots F, l ∈ R := by
   rwa [← lineages_roots, mem_lineages] at hl
 
@@ -335,14 +335,14 @@ theorem IsForest.eq_of_mem_roots_of_mem {F : Finset (Finset L)} (hF : IsForest F
   exact disjoint_left.1 (hF.disjoint_of_mem_roots hA hB hAB) hlA hlB
 
 /-- A forest with a single root is a tree: the root is the set of all its lineages. -/
-theorem IsForest.roots_eq_singleton_lineages {F : Finset (Finset L)} (hF : IsForest F)
+theorem roots_eq_singleton_lineages {F : Finset (Finset L)}
     (h : #(roots F) = 1) : roots F = {lineages F} := by
   obtain ⟨R, hR⟩ := card_eq_one.1 h
   rw [hR, ← lineages_roots, hR, lineages_singleton]
 
 theorem IsForest.lineages_mem_of_card_roots_eq_one {F : Finset (Finset L)} (hF : IsForest F)
     (h : #(roots F) = 1) : lineages F ∈ F :=
-  roots_subset F (by rw [hF.roots_eq_singleton_lineages h]; exact mem_singleton_self _)
+  roots_subset F (by rw [roots_eq_singleton_lineages h]; exact mem_singleton_self _)
 
 /-- The roots of a forest partition its lineages. -/
 theorem IsForest.sum_card_roots {F : Finset (Finset L)} (hF : IsForest F) :
