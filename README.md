@@ -104,12 +104,29 @@ The full audit is in [`REPORT.md`](REPORT.md).
 
 ## Credits
 
-The formalization was written by Claude (Anthropic) using Claude Code, from the paper's arXiv
-source, under the direction of The-Anh Vu-Le, following the procedure of the skill
-[`formalize-math-paper`](https://github.com/vltanh/formalize-math-paper). The audit of the paper
-was made in the same run, with every finding checked against the TeX source by a separate agent.
+The formalization, the audit of the paper and the packaging were made by Claude Opus 5.5
+(`claude-opus-5-5`, Anthropic) in Claude Code 2.1.288 (VS Code extension), from the paper's arXiv
+source, a request naming the paper and one later message asking to continue, under the direction
+of The-Anh Vu-Le. The work followed the
+procedure of the skill [`formalize-math-paper`](https://github.com/vltanh/formalize-math-paper),
+version 1.4.0. The skill was updated to that version during the run; its rule that every proof
+follow the paper's own argument led to a second phase, in which the proofs of Propositions 3, 7, 8
+and 11, Corollaries 6 and 10, Theorem 9, Lemma 4 and Tables 1–3 were rewritten along the paper's
+arguments and compared with them by independent readers.
 
-RUN LOG FIGURES — to be filled in from the session transcripts.
+From the session transcript:
+
+- **Elapsed time:** from 2026-10-03 13:25 to 19:51 (UTC−5), 6.4 hours, from the start to the
+  commit that completes the audit report.
+- **Sub-agents:** 32, at most 7 at a time, 2 of them resumed for follow-up work: 1 reviewed the
+  statements against the TeX source before any proof was written, 28 wrote proofs (the model and
+  its infrastructure, the paper's results, then the rewrite along the paper's arguments), and 3
+  read independently (one checked the audit's findings against the TeX source, two compared the
+  formal proofs with the paper's). Their total working time was 14.6 hours.
+- **Effort:** the sub-agents made 2,084 model calls and 2,287 tool calls, with 5.10 M output
+  tokens, 13.08 M input tokens (uncached input and cache writes) and 470 M cache reads; the main
+  session made 492 model calls and 502 tool calls, with 1.02 M output tokens, 2.10 M input tokens
+  and 268 M cache reads.
 
 ## Related work
 

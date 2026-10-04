@@ -1,0 +1,196 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/mathlib-initiative/formalization.yaml/main/schema/formalization.schema.json
+version: "v0.4"
+
+project:
+  name: "Identifying the rooted species tree from unrooted gene trees under the coalescent"
+  description: >-
+    A formalization of E. S. Allman, J. H. Degnan and J. A. Rhodes, "Identifying the rooted
+    species tree from the distribution of unrooted gene trees under the coalescent", J. Math.
+    Biol. 62 (2011) 833-862. The multispecies coalescent is defined from Kingman's coalescent on
+    forests of gene lineages (its generator, the matrix exponential, and a recursion over the
+    species tree).
+
+
+    Proved: the distribution of unrooted topological gene trees, with one lineage sampled per
+    taxon, determines the rooted species tree and its internal branch lengths when there are at
+    least five taxa (Theorem 9); on four taxa it determines exactly the unrooted metric species
+    tree (Proposition 3); with several lineages per taxon it also determines the corresponding
+    pendant branch lengths (Corollary 10); and all of this holds for nonbinary species trees
+    (Proposition 11). Every other result of the paper is proved too, with the explicit gene tree
+    distributions, linear invariants and inequalities for five taxa, and the cited results that
+    the proofs use: Tavare's formula, the reconstruction of trees from quartets, and Cayley's
+    count of tree shapes.
+  authors:
+    - "The-Anh Vu-Le"
+  license: "Apache-2.0"
+  responsible_maintainers:
+    - "The-Anh Vu-Le"
+
+classification:
+  arxiv: ["q-bio.PE", "math.PR"]
+  msc2020: ["92D15", "60J90", "60J27", "05C05", "62P10"]
+
+sources:
+  - title: "Identifying the rooted species tree from the distribution of unrooted gene trees under the coalescent"
+    authors:
+      - "Elizabeth S. Allman"
+      - "James H. Degnan"
+      - "John A. Rhodes"
+    id: "arXiv:0912.4472v2"
+    type: "article"
+    location: "J. Math. Biol. 62 (2011) 833-862, https://doi.org/10.1007/s00285-010-0355-7"
+    relationship: "formalizes"
+    author_endorsement: "not-contacted"
+  - title: "Line-of-descent and genealogical processes, and their applications in population genetics models"
+    authors:
+      - "Simon Tavaré"
+    type: "article"
+    location: "Theoretical Population Biology 26 (1984) 119-164"
+    relationship: "background"
+    note: "The probability that i lineages coalesce into j within time t, the paper's equation (2); proved in ADR11/External/Tavare."
+  - title: "The complexity of reconstructing trees from qualitative characters and subtrees"
+    authors:
+      - "Mike Steel"
+    type: "article"
+    location: "Journal of Classification 9 (1992) 91-116"
+    relationship: "background"
+    note: "Trees are determined by their quartets; every internal edge is distinguished by a quartet (Proposition 6). Proved in ADR11/External/Quartets."
+  - title: "Reconstructing the shape of a tree from observed dissimilarity data"
+    authors:
+      - "Hans-Jürgen Bandelt"
+      - "Andreas Dress"
+    type: "article"
+    location: "Advances in Applied Mathematics 7 (1986) 309-343"
+    relationship: "background"
+    note: "Nonbinary trees are determined by their quartets (also Semple and Steel, Phylogenetics, Theorem 6.3.5). Proved in ADR11/External/Quartets."
+  - title: "On the theory of the analytical forms called trees"
+    authors:
+      - "Arthur Cayley"
+    type: "article"
+    location: "Philosophical Magazine 13 (1857) 172-176"
+    relationship: "background"
+    note: "The numbers of rooted tree shapes on three, four and five leaves; proved in ADR11/External/Cayley."
+
+related_formalizations:
+  - id: "https://github.com/SauersML/Descent"
+    relationship: "independent"
+    note: "A Lean 4 library on coalescent theory, including the discordance probability of a three-taxon rooted gene tree; it has no multispecies coalescent model and no unrooted gene trees. Found by a search before this work started; not consulted or used."
+
+status:
+  scope: >-
+    Every result of the paper is formalized and proved, by the paper's own arguments: Propositions
+    1, 3, 7, 8 and 11, Lemmas 4 and 5, Corollaries 2, 6 and 10, Theorem 9, the displayed equations
+    used in proofs, Tables 1-7 with the explanations of the invariants, and the unnumbered claims
+    of Sections 1-5 and of the Discussion that are mathematical statements. The cited results used
+    in the proofs are proved as well. One step departs from the paper, forced by a gap in it: in
+    Theorem 9, no quartet distinguishes a pendant edge, so another set of five taxa locates the
+    root there. Not formalized: the remark on midpoint rooting of ultrametric gene trees, the
+    existence of nonlinear invariants, the exactness of the symmetry groups of Section 4.2, the
+    realizability claims of the caption of Fig. 1, and the Discussion's methodological remarks.
+    Some hypotheses of the paper are unnecessary and are dropped in the library but kept in the
+    Challenge (REPORT.md, Section 5).
+  sorry_count: 0
+  sorry_in_definitions: 0
+  axioms: []
+
+automation:
+  methods:
+    - method: "agent"
+      models: ["claude-opus-5-5"]
+      framework: "Claude Code 2.1.288 (VS Code extension, Claude Agent SDK)"
+      tool_setup: "The formalize-math-paper skill, version 1.4.0 (https://github.com/vltanh/formalize-math-paper), with a main agent and 32 sub-agents (at most 7 at once: 1 statement reviewer, 28 provers, 3 independent readers) that compiled against a local Lean toolchain; Lean v4.35.0-rc3, Mathlib v4.35.0-rc3."
+      cost:
+        wall_time: "6.4 hours elapsed (2026-10-03 13:25 to 19:51 UTC-5) to the audited formalization; 14.6 hours of sub-agent working time; tokens: 6.1 M output, 15.2 M input, 738 M cache reads"
+        spend_usd: "not tracked"
+        hardware: "local machine (20 cores, 62 GB RAM) for Lean; models via API"
+      prompting_notes: "One prompt invoking the skill with the paper's URL, and one later message asking to continue; no other human input during the run."
+  spend_usd: "not tracked"
+  notes: "The whole formalization, the audit of the paper and the packaging were made by AI agents following the skill, under the direction of The-Anh Vu-Le. Statements were reviewed against the TeX source by an agent other than their writer before the proofs; after a first phase of proofs, the proofs that did not follow the paper's arguments were rewritten along them, and two independent readers compared the formal proofs with the paper's; the audit's findings were checked against the TeX source by another agent."
+
+fidelity:
+  divergences: >-
+    Proofs: one departure, forced by a gap of the paper (REPORT.md, E4 and Section 7): in the proof
+    of Theorem 9, and of its extension in Proposition 11, the root on a pendant edge is located by a
+    five-taxon set chosen differently, since no quartet distinguishes a pendant edge. Readings and
+    representation choices (REPORT.md, Section 6): rooted trees are sets of clusters, unrooted
+    trees sets of split sides; species trees carry positive lengths on pendant edges too, which do
+    not affect the distribution with one lineage per taxon; g_ij is defined from the model and
+    Tavare's formula is a theorem; equation (3) is stated as the existence of a decomposition into
+    coalescent histories; the inequality lists of (4)-(6) and Table 6 are read as
+    u1 > {u2, u4} > u5 > u7; nonbinary species trees are given by the same model, their
+    probabilities are proved to be the limits of the paper and obtained from the binary formulas
+    as in the paper; Section 5's test for polytomies is read with the three genes below three
+    distinct children. The statement that gene trees of positive probability are binary assumes at
+    least one sampled lineage, and Lemma 5 a nonempty set of taxa. Hypotheses of the paper dropped
+    in the library because they are not needed: t > 0 in equation (2) and the identities after it,
+    n >= 3 in Proposition 1 and Corollary 2 (and their Section 5 versions); the binary assumption
+    of Section 4 is kept there, as the proofs follow the binary arguments, and Proposition 11
+    removes it. Newick strings with unbalanced parentheses are read in their evident corrected form
+    (REPORT.md, E7).
+
+review:
+  status: "agent-reviewed"
+  reviewers:
+    - "none"
+  notes: "No human has reviewed the formalization. AI agents reviewed every statement against the paper's TeX source before the proofs were written, and checked every finding of the audit against the TeX source; the Challenge is compared to the Solution by Comparator."
+
+alignment:
+  namespace: "ADR11"
+  statements:
+    - source: "Theorem 9 (|X| >= 5)"
+      lean: "ADR11.Challenge.theorem9"
+      module: "Challenge"
+      status: "proved"
+      note: "Equal unrooted gene tree distributions imply the same rooted topology and internal edge lengths, for binary species trees."
+    - source: "Theorem 9 (|X| = 4)"
+      lean: "ADR11.Challenge.theorem9_four"
+      module: "Challenge"
+      status: "proved"
+      note: "Stated as an equivalence: equal distributions if and only if the same unrooted metric tree, which says that this is all the distribution determines."
+    - source: "Proposition 3"
+      lean: "ADR11.Challenge.proposition3"
+      module: "Challenge"
+      status: "proved"
+      note: "Four taxa: the unrooted metric tree is determined; two species trees with the same distribution and different rooted metric trees exist."
+    - source: "Corollary 10"
+      lean: "ADR11.Challenge.corollary10"
+      module: "Challenge"
+      status: "proved"
+      note: "Lineages (x, k), k < l(x), sampled from taxon x; the conditions on |X| and the l(x) are the paper's."
+    - source: "Proposition 11 (Theorem 9, |X| >= 5, nonbinary)"
+      lean: "ADR11.Challenge.proposition11_theorem9"
+      module: "Challenge"
+      status: "proved"
+      note: "Theorem 9 without the binary assumption."
+    - source: "Proposition 11 (Theorem 9, |X| = 4, nonbinary)"
+      lean: "ADR11.Challenge.proposition11_theorem9_four"
+      module: "Challenge"
+      status: "proved"
+      note: "Theorem 9 for four taxa without the binary assumption."
+    - source: "Proposition 11 (Corollary 10, nonbinary)"
+      lean: "ADR11.Challenge.proposition11_corollary10"
+      module: "Challenge"
+      status: "proved"
+      note: "Corollary 10 without the binary assumption."
+    - source: "Section 1 (the unrooted gene tree probabilities form a distribution)"
+      lean: "ADR11.Challenge.unrootedDist_nonneg"
+      module: "Challenge"
+      status: "proved"
+      note: "Nonnegativity, for any sampling of lineages."
+    - source: "Section 1 (the unrooted gene tree probabilities form a distribution)"
+      lean: "ADR11.Challenge.unrootedDist_sum"
+      module: "Challenge"
+      status: "proved"
+      note: "The probabilities sum to 1, for any sampling of lineages."
+    - source: "Section 4.1 (balanced 4-taxon species tree)"
+      lean: "ADR11.Challenge.fourTaxa_balanced"
+      module: "Challenge"
+      status: "proved"
+      note: "The paper's explicit probabilities; ties the model's definition to known values."
+    - source: "Section 4.1 (caterpillar 4-taxon species tree)"
+      lean: "ADR11.Challenge.fourTaxa_caterpillar"
+      module: "Challenge"
+      status: "proved"
+      note: "The paper's explicit probabilities; ties the model's definition to known values."
+
+acknowledgements: "Built on Lean 4 and Mathlib. The formalization follows the paper by E. S. Allman, J. H. Degnan and J. A. Rhodes."
