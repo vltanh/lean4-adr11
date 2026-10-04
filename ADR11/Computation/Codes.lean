@@ -332,7 +332,7 @@ theorem valid_merge {n : ℕ} {F : List ℕ} (hv : Valid n F) {p : ℕ × ℕ}
   · exact hv c hc
 
 theorem nodup_merge {n : ℕ} {F : List ℕ} (hv : Valid n F) (hnd : F.Nodup)
-    (hF : IsForest (decF n F)) {p : ℕ × ℕ} (hp : p ∈ pairsL (rootsL F)) :
+    {p : ℕ × ℕ} (hp : p ∈ pairsL (rootsL F)) :
     ((p.1 ||| p.2) :: F).Nodup := by
   refine List.nodup_cons.2 ⟨fun h => ?_, hnd⟩
   obtain ⟨ha, hb, hne⟩ := roots_pair_of_mem_pairsL hv hnd hp
@@ -376,13 +376,13 @@ theorem jumpMatrix_pow_decF {n : ℕ} : ∀ (j : ℕ) (F : List ℕ), Valid n F 
       rcases eq_or_ne (decF n F) G with h | h
       · subst h; simp [jumpL, hk]
       · simp [jumpL, hk, h, Ne.symm h]
-    · rw [jumpMatrix_pow_succ_apply hF (by rw [card_roots_decF hv hnd]; omega),
+    · rw [jumpMatrix_pow_succ_apply (by rw [card_roots_decF hv hnd]; omega),
         sum_merges_decF hv hnd hF, card_roots_decF hv hnd]
       rw [jumpL, ite_eq_right hk, sum_map_flatMap, ← List.sum_map_mul_left]
       congr 1
       apply List.map_congr_left
       intro p hp
-      rw [jumpMatrix_pow_decF j _ (valid_merge hv hp) (nodup_merge hv hnd hF hp)
+      rw [jumpMatrix_pow_decF j _ (valid_merge hv hp) (nodup_merge hv hnd hp)
         (isForest_merge hv hnd hF hp) G, ← List.sum_map_mul_left, List.map_map]
       congr 1
       apply List.map_congr_left

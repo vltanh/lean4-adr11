@@ -96,7 +96,7 @@ theorem absorb_merges_of_card_roots_eq_two {F G : Finset (Finset L)} (hF : IsFor
     · rw [mem_singleton.1 hx]
       exact hB
   have hunion : A ∪ B = univ := by
-    rw [← hcov, ← hF.lineages_roots, hroots, absorb_lineages_pair]
+    rw [← hcov, ← lineages_roots, hroots, absorb_lineages_pair]
   rw [hunion]
 
 /-- In a forest with exactly three roots covering all lineages, the union of two roots is the
@@ -124,7 +124,7 @@ theorem absorb_union_mem_unroot {F : Finset (Finset L)} (hF : IsForest F)
       simp only [mem_insert, mem_singleton, not_or]
       exact ⟨hAB, fun h => hCA h.symm⟩
   have hunion : A ∪ (B ∪ C) = univ := by
-    rw [← hcov, ← hF.lineages_roots, hroots]
+    rw [← hcov, ← lineages_roots, hroots]
     simp [lineages]
   have hdisjA : Disjoint C A := hF.disjoint_of_mem_roots hCr hA hCA
   have hdisjB : Disjoint C B := hF.disjoint_of_mem_roots hCr hB hCB
@@ -163,7 +163,7 @@ theorem absorb_unroot_eq_of_kingmanAbsorption_ne_zero {F : Finset (Finset L)} (h
     split_ifs at hG with hm
     · rw [absorb_merges_of_card_roots_eq_two hF hcov h hm, absorb_unroot_insert_univ]
     · exact absurd rfl hG
-  · rw [h, show 3 - 1 = 1 + 1 from rfl, jumpMatrix_pow_succ_apply hF (by omega)] at hG
+  · rw [h, show 3 - 1 = 1 + 1 from rfl, jumpMatrix_pow_succ_apply (by omega)] at hG
     obtain ⟨F', hF', hne⟩ := exists_ne_zero_of_sum_ne_zero (right_ne_zero_of_mul hG)
     obtain ⟨hF'f, hcard, -, -, hlin⟩ := hF.of_mem_merges hF'
     rw [pow_one, jumpMatrix_apply_of_isForest (by omega)] at hne

@@ -133,7 +133,7 @@ theorem exists_mem_roots_subset {F : Finset (Finset L)} {A : Finset L}
     (hA : A ∈ F) : ∃ R ∈ roots F, A ⊆ R := by
   exact forest_exists_mem_roots_subset hA
 
-theorem IsForest.lineages_roots {F : Finset (Finset L)} (hF : IsForest F) :
+theorem lineages_roots {F : Finset (Finset L)} :
     lineages (roots F) = lineages F := by
   refine (lineages_mono (roots_subset F)).antisymm (lineages_subset_iff.2 fun A hA => ?_)
   obtain ⟨R, hR, hAR⟩ := exists_mem_roots_subset hA
@@ -325,7 +325,7 @@ theorem roots_nonempty_iff {F : Finset (Finset L)} : (roots F).Nonempty ↔ F.No
 /-- Every lineage of a forest lies in a root. -/
 theorem IsForest.exists_mem_roots_of_mem_lineages {F : Finset (Finset L)} (hF : IsForest F)
     {l : L} (hl : l ∈ lineages F) : ∃ R ∈ roots F, l ∈ R := by
-  rwa [← hF.lineages_roots, mem_lineages] at hl
+  rwa [← lineages_roots, mem_lineages] at hl
 
 /-- A lineage of a forest lies in only one root. -/
 theorem IsForest.eq_of_mem_roots_of_mem {F : Finset (Finset L)} (hF : IsForest F)
@@ -338,7 +338,7 @@ theorem IsForest.eq_of_mem_roots_of_mem {F : Finset (Finset L)} (hF : IsForest F
 theorem IsForest.roots_eq_singleton_lineages {F : Finset (Finset L)} (hF : IsForest F)
     (h : #(roots F) = 1) : roots F = {lineages F} := by
   obtain ⟨R, hR⟩ := card_eq_one.1 h
-  rw [hR, ← hF.lineages_roots, hR, lineages_singleton]
+  rw [hR, ← lineages_roots, hR, lineages_singleton]
 
 theorem IsForest.lineages_mem_of_card_roots_eq_one {F : Finset (Finset L)} (hF : IsForest F)
     (h : #(roots F) = 1) : lineages F ∈ F :=
@@ -347,7 +347,7 @@ theorem IsForest.lineages_mem_of_card_roots_eq_one {F : Finset (Finset L)} (hF :
 /-- The roots of a forest partition its lineages. -/
 theorem IsForest.sum_card_roots {F : Finset (Finset L)} (hF : IsForest F) :
     ∑ R ∈ roots F, #R = #(lineages F) := by
-  rw [← hF.lineages_roots, lineages, sup_eq_biUnion, card_biUnion]
+  rw [← lineages_roots, lineages, sup_eq_biUnion, card_biUnion]
   · rfl
   · intro A hA B hB hAB
     exact hF.disjoint_of_mem_roots hA hB hAB

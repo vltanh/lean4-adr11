@@ -123,7 +123,7 @@ theorem section5_proposition1 (σ σ' : SpeciesTree X)
     (fun _ _ _ hab hac hbc => triple_resolved_iff σ' hab hac hbc) h
 
 /-- Section 5: Corollary 2 for species trees that need not be binary. -/
-theorem section5_corollary2 (hX : 3 ≤ Fintype.card X) (σ σ' : SpeciesTree X)
+theorem section5_corollary2 (σ σ' : SpeciesTree X)
     (h : σ.rootedDist id = σ'.rootedDist id) : σ.SameRootedMetricTree σ' := by
   refine section5_proposition1 σ σ' fun a b c _ _ _ => ?_
   unfold SpeciesTree.rootedTripleProb

@@ -90,7 +90,7 @@ private theorem fact_one_apply (F G : Finset (Finset L)) :
   · rw [Matrix.one_apply_ne (Ne.symm h), ite_eq_right h]
 
 /-- First-step analysis of the jump chain. -/
-theorem jumpMatrix_pow_succ_apply {F : Finset (Finset L)} (hF : IsForest F) (hk : 2 ≤ #(roots F))
+theorem jumpMatrix_pow_succ_apply {F : Finset (Finset L)} (hk : 2 ≤ #(roots F))
     (n : ℕ) (G : Finset (Finset L)) :
     (jumpMatrix ^ (n + 1)) F G =
       (((#(roots F)).choose 2 : ℕ) : ℝ)⁻¹ * ∑ F' ∈ merges F, (jumpMatrix ^ n) F' G := by
@@ -306,7 +306,7 @@ theorem kingmanGenerator_pow_apply {F : Finset (Finset L)} (hF : IsForest F) (m 
       simp
     · replace hk : 2 ≤ #(roots F) := by omega
       by_cases hjk : #(roots G) < #(roots F)
-      · have hstep := jumpMatrix_pow_succ_apply hF hk (#(roots F) - 1 - #(roots G)) G
+      · have hstep := jumpMatrix_pow_succ_apply hk (#(roots F) - 1 - #(roots G)) G
         rw [show #(roots F) - 1 - #(roots G) + 1 = #(roots F) - #(roots G) by omega] at hstep
         have hC : (((#(roots F)).choose 2 : ℕ) : ℝ) ≠ 0 := by
           exact_mod_cast (Nat.choose_pos hk).ne'

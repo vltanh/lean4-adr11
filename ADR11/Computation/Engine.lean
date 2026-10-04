@@ -289,7 +289,7 @@ theorem outcomeL_spec {m : ℕ} : ∀ (fuel : ℕ) (F : List ℕ), Valid m F →
       apply sum_flatMapO h
       intro p hp x hx
       obtain ⟨P', hP', rfl⟩ := Option.map_eq_some_iff.1 hx
-      rw [outcomeL_spec fuel _ (valid_merge hv hp) (nodup_merge hv hnd hF hp)
+      rw [outcomeL_spec fuel _ (valid_merge hv hp) (nodup_merge hv hnd hp)
         (isForest_merge hv hnd hF hp) P' hP' U, ← List.sum_map_mul_left, List.map_map]
       congr 1
       apply List.map_congr_left

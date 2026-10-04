@@ -510,7 +510,7 @@ theorem proposition1 (σ σ' : SpeciesTree X) (hσ : σ.IsBinary)
 
 /-- **Corollary 2** (`cor:rgt`). For a species tree with `n ≥ 3` taxa, the distribution of rooted gene tree
 topologies determines the species tree topology and internal branch lengths. -/
-theorem corollary2 (hX : 3 ≤ Fintype.card X) (σ σ' : SpeciesTree X) (hσ : σ.IsBinary)
+theorem corollary2 (σ σ' : SpeciesTree X) (hσ : σ.IsBinary)
     (hσ' : σ'.IsBinary) (h : σ.rootedDist id = σ'.rootedDist id) :
     σ.SameRootedMetricTree σ' := by
   refine proposition1 σ σ' hσ hσ' fun a b c _ _ _ => ?_

@@ -155,7 +155,7 @@ theorem kingmanAbsorption_first_step {F : Finset (Finset L)} (hF : IsForest F)
       show #(roots F') - 1 = #(roots F) - 2 by omega]
   rw [Finset.sum_congr rfl hm]
   split_ifs with hG
-  · rw [show #(roots F) - 1 = (#(roots F) - 2) + 1 by omega, jumpMatrix_pow_succ_apply hF hk]
+  · rw [show #(roots F) - 1 = (#(roots F) - 2) + 1 by omega, jumpMatrix_pow_succ_apply hk]
   · simp
 
 theorem kingmanTransition_mul_kingmanAbsorption {F : Finset (Finset L)} (hF : IsForest F)
