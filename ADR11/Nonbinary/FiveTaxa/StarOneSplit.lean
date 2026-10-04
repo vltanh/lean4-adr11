@@ -1,32 +1,32 @@
 module
 
-public import ADR11.Nonbinary.FiveTaxa.Ac1Classes
+public import ADR11.Nonbinary.FiveTaxa.Shapes
 
 /-!
-# Appendix C: the rootings of the star `U5 0` and of `U5 1 = AB|CDE`
+# Appendix C: the labelling and the lengths for the rootings of `U5 0` and `U5 1`
 
 Appendix C of the paper (the proof of Proposition 11) recovers a possibly nonbinary 5-taxon
-species tree `σ⁺` from its distribution of unrooted gene trees once the unrooted species tree `σ⁻`
-is known: first the rooted shape, from the size of the least probable class `𝒞` of gene trees and,
-when `|𝒞| = 6`, of the class `𝒞₂` with the second smallest probability; then the labelling, by
-the paper's rules on the cherries of the gene trees of these classes; then the branch lengths, by
-solving the equations of Table 7, `P₄` and `P₈` being told apart by whether the solved `Z` is
-`< 1` or `= 1`. This module carries out the argument when `σ⁻` is the star `U5 0` (rooted shapes
-`P₁` and `P₃`) or `U5 1 = AB|CDE` (rooted shapes `P₂`, `P₄`, `P₇`, `P₈`, `P₉`). The classes of
-each labelled rooting are computed in `ADR11.Nonbinary.FiveTaxa.Ac1Classes`.
+species tree `σ⁺` from its distribution of unrooted gene trees in three steps: the unlabelled
+rooted shape, up to the cases `P₄`/`P₈` and balanced/`P₆`, is read off the classes of gene trees
+(`ADR11.Nonbinary.FiveTaxa.Shapes`); the labelling is then determined from the unrooted species tree
+`σ⁻` and the classes, by the paper's rules for each shape; finally the branch lengths are solved
+from the equations of Table 7, `P₄` and `P₈` being told apart by whether the solved `Z` is `< 1` or
+`= 1`. This module carries out the last two steps when `σ⁻` is the star `U5 0` (rooted shapes `P₁`
+and `P₃`) or `U5 1 = AB|CDE` (rooted shapes `P₂`, `P₄`, `P₇`, `P₈`, `P₉`), for two species trees
+with the same shape group. The classes of each labelled rooting are computed in
+`ADR11.Nonbinary.FiveTaxa.Ac1Classes`.
 
 ## Main results
 
 * `ac1_rootings_zero`, `ac1_rootings_one`: two species trees with unrooted tree `U5 0` (resp.
-  `U5 1`) and the same unrooted gene tree distribution have the same rooted metric tree.
-* `ac1_shape_zero`, `ac1_shape_one`: `|𝒞|`, and `|𝒞₂|` when `|𝒞| = 6`, for each rooted shape.
+  `U5 1`), the same shape group and the same unrooted gene tree distribution have the same rooted
+  metric tree.
 * The labelling rules `ac1_P3_outgroup`, `ac1_P7_outgroup`, `ac1_P9_distinguished`,
   `ac1_P9_outgroup`, and `ac1_P4_P8_rule` (`Z < 1` for `P₈`, `Z = 1` for `P₄`).
-* `ac1_P2_P3_rule`: `P₂` and `P₃` are told apart by the cherries of their 3-element classes
-  (on the representatives of Table 6).
 * `ac1_topologyZero`, `ac1_topologyOne`: the rooted topology read off the gene tree classes by
-  these rules; `ac1_topologyZero_eq`, `ac1_topologyOne_eq`: it is the topology of the species
-  tree; `ac1_topologyZero_congr`, `ac1_topologyOne_congr`: it depends only on the distribution.
+  these rules, given the shape group; `ac1_topologyZero_eq`, `ac1_topologyOne_eq`: for the shape
+  group of the species tree it is the topology of the species tree; `ac1_topologyZero_congr`,
+  `ac1_topologyOne_congr`: it depends only on the distribution.
 * `ac1_lengths_0_j`, `ac1_lengths_1_j`: the branch lengths of each rooting, solved from Table 7.
 -/
 
@@ -36,12 +36,7 @@ namespace ADR11
 
 open Finset Real
 
-/-! ### Cherries of the gene trees of a class -/
-
-/-- The taxa that appear in no cherry of the gene trees `T_i`, `i ∈ S`. For a single gene tree
-`T_i` this is the one taxon of `T_i` that is not in a cherry. -/
-def ac1_noCherry (S : Finset ℕ) : Finset (Fin 5) :=
-  univ.filter fun x => ∀ i ∈ S, ∀ A ∈ cls_cherries (T5 i), x ∉ A
+/-! ### The cherries of the gene trees of a class -/
 
 /-- The taxa `y` that appear in a cherry with a taxon `d ∈ D`, `y ≠ d`, in exactly three of the
 gene trees `T_i`, `i ∈ S`. -/
@@ -65,53 +60,6 @@ noncomputable def ac1_solveZ (τ : SpeciesTree (Fin 5)) : ℝ :=
 theorem ac1_fin5 (x : Fin 5) : x = 0 ∨ x = 1 ∨ x = 2 ∨ x = 3 ∨ x = 4 := by
   fin_cases x <;> simp
 
-/-! ### The shape: `|𝒞|`, and `|𝒞₂|` when `|𝒞| = 6` -/
-
-/-- Appendix C, `|𝒞|` for the rootings of the star `U5 0`: `|𝒞| = 15` for `P₁`, and `|𝒞| = 12`
-for the rootings of shape `P₃` (on the pendant edge of a taxon `x`). -/
-theorem ac1_shape_zero (τ : SpeciesTree (Fin 5)) :
-    (τ.clusters = hierarchyOf ∅ → #(cls_leastClass τ) = 15) ∧
-      ∀ x : Fin 5, τ.clusters = hierarchyOf {univ.erase x} → #(cls_leastClass τ) = 12 := by
-  refine ⟨fun h => by rw [ac1_classes_0_0 τ h]; decide, fun x h => ?_⟩
-  rcases ac1_fin5 x with rfl | rfl | rfl | rfl | rfl
-  · rw [(ac1_classes_0_1 τ (h.trans (by decide))).1]; decide
-  · rw [(ac1_classes_0_2 τ (h.trans (by decide))).1]; decide
-  · rw [(ac1_classes_0_3 τ (h.trans (by decide))).1]; decide
-  · rw [(ac1_classes_0_4 τ (h.trans (by decide))).1]; decide
-  · rw [(ac1_classes_0_5 τ (h.trans (by decide))).1]; decide
-
-/-- Appendix C, `|𝒞|` and `|𝒞₂|` for the rootings of `U5 1`: `|𝒞| = 12` for `P₂`; `|𝒞| = 10` for
-the rootings of shape `P₇` (with outgroup `x ∈ {c, d, e}`); `|𝒞| = 6` and `|𝒞₂| = 3` for the
-rootings of shape `P₉` (with the clusters `{2, 3, 4}` and `{2, 3, 4} ∪ {d}` and the outgroup `o`,
-where `{d, o} = {0, 1}`); `|𝒞| = 6` and `|𝒞₂| = 6` for `P₄` and `P₈`. -/
-theorem ac1_shape_one (τ : SpeciesTree (Fin 5)) :
-    (τ.clusters = hierarchyOf {{0, 1}} → #(cls_leastClass τ) = 12) ∧
-    (∀ x ∈ ({2, 3, 4} : Finset (Fin 5)), τ.clusters = hierarchyOf {{0, 1}, univ.erase x} →
-      #(cls_leastClass τ) = 10) ∧
-    (∀ d o : Fin 5, d = 1 ∧ o = 0 ∨ d = 0 ∧ o = 1 →
-      τ.clusters = hierarchyOf {univ \ {d, o}, univ.erase o} →
-      #(cls_leastClass τ) = 6 ∧ #(cls_secondClass τ) = 3) ∧
-    (τ.clusters = hierarchyOf {{2, 3, 4}} →
-      #(cls_leastClass τ) = 6 ∧ #(cls_secondClass τ) = 6) ∧
-    (τ.clusters = hierarchyOf {{0, 1}, {2, 3, 4}} →
-      #(cls_leastClass τ) = 6 ∧ #(cls_secondClass τ) = 6) := by
-  refine ⟨fun h => ?_, fun x hx h => ?_, fun d o hdo h => ?_, fun h => ?_, fun h => ?_⟩
-  · rw [ac1_classes_1_0 τ h]; decide
-  · simp only [mem_insert, mem_singleton] at hx
-    rcases hx with rfl | rfl | rfl
-    · rw [(ac1_classes_1_5 τ (h.trans (by decide))).1]; decide
-    · rw [(ac1_classes_1_6 τ (h.trans (by decide))).1]; decide
-    · rw [(ac1_classes_1_7 τ (h.trans (by decide))).1]; decide
-  · rcases hdo with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-    · obtain ⟨e1, e2⟩ := ac1_classes_1_3 τ (h.trans (by decide))
-      rw [e1, e2]; decide
-    · obtain ⟨e1, e2⟩ := ac1_classes_1_4 τ (h.trans (by decide))
-      rw [e1, e2]; decide
-  · obtain ⟨e1, e2⟩ := ac1_classes_1_1 τ h
-    rw [e1, e2]; decide
-  · obtain ⟨e1, e2⟩ := ac1_classes_1_2 τ h
-    rw [e1, e2]; decide
-
 /-! ### The labelling -/
 
 /-- Appendix C, the labelling of `P₃`: for the rooting of the star `U5 0` with outgroup `x` (of
@@ -119,7 +67,7 @@ shape `P₃`), the class with the second smallest probability is the 3-element c
 taxon that appears in no cherry of its gene trees. -/
 theorem ac1_P3_outgroup (τ : SpeciesTree (Fin 5)) (x : Fin 5)
     (h : τ.clusters = hierarchyOf {univ.erase x}) :
-    #(cls_secondClass τ) = 3 ∧ ac1_noCherry (cls_secondClass τ) = {x} := by
+    #(cls_secondClass τ) = 3 ∧ sh_noCherry (cls_secondClass τ) = {x} := by
   rcases ac1_fin5 x with rfl | rfl | rfl | rfl | rfl
   · rw [(ac1_classes_0_1 τ (h.trans (by decide))).2]; decide
   · rw [(ac1_classes_0_2 τ (h.trans (by decide))).2]; decide
@@ -133,7 +81,7 @@ split of `U5 1`), there is one most probable gene tree, and `x` is the taxon tha
 its cherries. -/
 theorem ac1_P7_outgroup (τ : SpeciesTree (Fin 5)) (x : Fin 5)
     (hx : x ∈ ({2, 3, 4} : Finset (Fin 5))) (h : τ.clusters = hierarchyOf {{0, 1}, univ.erase x}) :
-    #(cls_mostProbable τ) = 1 ∧ ac1_noCherry (cls_mostProbable τ) = {x} := by
+    #(cls_mostProbable τ) = 1 ∧ sh_noCherry (cls_mostProbable τ) = {x} := by
   simp only [mem_insert, mem_singleton] at hx
   rcases hx with rfl | rfl | rfl
   · rw [(ac1_classes_1_5 τ (h.trans (by decide))).2]; decide
@@ -147,7 +95,7 @@ that appears in no cherry of the gene trees of the class with the second smalles
 theorem ac1_P9_distinguished (τ : SpeciesTree (Fin 5)) (d o : Fin 5)
     (hdo : d = 1 ∧ o = 0 ∨ d = 0 ∧ o = 1)
     (h : τ.clusters = hierarchyOf {univ \ {d, o}, univ.erase o}) :
-    ac1_noCherry (cls_secondClass τ) = {d} := by
+    sh_noCherry (cls_secondClass τ) = {d} := by
   rcases hdo with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
   · rw [(ac1_classes_1_3 τ (h.trans (by decide))).2]; decide
   · rw [(ac1_classes_1_4 τ (h.trans (by decide))).2]; decide
@@ -196,160 +144,123 @@ theorem ac1_P4_P8_rule (τ : SpeciesTree (Fin 5)) :
       ring
     rw [ac1_solveZ, key, Real.sqrt_one]
 
-/-! ### `P₂` versus `P₃` -/
+/-! ### The labelled rooted topology read off the gene tree classes, given the shape group -/
 
-/-- Appendix C, `|𝒞| = 12`: `P₂` and `P₃` are told apart since all gene trees in the 3-element
-class for `P₃` have the same taxon not occurring in a cherry, while for `P₂` the gene trees in the
-3-element class have different taxa in this role. On the representatives `P₂ = (a,b,c,(d,e))` and
-`P₃ = ((a,b,c,d),e)` of Table 6: both have `|𝒞| = 12`, and their class with the second smallest
-probability is the 3-element class; the taxa in no cherry of its gene trees are pairwise
-different for `P₂` and all equal for `P₃`; hence the two have different distributions. -/
-theorem ac1_P2_P3_rule :
-    (∀ σ : SpeciesTree (Fin 5), σ.clusters = polytomy5 2 →
-      #(cls_leastClass σ) = 12 ∧ #(cls_secondClass σ) = 3 ∧
-        ∀ i ∈ cls_secondClass σ, ∀ j ∈ cls_secondClass σ, i ≠ j →
-          ac1_noCherry {i} ≠ ac1_noCherry {j}) ∧
-    (∀ σ : SpeciesTree (Fin 5), σ.clusters = polytomy5 3 →
-      #(cls_leastClass σ) = 12 ∧ #(cls_secondClass σ) = 3 ∧
-        ∃ x : Fin 5, ∀ i ∈ cls_secondClass σ, ac1_noCherry {i} = {x}) ∧
-    ∀ σ σ' : SpeciesTree (Fin 5), σ.clusters = polytomy5 2 → σ'.clusters = polytomy5 3 →
-      σ.unrootedDist id ≠ σ'.unrootedDist id := by
-  have h2 : ∀ σ : SpeciesTree (Fin 5), σ.clusters = polytomy5 2 →
-      #(cls_leastClass σ) = 12 ∧ #(cls_secondClass σ) = 3 ∧
-        ∀ i ∈ cls_secondClass σ, ∀ j ∈ cls_secondClass σ, i ≠ j →
-          ac1_noCherry {i} ≠ ac1_noCherry {j} := fun σ h => by
-    obtain ⟨e1, e2⟩ := ac1_classes_P2 σ h
-    rw [e1, e2]
-    decide
-  have h3 : ∀ σ : SpeciesTree (Fin 5), σ.clusters = polytomy5 3 →
-      #(cls_leastClass σ) = 12 ∧ #(cls_secondClass σ) = 3 ∧
-        ∃ x : Fin 5, ∀ i ∈ cls_secondClass σ, ac1_noCherry {i} = {x} := fun σ h => by
-    obtain ⟨e1, e2⟩ := ac1_classes_P3 σ h
-    rw [e1, e2]
-    exact ⟨by decide, by decide, 4, by decide⟩
-  refine ⟨h2, h3, fun σ σ' h h' hd => ?_⟩
-  obtain ⟨-, hc, hdiff⟩ := h2 σ h
-  obtain ⟨-, -, x, hx⟩ := h3 σ' h'
-  rw [cls_secondClass_congr hd] at hc hdiff
-  -- two different gene trees of the 3-element class
-  obtain ⟨i, hi, j, hj, hij⟩ := one_lt_card.1 (by omega : 1 < #(cls_secondClass σ'))
-  exact hdiff i hi j hj hij ((hx i hi).trans (hx j hj).symm)
+/-- Appendix C, the labelling for the rootings of the star `U5 0`, once the shape group `g` is
+known: for `P₁` "there is nothing to do"; for `P₃` "the taxon that appears in no cherry in the gene
+trees in the 3-element class is the one that is an outgroup to all the others". -/
+noncomputable def ac1_topologyZero (g : sh_Group) (τ : SpeciesTree (Fin 5)) :
+    Finset (Finset (Fin 5)) :=
+  match g with
+  | .p1 => hierarchyOf ∅
+  | .p3 => hierarchyOf {univ \ sh_noCherry (cls_secondClass τ)}
+  | _ => ∅
 
-/-! ### The rooted topology read off the gene tree classes -/
-
-/-- Appendix C for the rootings of the star `U5 0`: the rooted topology read off the classes of
-gene trees. If `|𝒞| = 15` the species tree is `P₁`. If `|𝒞| = 12` it is `P₃` (the rooted shape
-`P₂` does not have the unrooted tree `U5 0`), whose outgroup is the taxon that appears in no cherry
-of the gene trees of the 3-element class. -/
-noncomputable def ac1_topologyZero (τ : SpeciesTree (Fin 5)) : Finset (Finset (Fin 5)) :=
-  if #(cls_leastClass τ) = 15 then hierarchyOf ∅
-  else if #(cls_leastClass τ) = 12 then hierarchyOf {univ \ ac1_noCherry (cls_secondClass τ)}
-  else ∅
-
-/-- Appendix C for the rootings of `U5 1 = AB|CDE`: the rooted topology read off the classes of
-gene trees. If `|𝒞| = 12` the species tree is `P₂` (not `P₃`, which does not have the unrooted
-tree `U5 1`), and its labelling is that of `U5 1`. If `|𝒞| = 10` it is `P₇` (not `P₅`): its
-resolved cherry `{a, b}` is given by `U5 1`, and its outgroup is the taxon in no cherry of the most
-probable gene tree. If `|𝒞| = 6` and `|𝒞₂| = 3` it is `P₉`: the non-outgroup taxon `d` not
-descended from the polytomy is the taxon in no cherry of the gene trees of `𝒞₂`, and the outgroup
-is the taxon in a cherry with `d` in three of the six most probable gene trees. If `|𝒞| = 6` and
-`|𝒞₂| = 6` it is `P₄` or `P₈`, labelled by `U5 1`: `P₈` if the solved `Z` is `< 1`, and `P₄`
-otherwise (`Z = 1`). -/
-noncomputable def ac1_topologyOne (τ : SpeciesTree (Fin 5)) : Finset (Finset (Fin 5)) :=
-  if #(cls_leastClass τ) = 12 then hierarchyOf {{0, 1}}
-  else if #(cls_leastClass τ) = 10 then
-    hierarchyOf {{0, 1}, univ \ ac1_noCherry (cls_mostProbable τ)}
-  else if #(cls_leastClass τ) = 6 ∧ #(cls_secondClass τ) = 3 then
-    hierarchyOf {univ \ (ac1_noCherry (cls_secondClass τ) ∪
-        ac1_threeCherries (ac1_noCherry (cls_secondClass τ)) (ac1_topSix τ)),
-      univ \ ac1_threeCherries (ac1_noCherry (cls_secondClass τ)) (ac1_topSix τ)}
-  else if #(cls_leastClass τ) = 6 ∧ #(cls_secondClass τ) = 6 then
-    if ac1_solveZ τ < 1 then hierarchyOf {{0, 1}, {2, 3, 4}} else hierarchyOf {{2, 3, 4}}
-  else ∅
+/-- Appendix C, the labelling for the rootings of `U5 1 = AB|CDE`, once the shape group `g` is
+known. For `P₂`, and for `P₄`/`P₈`, "the labeling on the unrooted tree determines that on the
+rooted one", and `P₈` and `P₄` are told apart by whether the solved `Z` is `< 1` or not (`Z = 1`).
+For `P₇`, "the resolved cherry in the species tree is determined by the unrooted labeled tree, and
+the outgroup is determined by not appearing in a cherry in the most probable gene tree". For `P₉`,
+the non-outgroup taxon `d` not descended from the polytomy is the taxon in no cherry of the gene
+trees of the class with the second smallest probability, and the outgroup is the taxon in a cherry
+with `d` in three of the six most probable gene trees. -/
+noncomputable def ac1_topologyOne (g : sh_Group) (τ : SpeciesTree (Fin 5)) :
+    Finset (Finset (Fin 5)) :=
+  match g with
+  | .p2 => hierarchyOf {{0, 1}}
+  | .p7 => hierarchyOf {{0, 1}, univ \ sh_noCherry (cls_mostProbable τ)}
+  | .p9 => hierarchyOf {univ \ (sh_noCherry (cls_secondClass τ) ∪
+        ac1_threeCherries (sh_noCherry (cls_secondClass τ)) (ac1_topSix τ)),
+      univ \ ac1_threeCherries (sh_noCherry (cls_secondClass τ)) (ac1_topSix τ)}
+  | .p48 => if ac1_solveZ τ < 1 then hierarchyOf {{0, 1}, {2, 3, 4}} else hierarchyOf {{2, 3, 4}}
+  | _ => ∅
 
 /-- The topology read off the gene tree classes depends only on the distribution. -/
-theorem ac1_topologyZero_congr {τ τ' : SpeciesTree (Fin 5)}
-    (h : τ.unrootedDist id = τ'.unrootedDist id) : ac1_topologyZero τ = ac1_topologyZero τ' := by
-  unfold ac1_topologyZero
-  rw [cls_leastClass_congr h, cls_secondClass_congr h]
+theorem ac1_topologyZero_congr (g : sh_Group) {τ τ' : SpeciesTree (Fin 5)}
+    (h : τ.unrootedDist id = τ'.unrootedDist id) :
+    ac1_topologyZero g τ = ac1_topologyZero g τ' := by
+  cases g <;> simp only [ac1_topologyZero, cls_secondClass_congr h]
 
 /-- The topology read off the gene tree classes depends only on the distribution. -/
-theorem ac1_topologyOne_congr {τ τ' : SpeciesTree (Fin 5)}
-    (h : τ.unrootedDist id = τ'.unrootedDist id) : ac1_topologyOne τ = ac1_topologyOne τ' := by
+theorem ac1_topologyOne_congr (g : sh_Group) {τ τ' : SpeciesTree (Fin 5)}
+    (h : τ.unrootedDist id = τ'.unrootedDist id) : ac1_topologyOne g τ = ac1_topologyOne g τ' := by
   have hZ : ac1_solveZ τ = ac1_solveZ τ' := by
     rw [ac1_solveZ, ac1_solveZ, cls_u_congr h 4, cls_u_congr h 5]
-  unfold ac1_topologyOne ac1_topSix
-  rw [cls_leastClass_congr h, cls_secondClass_congr h, cls_mostProbable_congr h, hZ]
+  cases g <;> simp only [ac1_topologyOne, ac1_topSix, cls_leastClass_congr h,
+    cls_secondClass_congr h, cls_mostProbable_congr h, hZ]
 
-/-- Appendix C for the rootings of the star `U5 0`: the shape from `|𝒞|` (`ac1_shape_zero`), then
-the labelling of `P₃` (`ac1_P3_outgroup`), give the rooted topology of the species tree. -/
+/-- Appendix C for the rootings of the star `U5 0`: given its shape group (`P₁` or `P₃`), the
+labelling rule of `P₃` (`ac1_P3_outgroup`) gives the rooted topology of the species tree. -/
 theorem ac1_topologyZero_eq (τ : SpeciesTree (Fin 5)) (hk : unroot τ.clusters = U5 0) :
-    ac1_topologyZero τ = τ.clusters := by
-  obtain ⟨s1, s3⟩ := ac1_shape_zero τ
+    ac1_topologyZero (sh_groupOf τ.clusters) τ = τ.clusters := by
   -- a rooting of shape `P₃`, with outgroup `x`
   have P3 : ∀ x : Fin 5, τ.clusters = hierarchyOf {univ.erase x} →
-      ac1_topologyZero τ = τ.clusters := fun x hx => by
-    have c12 := s3 x hx
-    have c15 : ¬ #(cls_leastClass τ) = 15 := by rw [c12]; decide
-    rw [ac1_topologyZero, ite_eq_right c15, ite_eq_left c12, (ac1_P3_outgroup τ x hx).2, hx,
-      sdiff_singleton_eq_erase]
+      ac1_topologyZero (sh_groupOf τ.clusters) τ = τ.clusters := fun x hx => by
+    have hg : sh_groupOf τ.clusters = .p3 := by
+      rw [hx]
+      rcases ac1_fin5 x with rfl | rfl | rfl | rfl | rfl <;> decide +kernel
+    rw [hg]
+    simp only [ac1_topologyZero]
+    rw [(ac1_P3_outgroup τ x hx).2, hx, sdiff_singleton_eq_erase]
   have hR := classify_mem_rootings5 τ 0 (by decide) hk
   simp only [rootings5, mem_insert, mem_singleton] at hR
   rcases hR with h | h | h | h | h | h
   · -- `P₁`
-    rw [ac1_topologyZero, ite_eq_left (s1 h), h]
+    have hg : sh_groupOf τ.clusters = .p1 := by rw [h]; decide +kernel
+    rw [hg, h]
+    simp only [ac1_topologyZero]
   · exact P3 0 (h.trans (by decide))
   · exact P3 1 (h.trans (by decide))
   · exact P3 2 (h.trans (by decide))
   · exact P3 3 (h.trans (by decide))
   · exact P3 4 (h.trans (by decide))
 
-/-- Appendix C for the rootings of `U5 1`: the shape from `|𝒞|` and `|𝒞₂|` (`ac1_shape_one`), the
-labellings of `P₇` and `P₉` (`ac1_P7_outgroup`, `ac1_P9_distinguished`, `ac1_P9_outgroup`), and
-`P₄` versus `P₈` (`ac1_P4_P8_rule`) give the rooted topology of the species tree. -/
+/-- Appendix C for the rootings of `U5 1`: given its shape group (`P₂`, `P₄`/`P₈`, `P₇` or
+`P₉`), the labelling rules of `P₇` and `P₉` (`ac1_P7_outgroup`, `ac1_P9_distinguished`,
+`ac1_P9_outgroup`) and `P₄` versus `P₈` (`ac1_P4_P8_rule`) give the rooted topology of the species
+tree. -/
 theorem ac1_topologyOne_eq (τ : SpeciesTree (Fin 5)) (hk : unroot τ.clusters = U5 1) :
-    ac1_topologyOne τ = τ.clusters := by
-  obtain ⟨s2, s7, s9, s4, s8⟩ := ac1_shape_one τ
+    ac1_topologyOne (sh_groupOf τ.clusters) τ = τ.clusters := by
   -- a rooting of shape `P₇`, with outgroup `x`
   have P7 : ∀ x ∈ ({2, 3, 4} : Finset (Fin 5)),
-      τ.clusters = hierarchyOf {{0, 1}, univ.erase x} → ac1_topologyOne τ = τ.clusters :=
-    fun x hx h => by
-      have c10 := s7 x hx h
-      have c12 : ¬ #(cls_leastClass τ) = 12 := by rw [c10]; decide
-      rw [ac1_topologyOne, ite_eq_right c12, ite_eq_left c10, (ac1_P7_outgroup τ x hx h).2, h,
-        sdiff_singleton_eq_erase]
+      τ.clusters = hierarchyOf {{0, 1}, univ.erase x} →
+        ac1_topologyOne (sh_groupOf τ.clusters) τ = τ.clusters := fun x hx h => by
+    have hg : sh_groupOf τ.clusters = .p7 := by
+      rw [h]
+      simp only [mem_insert, mem_singleton] at hx
+      rcases hx with rfl | rfl | rfl <;> decide +kernel
+    rw [hg]
+    simp only [ac1_topologyOne]
+    rw [(ac1_P7_outgroup τ x hx h).2, h, sdiff_singleton_eq_erase]
   -- a rooting of shape `P₉`, with distinguished taxon `d` and outgroup `o`
   have P9 : ∀ d o : Fin 5, d = 1 ∧ o = 0 ∨ d = 0 ∧ o = 1 →
       τ.clusters = hierarchyOf {univ \ {d, o}, univ.erase o} →
-      ac1_topologyOne τ = τ.clusters := fun d o hdo h => by
-    obtain ⟨c6, c3⟩ := s9 d o hdo h
-    have c12 : ¬ #(cls_leastClass τ) = 12 := by rw [c6]; decide
-    have c10 : ¬ #(cls_leastClass τ) = 10 := by rw [c6]; decide
-    rw [ac1_topologyOne, ite_eq_right c12, ite_eq_right c10, ite_eq_left ⟨c6, c3⟩,
-      ac1_P9_distinguished τ d o hdo h, (ac1_P9_outgroup τ d o hdo h).2, h,
+        ac1_topologyOne (sh_groupOf τ.clusters) τ = τ.clusters := fun d o hdo h => by
+    have hg : sh_groupOf τ.clusters = .p9 := by
+      rw [h]
+      rcases hdo with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;> decide +kernel
+    rw [hg]
+    simp only [ac1_topologyOne]
+    rw [ac1_P9_distinguished τ d o hdo h, (ac1_P9_outgroup τ d o hdo h).2, h,
       sdiff_singleton_eq_erase, ← insert_eq]
   have hR := classify_mem_rootings5 τ 1 (by decide) hk
   simp only [rootings5, mem_insert, mem_singleton] at hR
   rcases hR with h | h | h | h | h | h | h | h
   · -- `P₂`
-    rw [ac1_topologyOne, ite_eq_left (s2 h), h]
+    have hg : sh_groupOf τ.clusters = .p2 := by rw [h]; decide +kernel
+    rw [hg, h]
+    simp only [ac1_topologyOne]
   · -- `P₄`: `Z = 1`
-    obtain ⟨c6, c6'⟩ := s4 h
-    have c12 : ¬ #(cls_leastClass τ) = 12 := by rw [c6]; decide
-    have c10 : ¬ #(cls_leastClass τ) = 10 := by rw [c6]; decide
-    have c3 : ¬ (#(cls_leastClass τ) = 6 ∧ #(cls_secondClass τ) = 3) := by
-      rw [c6, c6']; decide
+    have hg : sh_groupOf τ.clusters = .p48 := by rw [h]; decide +kernel
     have hZ : ¬ ac1_solveZ τ < 1 := by rw [(ac1_P4_P8_rule τ).2 h]; exact lt_irrefl 1
-    rw [ac1_topologyOne, ite_eq_right c12, ite_eq_right c10, ite_eq_right c3,
-      ite_eq_left ⟨c6, c6'⟩, ite_eq_right hZ, h]
+    rw [hg]
+    simp only [ac1_topologyOne]
+    rw [ite_eq_right hZ, h]
   · -- `P₈`: `Z < 1`
-    obtain ⟨c6, c6'⟩ := s8 h
-    have c12 : ¬ #(cls_leastClass τ) = 12 := by rw [c6]; decide
-    have c10 : ¬ #(cls_leastClass τ) = 10 := by rw [c6]; decide
-    have c3 : ¬ (#(cls_leastClass τ) = 6 ∧ #(cls_secondClass τ) = 3) := by
-      rw [c6, c6']; decide
-    rw [ac1_topologyOne, ite_eq_right c12, ite_eq_right c10, ite_eq_right c3,
-      ite_eq_left ⟨c6, c6'⟩, ite_eq_left ((ac1_P4_P8_rule τ).1 h).2, h]
+    have hg : sh_groupOf τ.clusters = .p48 := by rw [h]; decide +kernel
+    rw [hg]
+    simp only [ac1_topologyOne]
+    rw [ite_eq_left ((ac1_P4_P8_rule τ).1 h).2, h]
   · exact P9 1 0 (Or.inl ⟨rfl, rfl⟩) (h.trans (by decide))
   · exact P9 0 1 (Or.inr ⟨rfl, rfl⟩) (h.trans (by decide))
   · exact P7 2 (by decide) (h.trans (by decide))
@@ -538,16 +449,17 @@ theorem ac1_lengths_1_7 {τ τ' : SpeciesTree (Fin 5)} (hu : ∀ i, u τ i = u �
 /-! ### The main results -/
 
 /-- Appendix C for the rootings of the star `U5 0` (the rooted shapes `P₁` and `P₃`): two species
-trees with unrooted tree `U5 0` and the same unrooted gene tree distribution have the same rooted
-metric tree. The rooted topology is read off the gene tree classes (`ac1_topologyZero_eq`: `P₁` if
-`|𝒞| = 15`; `P₃` if `|𝒞| = 12`, with the outgroup in no cherry of the gene trees of the 3-element
-class), and the branch length is solved from Table 7. -/
+trees with unrooted tree `U5 0`, the same shape group (read off the gene tree classes,
+`sh_group_eq`) and the same unrooted gene tree distribution have the same rooted metric tree. The
+labelling is read off the gene tree classes by the rule for the shape group
+(`ac1_topologyZero_eq`: for `P₃`, the outgroup is the taxon in no cherry of the gene trees of the
+3-element class), and the branch length is solved from Table 7. -/
 theorem ac1_rootings_zero (τ τ' : SpeciesTree (Fin 5)) (hk : unroot τ.clusters = U5 0)
-    (hk' : unroot τ'.clusters = U5 0) (h : τ.unrootedDist id = τ'.unrootedDist id) :
-    τ.SameRootedMetricTree τ' := by
-  -- the rooted topology, read off the classes of gene trees
+    (hk' : unroot τ'.clusters = U5 0) (hg : sh_groupOf τ.clusters = sh_groupOf τ'.clusters)
+    (h : τ.unrootedDist id = τ'.unrootedDist id) : τ.SameRootedMetricTree τ' := by
+  -- the labelling, read off the classes of gene trees by the rule for the shape group
   have hc : τ.clusters = τ'.clusters := by
-    rw [← ac1_topologyZero_eq τ hk, ← ac1_topologyZero_eq τ' hk', ac1_topologyZero_congr h]
+    rw [← ac1_topologyZero_eq τ hk, ← ac1_topologyZero_eq τ' hk', hg, ac1_topologyZero_congr _ h]
   -- the branch lengths, solved from Table 7
   have hu := cls_u_congr h
   have hR := classify_mem_rootings5 τ 0 (by decide) hk
@@ -561,17 +473,18 @@ theorem ac1_rootings_zero (τ τ' : SpeciesTree (Fin 5)) (hk : unroot τ.cluster
   · exact ac1_lengths_0_5 hu h0 (hc.symm.trans h0)
 
 /-- Appendix C for the rootings of `U5 1 = AB|CDE` (the rooted shapes `P₂`, `P₄`, `P₇`, `P₈`,
-`P₉`): two species trees with unrooted tree `U5 1` and the same unrooted gene tree distribution
-have the same rooted metric tree. The rooted topology is read off the gene tree classes
-(`ac1_topologyOne_eq`: the shape from `|𝒞|` and `|𝒞₂|`, the labelling of `P₇` and `P₉` by the
-cherries of the most probable gene tree, of `𝒞₂` and of the six most probable gene trees, and `P₄`
+`P₉`): two species trees with unrooted tree `U5 1`, the same shape group (read off the gene tree
+classes, `sh_group_eq`) and the same unrooted gene tree distribution have the same rooted metric
+tree. The labelling is read off the gene tree classes by the rules for the shape group
+(`ac1_topologyOne_eq`: for `P₇` and `P₉` by the cherries of the most probable gene tree, of the
+class with the second smallest probability and of the six most probable gene trees, and `P₄`
 versus `P₈` by `Z = 1` versus `Z < 1`), and the branch lengths are solved from Table 7. -/
 theorem ac1_rootings_one (τ τ' : SpeciesTree (Fin 5)) (hk : unroot τ.clusters = U5 1)
-    (hk' : unroot τ'.clusters = U5 1) (h : τ.unrootedDist id = τ'.unrootedDist id) :
-    τ.SameRootedMetricTree τ' := by
-  -- the rooted topology, read off the classes of gene trees
+    (hk' : unroot τ'.clusters = U5 1) (hg : sh_groupOf τ.clusters = sh_groupOf τ'.clusters)
+    (h : τ.unrootedDist id = τ'.unrootedDist id) : τ.SameRootedMetricTree τ' := by
+  -- the labelling, read off the classes of gene trees by the rules for the shape group
   have hc : τ.clusters = τ'.clusters := by
-    rw [← ac1_topologyOne_eq τ hk, ← ac1_topologyOne_eq τ' hk', ac1_topologyOne_congr h]
+    rw [← ac1_topologyOne_eq τ hk, ← ac1_topologyOne_eq τ' hk', hg, ac1_topologyOne_congr _ h]
   -- the branch lengths, solved from Table 7
   have hu := cls_u_congr h
   have hR := classify_mem_rootings5 τ 1 (by decide) hk

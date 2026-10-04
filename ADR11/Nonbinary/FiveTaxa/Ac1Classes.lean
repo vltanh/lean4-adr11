@@ -12,16 +12,18 @@ nonbinary 5-taxon species tree off its classes of equiprobable gene trees: the l
 `𝒞`, the class with the second smallest probability, and the most probable gene trees. This module
 computes these classes, from the gene tree distributions of Table 7 (`rootingDist5_k_j`, the
 formulas of Table 7 for each labelling), for the rootings of the star `U5 0` and of `U5 1 = AB|CDE`
-(`ADR11.rootings5 0`, `ADR11.rootings5 1`), and for the representatives `P₂`, `P₃` of Table 6.
+whose labelling rules use them (the shapes `P₃`, `P₇` and `P₉`), and for the representatives `P₂`,
+`P₃` of Table 6 (used by the rule telling them apart, `sh_P2_P3_rule`).
 
 ## Main results
 
 * `ac1_leastClass_eq`, `ac1_secondClass_eq`, `ac1_mostProbable_eq`, `ac1_classes_two`: the
   classes of a distribution that takes one value on a set of gene trees and larger (smaller)
   values elsewhere.
-* `ac1_classes_0_j` (`j = 0, …, 5`) and `ac1_classes_1_j` (`j = 0, …, 7`): the least probable
-  class of the `j`-th rooting of `U5 0` (resp. `U5 1`), with the class of the second smallest
-  probability or the most probable gene tree where Appendix C uses them.
+* `ac1_classes_0_j` (`j = 1, …, 5`, the rootings of shape `P₃`) and `ac1_classes_1_j`
+  (`j = 3, …, 7`, the rootings of shapes `P₉` and `P₇`): the least probable class of the `j`-th
+  rooting of `U5 0` (resp. `U5 1`), with the class of the second smallest probability or the most
+  probable gene tree.
 * `ac1_classes_P2`, `ac1_classes_P3`: the same for the representatives `P₂ = (a,b,c,(d,e))` and
   `P₃ = ((a,b,c,d),e)`, from Table 7.
 -/
@@ -120,20 +122,6 @@ theorem ac1_classes_two {τ : SpeciesTree (Fin 5)} (C : Finset ℕ) (a b : ℝ) 
     exact absurd (mem_sdiff.2 ⟨hi, h2⟩) h1
 
 /-! ### The rootings of `U5 0` and `U5 1` -/
-
-/-- The classes of gene trees of the rooting `hierarchyOf ∅` of `U5 0`
-(`P₁ = (a,b,c,d,e)`), read off its gene tree distribution `rootingDist5_0_0`. -/
-theorem ac1_classes_0_0 (τ : SpeciesTree (Fin 5))
-    (h : τ.clusters = hierarchyOf ∅) :
-    cls_leastClass τ = Icc 1 15 := by
-  obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
-    rootingDist5_0_0 τ h
-  exact ac1_leastClass_eq (Icc 1 15) (1 / 15) subset_rfl ⟨1, by decide⟩ (by
-    intro i hi
-    rw [mem_Icc] at hi
-    obtain ⟨hi1, hi2⟩ := hi
-    interval_cases i <;> constructor <;> intro hm <;>
-      first | exact absurd hm (by decide) | linarith)
 
 /-- The classes of gene trees of the rooting `hierarchyOf {{1, 2, 3, 4}}` of `U5 0`
 (`P₃ = ((b,c,d,e),a)`), read off its gene tree distribution `rootingDist5_0_1`. -/
@@ -288,114 +276,6 @@ theorem ac1_classes_0_5 (τ : SpeciesTree (Fin 5))
     interval_cases i <;> constructor <;> intro hm <;>
       first | exact absurd hm (by decide) | linarith)
   refine ⟨hC, ac1_secondClass_eq hC {3, 6, 9} a (by decide) (by decide) (by decide)
-    (by
-    intro i hi
-    rw [mem_Icc] at hi
-    obtain ⟨hi1, hi2⟩ := hi
-    interval_cases i <;> refine ⟨fun hm => ?_, fun hn hm => ?_⟩ <;>
-      first | exact absurd hm (by decide) | exact absurd hn (by decide) | linarith)⟩
-
-/-- The classes of gene trees of the rooting `hierarchyOf {{0, 1}}` of `U5 1`
-(`P₂ = ((a,b),c,d,e)`), read off its gene tree distribution `rootingDist5_1_0`. -/
-theorem ac1_classes_1_0 (τ : SpeciesTree (Fin 5))
-    (h : τ.clusters = hierarchyOf {{0, 1}}) :
-    cls_leastClass τ = {4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15} := by
-  obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
-    rootingDist5_1_0 τ h
-  obtain ⟨x0, x1⟩ := five_exp_bounds τ (A := {0, 1}) (by rw [h]; decide) (by decide)
-  generalize exp (-τ.length {0, 1}) = X at *
-  have i_vt : 1 / 15 * X <
-      -4 / 15 * X + 1 / 3 := by
-    linarith only [x1]
-  generalize -4 / 15 * X + 1 / 3 = t at *
-  generalize 1 / 15 * X = v at *
-  have hC := ac1_leastClass_eq (τ := τ) {4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15} v
-    (by decide) (by decide) (by
-    intro i hi
-    rw [mem_Icc] at hi
-    obtain ⟨hi1, hi2⟩ := hi
-    interval_cases i <;> constructor <;> intro hm <;>
-      first | exact absurd hm (by decide) | linarith)
-  exact hC
-
-/-- The classes of gene trees of the rooting `hierarchyOf {{2, 3, 4}}` of `U5 1`
-(`P₄ = ((c,d,e),a,b)`), read off its gene tree distribution `rootingDist5_1_1`. -/
-theorem ac1_classes_1_1 (τ : SpeciesTree (Fin 5))
-    (h : τ.clusters = hierarchyOf {{2, 3, 4}}) :
-    cls_leastClass τ = {5, 6, 8, 9, 11, 12} ∧ cls_secondClass τ = {4, 7, 10, 13, 14, 15} := by
-  obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
-    rootingDist5_1_1 τ h
-  obtain ⟨y0, y1⟩ := five_exp_bounds τ (A := {2, 3, 4}) (by rw [h]; decide) (by decide)
-  generalize exp (-τ.length {2, 3, 4}) = Y at *
-  have f1 : 0 < Y * ((1 - Y) * (1 + Y)) :=
-    mul_pos y0 (mul_pos (sub_pos.2 y1) (by linarith only [y0]))
-  have f2 : 0 < (1 - Y) ^ 2 * (2 + Y) := mul_pos (pow_pos (sub_pos.2 y1) 2) (by linarith only [y0])
-  have i_vw : 1 / 15 * Y ^ 3 <
-      -1 / 10 * Y ^ 3 + 1 / 6 * Y := by
-    linarith only [y1, f1, f2]
-  have i_vt : 1 / 15 * Y ^ 3 <
-      1 / 15 * Y ^ 3 - 1 / 3 * Y + 1 / 3 := by
-    linarith only [y1, f1, f2]
-  have i_wt : -1 / 10 * Y ^ 3 + 1 / 6 * Y <
-      1 / 15 * Y ^ 3 - 1 / 3 * Y + 1 / 3 := by
-    linarith only [y1, f1, f2]
-  clear f1 f2
-  generalize 1 / 15 * Y ^ 3 - 1 / 3 * Y + 1 / 3 = t at *
-  generalize -1 / 10 * Y ^ 3 + 1 / 6 * Y = w at *
-  generalize 1 / 15 * Y ^ 3 = v at *
-  have hC := ac1_leastClass_eq (τ := τ) {5, 6, 8, 9, 11, 12} v
-    (by decide) (by decide) (by
-    intro i hi
-    rw [mem_Icc] at hi
-    obtain ⟨hi1, hi2⟩ := hi
-    interval_cases i <;> constructor <;> intro hm <;>
-      first | exact absurd hm (by decide) | linarith)
-  refine ⟨hC, ac1_secondClass_eq hC {4, 7, 10, 13, 14, 15} w (by decide) (by decide) (by decide)
-    (by
-    intro i hi
-    rw [mem_Icc] at hi
-    obtain ⟨hi1, hi2⟩ := hi
-    interval_cases i <;> refine ⟨fun hm => ?_, fun hn hm => ?_⟩ <;>
-      first | exact absurd hm (by decide) | exact absurd hn (by decide) | linarith)⟩
-
-/-- The classes of gene trees of the rooting `hierarchyOf {{0, 1}, {2, 3, 4}}` of `U5 1`
-(`P₈ = ((a,b),(c,d,e))`), read off its gene tree distribution `rootingDist5_1_2`. -/
-theorem ac1_classes_1_2 (τ : SpeciesTree (Fin 5))
-    (h : τ.clusters = hierarchyOf {{0, 1}, {2, 3, 4}}) :
-    cls_leastClass τ = {5, 6, 8, 9, 11, 12} ∧ cls_secondClass τ = {4, 7, 10, 13, 14, 15} := by
-  obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ :=
-    rootingDist5_1_2 τ h
-  obtain ⟨x0, x1⟩ := five_exp_bounds τ (A := {0, 1}) (by rw [h]; decide) (by decide)
-  obtain ⟨y0, y1⟩ := five_exp_bounds τ (A := {2, 3, 4}) (by rw [h]; decide) (by decide)
-  generalize exp (-τ.length {0, 1}) = X at *
-  generalize exp (-τ.length {2, 3, 4}) = Y at *
-  have f1 : 0 < X * (Y * ((1 - Y) * (1 + Y))) :=
-    mul_pos x0 (mul_pos y0 (mul_pos (sub_pos.2 y1) (by linarith only [y0])))
-  have f2 : 0 < (1 - Y) ^ 2 * (2 + Y) + (1 - X) * (Y * (3 - Y ^ 2)) :=
-    add_pos (mul_pos (pow_pos (sub_pos.2 y1) 2) (by linarith only [y0]))
-      (mul_pos (sub_pos.2 x1) (mul_pos y0 (by nlinarith only [y0, y1])))
-  have f3 : X * Y < 1 := by nlinarith only [x0, x1, y0, y1]
-  have i_vw : 1 / 15 * X * Y ^ 3 <
-      -1 / 10 * X * Y ^ 3 + 1 / 6 * X * Y := by
-    linarith only [f1, f2, f3]
-  have i_vt : 1 / 15 * X * Y ^ 3 <
-      1 / 15 * X * Y ^ 3 - 1 / 3 * X * Y + 1 / 3 := by
-    linarith only [f1, f2, f3]
-  have i_wt : -1 / 10 * X * Y ^ 3 + 1 / 6 * X * Y <
-      1 / 15 * X * Y ^ 3 - 1 / 3 * X * Y + 1 / 3 := by
-    linarith only [f1, f2, f3]
-  clear f1 f2 f3
-  generalize 1 / 15 * X * Y ^ 3 - 1 / 3 * X * Y + 1 / 3 = t at *
-  generalize -1 / 10 * X * Y ^ 3 + 1 / 6 * X * Y = w at *
-  generalize 1 / 15 * X * Y ^ 3 = v at *
-  have hC := ac1_leastClass_eq (τ := τ) {5, 6, 8, 9, 11, 12} v
-    (by decide) (by decide) (by
-    intro i hi
-    rw [mem_Icc] at hi
-    obtain ⟨hi1, hi2⟩ := hi
-    interval_cases i <;> constructor <;> intro hm <;>
-      first | exact absurd hm (by decide) | linarith)
-  refine ⟨hC, ac1_secondClass_eq hC {4, 7, 10, 13, 14, 15} w (by decide) (by decide) (by decide)
     (by
     intro i hi
     rw [mem_Icc] at hi

@@ -1,26 +1,24 @@
 module
 
 public import ADR11.Identifiability.Proposition8
-public import ADR11.Identifiability.FiveTaxa.Classes
-public import ADR11.Identifiability.FiveTaxa.Common
-public import ADR11.Nonbinary.AppendixC
+public import ADR11.Nonbinary.FiveTaxa.Shapes
 
 /-!
-# Appendix C for the rootings of `U5 2`
+# Appendix C: the labelling and the lengths for the rootings of `U5 2`
 
 The proof of Proposition 11 (Appendix C of the paper, l. 938–995) for the five-taxon species trees
 whose unrooted tree is `U5 2`, with the splits `ab|cde` and `abc|de`. Its ten rootings
 (`ADR11.rootings5 2`) are the four caterpillars `((((a,b),c),d),e)`, `((((a,b),c),e),d)`,
 `((((d,e),c),b),a)`, `((((d,e),c),a),b)`, the pseudocaterpillar `(((a,b),(d,e)),c)`, the balanced
 trees `(((a,b),c),(d,e))` and `((a,b),(c,(d,e)))`, the polytomy `P₅ = ((a,b),(d,e),c)`, and the
-two polytomies of shape `P₆`, `(((a,b),c),d,e)` and `(a,b,(c,(d,e)))`. Following the paper, the
-rooted metric tree is read off the distribution in three steps.
+two polytomies of shape `P₆`, `(((a,b),c),d,e)` and `(a,b,(c,(d,e)))`.
 
-* The shape, from the size of the least probable class `𝒞` and of the class with the second
-  smallest probability: `|𝒞| = 10` only for `P₅`, `|𝒞| = 8` for the pseudocaterpillar, and
-  `|𝒞| = 6` for the others, with a second class of two trees for the caterpillars and of four
-  trees for the balanced trees and `P₆` (`ac2_classSizes`, from `appendixC_leastClass` by
-  permuting labels; `ac2_P5_shape`, `ac2_balanced_P6_shape`).
+The shape group of the species tree has been read off the classes of gene trees before the
+unrooted tree is used (`ADR11.Nonbinary.FiveTaxa.Shapes`); among the rootings of `U5 2` the groups
+are the caterpillars, the pseudocaterpillar, `P₅`, and the balanced trees with `P₆`
+(`ac2_group_p5`, `ac2_group_balP6`). This module carries out the remaining steps for two rootings
+of `U5 2` with the same shape group.
+
 * The labelling: for two binary trees by Proposition 8 (`proposition8`); for `P₅` by the unrooted
   tree; for the balanced trees and `P₆` by `T₇`, as for the balanced tree in the proof of
   Proposition 7 (`ac2_T7_rule`).
@@ -35,17 +33,11 @@ with the labels permuted).
 
 ## Main results
 
-* `ac2_rootings_two`: two species trees whose unrooted trees are `U5 2`, with the same unrooted
-  gene tree distribution, have the same rooted metric tree.
-* The rules of Appendix C for the rootings of `U5 2`: `ac2_classSizes`, `ac2_P5_shape`,
-  `ac2_balanced_P6_shape` (the shape), `ac2_T7_rule` (the labelling of the balanced trees and
-  `P₆`), `ac2_balanced_P6_rule` (`Z < 1` versus `Z = 1`), `ac2_P5_lengths`, `ac2_P6_lengths` (the
-  lengths, from Table 7); `ac2_rootings_two_polytomy` combines them.
-* `ac2_P5_P7_rule`: the rule of Appendix C telling `P₅` from `P₇` (both with `|𝒞| = 10`) by the
-  cherries of the trees of their two 2-element classes, also when these merge into one 4-element
-  class; `ac2_P5_P7_distinguish`: the rule separates the two representatives.
-* `ac2_classes_transport`, `ac2_classes_relabel`: relabelling the taxa permutes the classes
-  ("permuting labels").
+* `ac2_rootings_two`: two species trees whose unrooted trees are `U5 2`, with the same shape group
+  and the same unrooted gene tree distribution, have the same rooted metric tree.
+* The rules of Appendix C for the rootings of `U5 2`: `ac2_T7_rule` (the labelling of the balanced
+  trees and `P₆`), `ac2_balanced_P6_rule` (`Z < 1` versus `Z = 1`), `ac2_P5_lengths`,
+  `ac2_P6_lengths` (the lengths, from Table 7); `ac2_rootings_two_polytomy` combines them.
 -/
 
 @[expose] public section
@@ -54,159 +46,25 @@ namespace ADR11
 
 open Finset Real
 
-/-! ### Permuting labels: transport of the classes -/
-
-/-- If `s` permutes the indices `[1, 15]` and `u τ₀ (s i) = u τ i`, then `T_i` is in the least
-probable class of `τ` iff `T_{s i}` is in that of `τ₀`, and the least probable classes, and the
-classes with the second smallest probability, of `τ` and `τ₀` have the same sizes. -/
-theorem ac2_classes_transport {τ τ₀ : SpeciesTree (Fin 5)} {s : ℕ → ℕ}
-    (hs : (Icc 1 15).image s = Icc 1 15) (hu : ∀ i ∈ Icc 1 15, u τ₀ (s i) = u τ i) :
-    (∀ i ∈ Icc 1 15, (i ∈ cls_leastClass τ ↔ s i ∈ cls_leastClass τ₀)) ∧
-      #(cls_leastClass τ₀) = #(cls_leastClass τ) ∧
-      #(cls_secondClass τ₀) = #(cls_secondClass τ) := by
-  have hmaps : ∀ i ∈ Icc 1 15, s i ∈ Icc 1 15 := fun i hi => hs ▸ mem_image_of_mem s hi
-  have hsurj : ∀ j ∈ Icc 1 15, ∃ i ∈ Icc 1 15, s i = j := fun j hj =>
-    mem_image.1 (hs.symm ▸ hj)
-  have hinj : Set.InjOn s (Icc 1 15 : Finset ℕ) := by
-    rw [← Finset.card_image_iff, hs]
-  have hL : ∀ i ∈ Icc 1 15, (i ∈ cls_leastClass τ ↔ s i ∈ cls_leastClass τ₀) := by
-    intro i hi
-    simp only [cls_leastClass, mem_filter]
-    constructor
-    · rintro ⟨-, h⟩
-      refine ⟨hmaps i hi, fun j hj => ?_⟩
-      obtain ⟨k, hk, rfl⟩ := hsurj j hj
-      rw [hu i hi, hu k hk]
-      exact h k hk
-    · rintro ⟨-, h⟩
-      refine ⟨hi, fun j hj => ?_⟩
-      rw [← hu i hi, ← hu j hj]
-      exact h _ (hmaps j hj)
-  have hC2 : ∀ i ∈ Icc 1 15, (i ∈ cls_secondClass τ ↔ s i ∈ cls_secondClass τ₀) := by
-    intro i hi
-    simp only [cls_secondClass, mem_filter]
-    constructor
-    · rintro ⟨-, hiL, h⟩
-      refine ⟨hmaps i hi, fun h' => hiL ((hL i hi).2 h'), fun j hj hjL => ?_⟩
-      obtain ⟨k, hk, rfl⟩ := hsurj j hj
-      rw [hu i hi, hu k hk]
-      exact h k hk fun h' => hjL ((hL k hk).1 h')
-    · rintro ⟨-, hiL, h⟩
-      refine ⟨hi, fun h' => hiL ((hL i hi).1 h'), fun j hj hjL => ?_⟩
-      rw [← hu i hi, ← hu j hj]
-      exact h _ (hmaps j hj) fun h' => hjL ((hL j hj).2 h')
-  have himg : ∀ A : SpeciesTree (Fin 5) → Finset ℕ, (∀ σ, A σ ⊆ Icc 1 15) →
-      (∀ i ∈ Icc 1 15, (i ∈ A τ ↔ s i ∈ A τ₀)) → #(A τ₀) = #(A τ) := by
-    intro A hA hmem
-    have : A τ₀ = (A τ).image s := by
-      ext j
-      constructor
-      · intro hj
-        obtain ⟨i, hi, rfl⟩ := hsurj j (hA τ₀ hj)
-        exact mem_image_of_mem s ((hmem i hi).2 hj)
-      · intro hj
-        obtain ⟨i, hi, rfl⟩ := mem_image.1 hj
-        exact (hmem i (hA τ hi)).1 hi
-    rw [this, card_image_of_injOn (Set.InjOn.mono (coe_subset.2 (hA τ)) hinj)]
-  refine ⟨hL, himg cls_leastClass (fun _ _ hi => ?_) hL,
-    himg cls_secondClass (fun _ _ hi => ?_) hC2⟩
-  · simp only [cls_leastClass, mem_filter] at hi
-    exact hi.1
-  · simp only [cls_secondClass, mem_filter] at hi
-    exact hi.1
-
-/-- Relabelling the taxa along `e`, which maps each gene tree `T_i` to `T_{s i}`, permutes the
-classes ("permuting labels immediately gives the distribution for other choices", l. 319). -/
-theorem ac2_classes_relabel {e : Equiv.Perm (Fin 5)} {s : ℕ → ℕ}
-    (hT : ∀ i ∈ Icc 1 15, relabelFamily e (T5 i) = T5 (s i))
-    (hs : (Icc 1 15).image s = Icc 1 15) (τ : SpeciesTree (Fin 5)) :
-    (∀ i ∈ Icc 1 15, (i ∈ cls_leastClass τ ↔ s i ∈ cls_leastClass (τ.relabel e))) ∧
-      #(cls_leastClass (τ.relabel e)) = #(cls_leastClass τ) ∧
-      #(cls_secondClass (τ.relabel e)) = #(cls_secondClass τ) :=
-  ac2_classes_transport hs fun i hi => cls_u_relabel τ e (hT i hi)
-
-/-- The relabelling `d ↔ e`; it maps `((((a,b),c),e),d)` to the caterpillar `((((a,b),c),d),e)`. -/
-def ac2_swapDE : Equiv.Perm (Fin 5) := ⟨![0, 1, 2, 4, 3], ![0, 1, 2, 4, 3], by decide, by decide⟩
-
-/-- The relabelling `a ↦ e ↦ b ↦ d ↦ a`; it maps `((((d,e),c),b),a)` to the caterpillar
-`((((a,b),c),d),e)`. -/
-def ac2_cycle : Equiv.Perm (Fin 5) := ⟨![4, 3, 2, 0, 1], ![3, 4, 2, 1, 0], by decide, by decide⟩
+/-! ### Permuting labels: the relabelling `a ↔ d, b ↔ e` -/
 
 /-- The relabelling `a ↔ d, b ↔ e`, which exchanges the two cherries of `U5 2`; it maps
-`((((d,e),c),a),b)`, `((a,b),(c,(d,e)))` and `(a,b,(c,(d,e)))` to the caterpillar
-`((((a,b),c),d),e)`, the balanced tree `(((a,b),c),(d,e))` and `P₆ = (((a,b),c),d,e)`. -/
+`((a,b),(c,(d,e)))` and `(a,b,(c,(d,e)))` to the balanced tree `(((a,b),c),(d,e))` and to
+`P₆ = (((a,b),c),d,e)`. -/
 def ac2_flip : Equiv.Perm (Fin 5) := ⟨![3, 4, 2, 0, 1], ![3, 4, 2, 0, 1], by decide, by decide⟩
 
-/-- `ac2_swapDE` maps `T_i` to `T_{ac2_idxDE i}` (`ac2_swapDE_T5`). -/
-def ac2_idxDE (i : ℕ) : ℕ := [0, 1, 3, 2, 4, 6, 5, 10, 11, 12, 7, 8, 9, 13, 15, 14].getD i 0
-
-/-- `ac2_cycle` maps `T_i` to `T_{ac2_idxCycle i}` (`ac2_cycle_T5`). -/
-def ac2_idxCycle (i : ℕ) : ℕ := [0, 1, 13, 4, 2, 14, 7, 12, 11, 10, 5, 8, 15, 3, 9, 6].getD i 0
-
-/-- `ac2_flip` maps `T_i` to `T_{ac2_idxFlip i}` (`ac2_flip_T5`). -/
+/-- The permutation of the gene trees induced by `ac2_flip`: it maps `T_i` to `T_{ac2_idxFlip i}`
+(`ac2_flip_idx`). -/
 def ac2_idxFlip (i : ℕ) : ℕ := [0, 1, 13, 4, 3, 15, 10, 9, 8, 7, 6, 11, 14, 2, 12, 5].getD i 0
 
-/-- `ac2_swapDE` maps each gene tree `T_i` to `T_{ac2_idxDE i}`. -/
-theorem ac2_swapDE_T5 : ∀ i ∈ Icc 1 15, relabelFamily ac2_swapDE (T5 i) = T5 (ac2_idxDE i) := by
+theorem ac2_flip_idx : ∀ i ∈ Icc 1 15, ac2_idxFlip i ∈ Icc 1 15 ∧
+    relabelFamily ac2_flip (T5 i) = T5 (ac2_idxFlip i) := by
   decide +kernel
 
-/-- `ac2_cycle` maps each gene tree `T_i` to `T_{ac2_idxCycle i}`. -/
-theorem ac2_cycle_T5 : ∀ i ∈ Icc 1 15, relabelFamily ac2_cycle (T5 i) = T5 (ac2_idxCycle i) := by
-  decide +kernel
+theorem ac2_flip_surj : ∀ j ∈ Icc 1 15, ∃ i ∈ Icc 1 15, ac2_idxFlip i = j := by
+  decide
 
-/-- `ac2_flip` maps each gene tree `T_i` to `T_{ac2_idxFlip i}`. -/
-theorem ac2_flip_T5 : ∀ i ∈ Icc 1 15, relabelFamily ac2_flip (T5 i) = T5 (ac2_idxFlip i) := by
-  decide +kernel
-
-/-- `ac2_idxDE` permutes `[1, 15]`. -/
-theorem ac2_idxDE_image : (Icc 1 15).image ac2_idxDE = Icc 1 15 := by
-  decide +kernel
-
-/-- `ac2_idxCycle` permutes `[1, 15]`. -/
-theorem ac2_idxCycle_image : (Icc 1 15).image ac2_idxCycle = Icc 1 15 := by
-  decide +kernel
-
-/-- `ac2_idxFlip` permutes `[1, 15]`. -/
-theorem ac2_idxFlip_image : (Icc 1 15).image ac2_idxFlip = Icc 1 15 := by
-  decide +kernel
-
-/-! ### Classes given by explicit values -/
-
-/-- A set `C ⊆ [1, 15]` of equiprobable trees, less probable than all the others, is the least
-probable class. -/
-theorem ac2_leastClass_eq {τ : SpeciesTree (Fin 5)} {C : Finset ℕ} {m : ℕ} (hC : C ⊆ Icc 1 15)
-    (hm : m ∈ C) (heq : ∀ i ∈ C, u τ i = u τ m) (hlt : ∀ i ∈ Icc 1 15, i ∉ C → u τ m < u τ i) :
-    cls_leastClass τ = C := by
-  ext i
-  simp only [cls_leastClass, mem_filter]
-  constructor
-  · rintro ⟨hi, h⟩
-    by_contra hiC
-    exact absurd (h m (hC hm)) (not_le.2 (hlt i hi hiC))
-  · intro hiC
-    refine ⟨hC hiC, fun j hj => ?_⟩
-    rw [heq i hiC]
-    by_cases hjC : j ∈ C
-    · rw [heq j hjC]
-    · exact (hlt j hj hjC).le
-
-/-- A set `C ⊆ [1, 15]` of equiprobable trees, more probable than all the others, is the set of
-the most probable trees. -/
-theorem ac2_mostProbable_eq {τ : SpeciesTree (Fin 5)} {C : Finset ℕ} {m : ℕ} (hC : C ⊆ Icc 1 15)
-    (hm : m ∈ C) (heq : ∀ i ∈ C, u τ i = u τ m) (hlt : ∀ i ∈ Icc 1 15, i ∉ C → u τ i < u τ m) :
-    cls_mostProbable τ = C := by
-  ext i
-  simp only [cls_mostProbable, mem_filter]
-  constructor
-  · rintro ⟨hi, h⟩
-    by_contra hiC
-    exact absurd (h m (hC hm)) (not_le.2 (hlt i hi hiC))
-  · intro hiC
-    refine ⟨hC hiC, fun j hj => ?_⟩
-    rw [heq i hiC]
-    by_cases hjC : j ∈ C
-    · rw [heq j hjC]
-    · exact (hlt j hj hjC).le
+/-! ### The least probable class of `P₆` -/
 
 /-- The least probable class of `P₆ = (((a,b),c),d,e)` is `{T₇, T₈, T₁₀, T₁₁, T₁₄, T₁₅}`
 (Table 7, with the inequalities of Table 6). -/
@@ -220,7 +78,7 @@ theorem ac2_P6_leastClass (τ : SpeciesTree (Fin 5)) (h : τ.clusters = polytomy
   have q6 : u τ 6 = u τ 5 := by rw [e6, e5]
   have q9 : u τ 9 = u τ 5 := by rw [e9, e5]
   have q12 : u τ 12 = u τ 5 := by rw [e12, e5]
-  refine ac2_leastClass_eq (m := 7) (by decide) (by decide) ?_ ?_
+  refine sh_leastClass_eq (m := 7) (by decide) (by decide) ?_ ?_
   · intro i hi
     simp only [mem_insert, mem_singleton] at hi
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl <;>
@@ -229,13 +87,7 @@ theorem ac2_P6_leastClass (τ : SpeciesTree (Fin 5)) (h : τ.clusters = polytomy
     obtain ⟨hi1, hi2⟩ := mem_Icc.1 hi
     interval_cases i <;> first | exact (hiC (by decide)).elim | linarith
 
-/-! ### The shape: the sizes of the classes -/
-
-/-- The four caterpillar rootings of `U5 2`: `((((a,b),c),d),e)`, `((((a,b),c),e),d)`,
-`((((d,e),c),b),a)`, `((((d,e),c),a),b)`. -/
-abbrev ac2_caterpillars : Finset (Finset (Finset (Fin 5))) :=
-  {hierarchyOf {{0, 1}, {0, 1, 2}, {0, 1, 2, 3}}, hierarchyOf {{0, 1}, {0, 1, 2}, {0, 1, 2, 4}},
-    hierarchyOf {{3, 4}, {2, 3, 4}, {1, 2, 3, 4}}, hierarchyOf {{3, 4}, {2, 3, 4}, {0, 2, 3, 4}}}
+/-! ### The shape groups of the rootings of `U5 2` -/
 
 /-- The rootings of `U5 2` with the shape of the balanced tree or of `P₆`: `(((a,b),c),(d,e))`,
 `((a,b),(c,(d,e)))`, `(((a,b),c),d,e)`, `(a,b,(c,(d,e)))`. -/
@@ -248,113 +100,22 @@ abbrev ac2_balancedP6 : Finset (Finset (Finset (Fin 5))) :=
 abbrev ac2_polytomies : Finset (Finset (Finset (Fin 5))) :=
   {hierarchyOf {{0, 1}, {3, 4}}, hierarchyOf {{0, 1}, {0, 1, 2}}, hierarchyOf {{3, 4}, {2, 3, 4}}}
 
-/-- Appendix C, the sizes of the classes for the rootings of `U5 2` (those of the representatives,
-`appendixC_leastClass`, with the labels permuted): the least probable class `𝒞` has six trees and
-the class with the second smallest probability two for the four caterpillars; `|𝒞| = 8` for the
-pseudocaterpillar `(((a,b),(d,e)),c)`; `|𝒞| = 6` and a second class of four trees for the
-balanced trees and the two `P₆`; `|𝒞| = 10` for `P₅ = ((a,b),(d,e),c)`. -/
-theorem ac2_classSizes (τ : SpeciesTree (Fin 5)) :
-    (τ.clusters ∈ ac2_caterpillars → #(cls_leastClass τ) = 6 ∧ #(cls_secondClass τ) = 2) ∧
-    (τ.clusters = hierarchyOf {{0, 1}, {3, 4}, {0, 1, 3, 4}} → #(cls_leastClass τ) = 8) ∧
-    (τ.clusters ∈ ac2_balancedP6 → #(cls_leastClass τ) = 6 ∧ #(cls_secondClass τ) = 4) ∧
-    (τ.clusters = hierarchyOf {{0, 1}, {3, 4}} → #(cls_leastClass τ) = 10) := by
-  refine ⟨fun h => ?_, fun h => (appendixC_leastClass τ).2.2.2.2.2.1 h, fun h => ?_,
-    fun h => (appendixC_leastClass τ).2.2.2.1 h⟩
-  · simp only [ac2_caterpillars, mem_insert, mem_singleton] at h
-    rcases h with h | h | h | h
-    · exact (appendixC_leastClass τ).2.2.2.2.2.2.1 h
-    · obtain ⟨-, e1, e2⟩ := ac2_classes_relabel ac2_swapDE_T5 ac2_idxDE_image τ
-      have h0 : (τ.relabel ac2_swapDE).clusters = caterpillar5 := by
-        rw [SpeciesTree.relabel_clusters, h]
-        decide +kernel
-      rw [← e1, ← e2]
-      exact (appendixC_leastClass _).2.2.2.2.2.2.1 h0
-    · obtain ⟨-, e1, e2⟩ := ac2_classes_relabel ac2_cycle_T5 ac2_idxCycle_image τ
-      have h0 : (τ.relabel ac2_cycle).clusters = caterpillar5 := by
-        rw [SpeciesTree.relabel_clusters, h]
-        decide +kernel
-      rw [← e1, ← e2]
-      exact (appendixC_leastClass _).2.2.2.2.2.2.1 h0
-    · obtain ⟨-, e1, e2⟩ := ac2_classes_relabel ac2_flip_T5 ac2_idxFlip_image τ
-      have h0 : (τ.relabel ac2_flip).clusters = caterpillar5 := by
-        rw [SpeciesTree.relabel_clusters, h]
-        decide +kernel
-      rw [← e1, ← e2]
-      exact (appendixC_leastClass _).2.2.2.2.2.2.1 h0
-  · simp only [ac2_balancedP6, mem_insert, mem_singleton] at h
-    rcases h with h | h | h | h
-    · exact (appendixC_leastClass τ).2.2.2.2.2.2.2.1 h
-    · obtain ⟨-, e1, e2⟩ := ac2_classes_relabel ac2_flip_T5 ac2_idxFlip_image τ
-      have h0 : (τ.relabel ac2_flip).clusters = balanced5 := by
-        rw [SpeciesTree.relabel_clusters, h]
-        decide +kernel
-      rw [← e1, ← e2]
-      exact (appendixC_leastClass _).2.2.2.2.2.2.2.1 h0
-    · exact (appendixC_leastClass τ).2.2.2.2.2.2.2.2.2.1 h
-    · obtain ⟨-, e1, e2⟩ := ac2_classes_relabel ac2_flip_T5 ac2_idxFlip_image τ
-      have h0 : (τ.relabel ac2_flip).clusters = polytomy5 6 := by
-        rw [SpeciesTree.relabel_clusters, h]
-        decide +kernel
-      rw [← e1, ← e2]
-      exact (appendixC_leastClass _).2.2.2.2.2.2.2.2.2.1 h0
-
-/-- Appendix C, `|𝒞| = 10`: among the rootings of `U5 2`, the least probable class has ten trees
-exactly for `P₅ = ((a,b),(d,e),c)`. As this is the only rooting of `U5 2` of shape `P₅`, "the
-labeling on the unrooted tree determines that on the rooted one". -/
-theorem ac2_P5_shape (τ : SpeciesTree (Fin 5)) (hR : τ.clusters ∈ rootings5 2) :
-    #(cls_leastClass τ) = 10 ↔ τ.clusters = hierarchyOf {{0, 1}, {3, 4}} := by
-  obtain ⟨hc, hp, hb, h5⟩ := ac2_classSizes τ
-  have cat (h : τ.clusters ∈ ac2_caterpillars) :
-      #(cls_leastClass τ) = 10 ↔ τ.clusters = hierarchyOf {{0, 1}, {3, 4}} := by
-    refine iff_of_false (fun h' => absurd (h'.symm.trans (hc h).1) (by decide)) fun h' => ?_
-    rw [h'] at h
-    exact absurd h (by decide +kernel)
-  have bal (h : τ.clusters ∈ ac2_balancedP6) :
-      #(cls_leastClass τ) = 10 ↔ τ.clusters = hierarchyOf {{0, 1}, {3, 4}} := by
-    refine iff_of_false (fun h' => absurd (h'.symm.trans (hb h).1) (by decide)) fun h' => ?_
-    rw [h'] at h
-    exact absurd h (by decide +kernel)
+/-- Among the rootings of `U5 2`, `P₅ = ((a,b),(d,e),c)` is the only one in the shape group of
+`P₅`: once the shape is known, "the labeling on the unrooted tree determines that on the rooted
+one". -/
+theorem ac2_group_p5 {τ : SpeciesTree (Fin 5)} (hR : τ.clusters ∈ rootings5 2)
+    (hg : sh_groupOf τ.clusters = .p5) : τ.clusters = hierarchyOf {{0, 1}, {3, 4}} := by
   simp only [rootings5, mem_insert, mem_singleton] at hR
-  rcases hR with h | h | h | h | h | h | h | h | h | h
-  · exact cat (by rw [h]; decide +kernel)
-  · exact cat (by rw [h]; decide +kernel)
-  · exact cat (by rw [h]; decide +kernel)
-  · exact cat (by rw [h]; decide +kernel)
-  · refine iff_of_false (fun h' => absurd (h'.symm.trans (hp h)) (by decide)) ?_
-    rw [h]
-    decide +kernel
-  · exact bal (by rw [h]; decide +kernel)
-  · exact bal (by rw [h]; decide +kernel)
-  · exact iff_of_true (h5 h) h
-  · exact bal (by rw [h]; decide +kernel)
-  · exact bal (by rw [h]; decide +kernel)
+  rcases hR with h | h | h | h | h | h | h | h | h | h <;> rw [h] at hg ⊢ <;>
+    first | rfl | exact absurd hg (by decide +kernel)
 
-/-- Appendix C, `|𝒞| = 6`: among the rootings of `U5 2`, the least probable class has six trees
-and the class with the second smallest probability four exactly for the balanced trees and `P₆`
-(the caterpillars have a second class of two trees, the pseudocaterpillar has `|𝒞| = 8`, and
-`P₅` has `|𝒞| = 10`). -/
-theorem ac2_balanced_P6_shape (τ : SpeciesTree (Fin 5)) (hR : τ.clusters ∈ rootings5 2) :
-    (#(cls_leastClass τ) = 6 ∧ #(cls_secondClass τ) = 4) ↔ τ.clusters ∈ ac2_balancedP6 := by
-  obtain ⟨hc, hp, hb, h5⟩ := ac2_classSizes τ
-  have cat (h : τ.clusters ∈ ac2_caterpillars) (hn : τ.clusters ∉ ac2_balancedP6) :
-      (#(cls_leastClass τ) = 6 ∧ #(cls_secondClass τ) = 4) ↔ τ.clusters ∈ ac2_balancedP6 :=
-    iff_of_false (fun h' => absurd (h'.2.symm.trans (hc h).2) (by decide)) hn
+/-- Among the rootings of `U5 2`, those in the shape group of the balanced tree and `P₆` are the two
+balanced trees and the two rootings of shape `P₆`. -/
+theorem ac2_group_balP6 {τ : SpeciesTree (Fin 5)} (hR : τ.clusters ∈ rootings5 2)
+    (hg : sh_groupOf τ.clusters = .balP6) : τ.clusters ∈ ac2_balancedP6 := by
   simp only [rootings5, mem_insert, mem_singleton] at hR
-  rcases hR with h | h | h | h | h | h | h | h | h | h
-  · exact cat (by rw [h]; decide +kernel) (by rw [h]; decide +kernel)
-  · exact cat (by rw [h]; decide +kernel) (by rw [h]; decide +kernel)
-  · exact cat (by rw [h]; decide +kernel) (by rw [h]; decide +kernel)
-  · exact cat (by rw [h]; decide +kernel) (by rw [h]; decide +kernel)
-  · refine iff_of_false (fun h' => absurd (h'.1.symm.trans (hp h)) (by decide)) ?_
-    rw [h]
-    decide +kernel
-  · exact iff_of_true (hb (by rw [h]; decide +kernel)) (by rw [h]; decide +kernel)
-  · exact iff_of_true (hb (by rw [h]; decide +kernel)) (by rw [h]; decide +kernel)
-  · refine iff_of_false (fun h' => absurd (h'.1.symm.trans (h5 h)) (by decide)) ?_
-    rw [h]
-    decide +kernel
-  · exact iff_of_true (hb (by rw [h]; decide +kernel)) (by rw [h]; decide +kernel)
-  · exact iff_of_true (hb (by rw [h]; decide +kernel)) (by rw [h]; decide +kernel)
+  rcases hR with h | h | h | h | h | h | h | h | h | h <;> rw [h] at hg ⊢ <;>
+    first | decide +kernel | exact absurd hg (by decide +kernel)
 
 /-! ### The labelling of the balanced trees and `P₆`: `T₇` -/
 
@@ -374,22 +135,28 @@ theorem ac2_T7_rule (τ : SpeciesTree (Fin 5)) :
     decide
   · rw [ac2_P6_leastClass τ h]
     decide
-  · obtain ⟨hL, -, -⟩ := ac2_classes_relabel ac2_flip_T5 ac2_idxFlip_image τ
+  · -- permuting the labels `a ↔ d, b ↔ e` maps `τ` to `(((a,b),c),(d,e))` and `T₇` to `T₉`
+    obtain ⟨hL, -, -⟩ := sh_classes_idx ac2_flip_idx ac2_flip_surj τ
     have h0 : (τ.relabel ac2_flip).clusters = balanced5 := by
       rw [SpeciesTree.relabel_clusters, h]
       decide +kernel
     have hc : cls_leastClass (τ.relabel ac2_flip) = {7, 8, 10, 11, 14, 15} :=
       (balanced_extremeClasses _ h0).1
-    have := (hL 7 (by decide)).1 h7
-    rw [hc] at this
-    exact absurd this (by decide)
-  · obtain ⟨hL, -, -⟩ := ac2_classes_relabel ac2_flip_T5 ac2_idxFlip_image τ
+    have h9 : ac2_idxFlip 7 ∈ cls_leastClass (τ.relabel ac2_flip) := by
+      rw [hL]
+      exact mem_image_of_mem _ h7
+    rw [hc] at h9
+    exact absurd h9 (by decide)
+  · -- permuting the labels `a ↔ d, b ↔ e` maps `τ` to `(((a,b),c),d,e)` and `T₇` to `T₉`
+    obtain ⟨hL, -, -⟩ := sh_classes_idx ac2_flip_idx ac2_flip_surj τ
     have h0 : (τ.relabel ac2_flip).clusters = polytomy5 6 := by
       rw [SpeciesTree.relabel_clusters, h]
       decide +kernel
-    have := (hL 7 (by decide)).1 h7
-    rw [ac2_P6_leastClass _ h0] at this
-    exact absurd this (by decide)
+    have h9 : ac2_idxFlip 7 ∈ cls_leastClass (τ.relabel ac2_flip) := by
+      rw [hL]
+      exact mem_image_of_mem _ h7
+    rw [ac2_P6_leastClass _ h0] at h9
+    exact absurd h9 (by decide)
 
 /-! ### The balanced tree versus `P₆`: `Z < 1` versus `Z = 1` -/
 
@@ -547,25 +314,26 @@ theorem ac2_isBinary {τ : SpeciesTree (Fin 5)} (hR : τ.clusters ∈ rootings5 
   ac2_binaryRootings_isBinary _ (ac2_rootings5_two_cases _ hR hn)
 
 /-- Appendix C for a rooting `τ` of `U5 2` with a polytomy, `P₅` or `P₆`, and any rooting `τ'` of
-`U5 2` with the same distribution. The shape: `P₅` is the only rooting with `|𝒞| = 10`; the
-balanced trees and `P₆` are those with `|𝒞| = 6` and a second class of four trees. The labelling:
-for `P₅` by the unrooted tree; for the balanced trees and `P₆` by `T₇`. The balanced tree versus
-`P₆`: `Z < 1` versus `Z = 1`. The lengths: Table 7. -/
+`U5 2` with the same shape group and the same distribution. For `P₅`, the labelling is that of the
+unrooted tree (`ac2_group_p5`). For `P₆`, `τ'` is a balanced tree or of shape `P₆`
+(`ac2_group_balP6`); the labelling is given by `T₇` (`ac2_T7_rule`), and the balanced tree is told
+apart from `P₆` by `Z < 1` versus `Z = 1` (`ac2_balanced_P6_rule`). The lengths: Table 7. -/
 theorem ac2_rootings_two_polytomy (τ τ' : SpeciesTree (Fin 5)) (hn : τ.clusters ∈ ac2_polytomies)
-    (hR' : τ'.clusters ∈ rootings5 2) (h : τ.unrootedDist id = τ'.unrootedDist id) :
-    τ.SameRootedMetricTree τ' := by
+    (hR' : τ'.clusters ∈ rootings5 2) (hg : sh_groupOf τ.clusters = sh_groupOf τ'.clusters)
+    (h : τ.unrootedDist id = τ'.unrootedDist id) : τ.SameRootedMetricTree τ' := by
   have hC := cls_leastClass_congr h
-  have hC2 := cls_secondClass_congr h
   have hu := cls_u_congr h
-  obtain ⟨-, -, hb, h5⟩ := ac2_classSizes τ
   simp only [ac2_polytomies, mem_insert, mem_singleton] at hn
   rcases hn with hτ | hτ | hτ
-  · -- `P₅`: `|𝒞| = 10`, and the labelling is that of the unrooted tree
-    have h10 : #(cls_leastClass τ') = 10 := by rw [← hC]; exact h5 hτ
-    exact ac2_P5_same h hτ ((ac2_P5_shape τ' hR').1 h10)
-  · -- `P₆ = (((a,b),c),d,e)`: `|𝒞| = 6`, second class of four trees
-    obtain ⟨c6, c4⟩ := hb (by rw [hτ]; decide +kernel)
-    have hs := (ac2_balanced_P6_shape τ' hR').1 ⟨by rw [← hC]; exact c6, by rw [← hC2]; exact c4⟩
+  · -- `P₅`: the labelling is that of the unrooted tree
+    have g5 : sh_groupOf τ'.clusters = .p5 := by
+      rw [← hg, hτ]
+      decide +kernel
+    exact ac2_P5_same h hτ (ac2_group_p5 hR' g5)
+  · -- `P₆ = (((a,b),c),d,e)`: `τ'` is a balanced tree or of shape `P₆`
+    have hs : τ'.clusters ∈ ac2_balancedP6 := ac2_group_balP6 hR' (by
+      rw [← hg, hτ]
+      decide +kernel)
     -- the labelling: `T₇ ∈ 𝒞`
     have h7 : 7 ∈ cls_leastClass τ' := by rw [← hC]; exact (ac2_T7_rule τ).2.1 hτ
     simp only [ac2_balancedP6, mem_insert, mem_singleton] at hs
@@ -580,9 +348,10 @@ theorem ac2_rootings_two_polytomy (τ τ' : SpeciesTree (Fin 5)) (hn : τ.cluste
     · exact absurd h7 ((ac2_T7_rule τ').2.2.1 hτ')
     · exact ac2_P6_same h (Or.inl rfl) hτ hτ'
     · exact absurd h7 ((ac2_T7_rule τ').2.2.2 hτ')
-  · -- `P₆ = (a,b,(c,(d,e)))`: `|𝒞| = 6`, second class of four trees
-    obtain ⟨c6, c4⟩ := hb (by rw [hτ]; decide +kernel)
-    have hs := (ac2_balanced_P6_shape τ' hR').1 ⟨by rw [← hC]; exact c6, by rw [← hC2]; exact c4⟩
+  · -- `P₆ = (a,b,(c,(d,e)))`: `τ'` is a balanced tree or of shape `P₆`
+    have hs : τ'.clusters ∈ ac2_balancedP6 := ac2_group_balP6 hR' (by
+      rw [← hg, hτ]
+      decide +kernel)
     -- the labelling: `T₇ ∉ 𝒞`
     have h7 : 7 ∉ cls_leastClass τ' := by rw [← hC]; exact (ac2_T7_rule τ).2.2.2 hτ
     simp only [ac2_balancedP6, mem_insert, mem_singleton] at hs
@@ -599,125 +368,20 @@ theorem ac2_rootings_two_polytomy (τ τ' : SpeciesTree (Fin 5)) (hn : τ.cluste
     · exact ac2_P6_same h (Or.inr rfl) hτ hτ'
 
 /-- Appendix C (proof of Proposition 11) for the unrooted tree `U5 2` (splits `ab|cde`,
-`abc|de`): two species trees whose unrooted trees are `U5 2`, with the same unrooted gene tree
-distribution, have the same rooted metric tree. If both are binary, this is Proposition 8; if one
-of them has a polytomy (`P₅` or `P₆`), its shape, labelling and lengths are determined as in
-`ac2_rootings_two_polytomy`. -/
+`abc|de`): two species trees whose unrooted trees are `U5 2`, with the same shape group (read off
+the gene tree classes, `sh_group_eq`) and the same unrooted gene tree distribution, have the same
+rooted metric tree. If both are binary, the labelling and the lengths are given by Proposition 8;
+if one of them has a polytomy (`P₅` or `P₆`), by `ac2_rootings_two_polytomy`. -/
 theorem ac2_rootings_two (τ τ' : SpeciesTree (Fin 5)) (hk : unroot τ.clusters = U5 2)
-    (hk' : unroot τ'.clusters = U5 2) (h : τ.unrootedDist id = τ'.unrootedDist id) :
-    τ.SameRootedMetricTree τ' := by
+    (hk' : unroot τ'.clusters = U5 2) (hg : sh_groupOf τ.clusters = sh_groupOf τ'.clusters)
+    (h : τ.unrootedDist id = τ'.unrootedDist id) : τ.SameRootedMetricTree τ' := by
   have hR := classify_mem_rootings5 τ 2 (by simp) hk
   have hR' := classify_mem_rootings5 τ' 2 (by simp) hk'
   by_cases hn : τ.clusters ∈ ac2_polytomies
-  · exact ac2_rootings_two_polytomy τ τ' hn hR' h
+  · exact ac2_rootings_two_polytomy τ τ' hn hR' hg h
   by_cases hn' : τ'.clusters ∈ ac2_polytomies
-  · exact (ac2_rootings_two_polytomy τ' τ hn' hR h.symm).symm
+  · exact (ac2_rootings_two_polytomy τ' τ hn' hR hg.symm h.symm).symm
   -- both trees are binary: Proposition 8
   exact proposition8 (Fintype.card_fin 5) τ τ' (ac2_isBinary hR hn) (ac2_isBinary hR' hn') h
-
-/-! ### `P₅` versus `P₇` -/
-
-/-- The gene trees neither in the least probable class nor most probable. For `P₅` and `P₇` these
-are the trees of the two 2-element classes, or of the 4-element class into which they can merge. -/
-noncomputable def ac2_middle (τ : SpeciesTree (Fin 5)) : Finset ℕ :=
-  (Icc 1 15).filter fun i => i ∉ cls_leastClass τ ∧ i ∉ cls_mostProbable τ
-
-/-- The number of pairs of gene trees `T_i`, `T_j` (`i < j` in `S`) with a cherry in common. -/
-def ac2_cherryPairs (S : Finset ℕ) : ℕ :=
-  #((S ×ˢ S).filter fun p => p.1 < p.2 ∧ (cls_cherries (T5 p.1) ∩ cls_cherries (T5 p.2)).Nonempty)
-
-/-- `ac2_middle` depends only on the distribution. -/
-theorem ac2_middle_congr {τ τ' : SpeciesTree (Fin 5)}
-    (h : τ.unrootedDist id = τ'.unrootedDist id) : ac2_middle τ = ac2_middle τ' := by
-  unfold ac2_middle
-  rw [cls_leastClass_congr h, cls_mostProbable_congr h]
-
-/-- Appendix C, `|𝒞| = 10`: `P₅ = ((a,b),(d,e),c)` and `P₇ = (((a,b),d,e),c)` are told apart "by
-considering the two 2-element classes for both". For `P₅`, the trees of each of the classes
-`{T₂, T₃}` and `{T₄, T₁₃}` have a cherry in common; for `P₇`, those of `{T₂, T₃}` have a cherry in
-common, those of `{T₈, T₁₁}` do not. The two classes can merge into one 4-element class
-(`appendixC_degenerate`); in all cases their union is `ac2_middle`, the trees neither least nor
-most probable, and "counting the number of trees with a cherry in common in the larger degenerate
-class" gives two pairs for `P₅` and one for `P₇`. -/
-theorem ac2_P5_P7_rule (σ : SpeciesTree (Fin 5)) :
-    (σ.clusters = polytomy5 5 →
-      ac2_middle σ = {2, 3, 4, 13} ∧ u σ 2 = u σ 3 ∧ u σ 4 = u σ 13 ∧
-        (cls_cherries (T5 2) ∩ cls_cherries (T5 3)).Nonempty ∧
-        (cls_cherries (T5 4) ∩ cls_cherries (T5 13)).Nonempty ∧
-        ac2_cherryPairs (ac2_middle σ) = 2) ∧
-    (σ.clusters = polytomy5 7 →
-      ac2_middle σ = {2, 3, 8, 11} ∧ u σ 2 = u σ 3 ∧ u σ 8 = u σ 11 ∧
-        (cls_cherries (T5 2) ∩ cls_cherries (T5 3)).Nonempty ∧
-        cls_cherries (T5 8) ∩ cls_cherries (T5 11) = ∅ ∧
-        ac2_cherryPairs (ac2_middle σ) = 1) := by
-  refine ⟨fun h => ?_, fun h => ?_⟩
-  · -- `P₅`: Table 7 and the inequalities `u₁ > u₂, u₄ > u₅` of Table 6
-    obtain ⟨h12, h14, h25, h45⟩ := (table6 σ).2.2.2.1 h
-    obtain ⟨-, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15⟩ :=
-      rootingDist5_2_7 σ h
-    have q3 : u σ 3 = u σ 2 := by rw [e3, e2]
-    have q13 : u σ 13 = u σ 4 := by rw [e13, e4]
-    have hL : cls_leastClass σ = {5, 6, 7, 8, 9, 10, 11, 12, 14, 15} := by
-      refine ac2_leastClass_eq (m := 5) (by decide) (by decide) ?_ ?_
-      · intro i hi
-        simp only [mem_insert, mem_singleton] at hi
-        rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-          simp only [e5, e6, e7, e8, e9, e10, e11, e12, e14, e15]
-      · intro i hi hiC
-        obtain ⟨hi1, hi2⟩ := mem_Icc.1 hi
-        interval_cases i <;> first | exact (hiC (by decide)).elim | linarith
-    have hM : cls_mostProbable σ = {1} := by
-      refine ac2_mostProbable_eq (m := 1) (by decide) (by decide) ?_ ?_
-      · intro i hi
-        rw [mem_singleton.1 hi]
-      · intro i hi hiC
-        obtain ⟨hi1, hi2⟩ := mem_Icc.1 hi
-        interval_cases i <;> first | exact (hiC (by decide)).elim | linarith
-    have hmid : ac2_middle σ = {2, 3, 4, 13} := by
-      unfold ac2_middle
-      rw [hL, hM]
-      decide
-    refine ⟨hmid, q3.symm, q13.symm, by decide, by decide, ?_⟩
-    rw [hmid]
-    decide
-  · -- `P₇`: Table 7 and the inequalities `u₁ > u₂, u₈ > u₄` of Table 6
-    obtain ⟨h12, h18, h24, h84⟩ := (table6 σ).2.2.2.2.2.1 h
-    obtain ⟨-, e2, e3, e4, e5, e6, e7, e8, e9, e10, e11, e12, e13, e14, e15⟩ :=
-      rootingDist5_1_5 σ h
-    have q3 : u σ 3 = u σ 2 := by rw [e3, e2]
-    have q11 : u σ 11 = u σ 8 := by rw [e11, e8]
-    have hL : cls_leastClass σ = {4, 5, 6, 7, 9, 10, 12, 13, 14, 15} := by
-      refine ac2_leastClass_eq (m := 4) (by decide) (by decide) ?_ ?_
-      · intro i hi
-        simp only [mem_insert, mem_singleton] at hi
-        rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
-          simp only [e4, e5, e6, e7, e9, e10, e12, e13, e14, e15]
-      · intro i hi hiC
-        obtain ⟨hi1, hi2⟩ := mem_Icc.1 hi
-        interval_cases i <;> first | exact (hiC (by decide)).elim | linarith
-    have hM : cls_mostProbable σ = {1} := by
-      refine ac2_mostProbable_eq (m := 1) (by decide) (by decide) ?_ ?_
-      · intro i hi
-        rw [mem_singleton.1 hi]
-      · intro i hi hiC
-        obtain ⟨hi1, hi2⟩ := mem_Icc.1 hi
-        interval_cases i <;> first | exact (hiC (by decide)).elim | linarith
-    have hmid : ac2_middle σ = {2, 3, 8, 11} := by
-      unfold ac2_middle
-      rw [hL, hM]
-      decide
-    refine ⟨hmid, q3.symm, q11.symm, by decide, by decide, ?_⟩
-    rw [hmid]
-    decide
-
-/-- The rule of `ac2_P5_P7_rule` separates `P₅` from `P₇`: the number of pairs of trees with a
-cherry in common in `ac2_middle`, a function of the distribution, is `2` for `P₅` and `1` for
-`P₇`. -/
-theorem ac2_P5_P7_distinguish {σ σ' : SpeciesTree (Fin 5)} (hσ : σ.clusters = polytomy5 5)
-    (hσ' : σ'.clusters = polytomy5 7) : σ.unrootedDist id ≠ σ'.unrootedDist id := by
-  intro h
-  have := congrArg ac2_cherryPairs (ac2_middle_congr h)
-  rw [((ac2_P5_P7_rule σ).1 hσ).2.2.2.2.2, ((ac2_P5_P7_rule σ').2 hσ').2.2.2.2.2] at this
-  exact absurd this (by decide)
 
 end ADR11
