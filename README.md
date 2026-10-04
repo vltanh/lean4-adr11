@@ -26,7 +26,7 @@ and a reduction of the general case to five taxa by marginalization.
   claims of Sections 1–5, among them the four-taxon formulas, the five rooted species trees with
   one unrooted distribution, the bases of linear invariants and the inequalities between gene tree
   probabilities with the claims that there are no others, and the discussion's comparison of two
-  split probabilities. The report lists them all ([`REPORT.md`](REPORT.md), Section 7).
+  split probabilities. The report lists them all ([`REPORT.md`](REPORT.md), Section 8).
 - **The results the paper cites and uses**, in [`ADR11/External/`](ADR11/External): Tavaré's
   formula for the number of lineages of Kingman's coalescent (equation (2)), the reconstruction of
   unrooted trees from their quartets (Steel 1992; Bandelt–Dress 1986 for nonbinary trees), and

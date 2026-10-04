@@ -30,9 +30,10 @@ Status of the formalization:
   reuse of the proofs, not the statements, of Theorem 9 and Corollary 10, as in the paper.
 - [`Challenge.lean`](Challenge.lean) states the main results in the vocabulary of Mathlib; [`Solution.lean`](Solution.lean) proves them
   from the library, and Comparator accepts the pair (Lean's kernel and NanoDa).
-- No result of the paper had to be corrected. Three statements that render unnumbered claims make
-  explicit an assumption that the paper leaves implicit (at least one gene sampled; a nonempty set
-  of taxa in Lemma 5; the ranges of `n` in the counts of Section 1; Section 6).
+- No result of the paper had to be corrected. A few statements make explicit an assumption that the
+  paper leaves implicit: at least one sampled gene (that gene trees of positive probability are
+  binary), a nonempty set of taxa `S` in Lemma 5 (for `σ⁺(S)` to exist), and the ranges of `n` in
+  the counts of Section 1 (Section 6).
 
 ## 1. Summary
 
