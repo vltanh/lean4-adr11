@@ -59,9 +59,11 @@ private lemma msc_map_eq_univ_iff (e : X ≃ Y) (A : Finset X) :
     A.map e.toEmbedding = univ ↔ A = univ := by
   rw [← Finset.map_univ_equiv e, Finset.map_inj]
 
+omit [Fintype X] [DecidableEq X] [Fintype Y] in
 theorem relabelFamily_injective (e : X ≃ Y) : Function.Injective (relabelFamily e) :=
   Finset.image_injective (Finset.map_injective e.toEmbedding)
 
+omit [Fintype X] [Fintype Y] in
 theorem relabelFamily_symm (e : X ≃ Y) (F : Finset (Finset X)) :
     relabelFamily e.symm (relabelFamily e F) = F := by
   unfold relabelFamily
@@ -91,6 +93,7 @@ def relabelFamilyEquiv (e : X ≃ Y) : Finset (Finset X) ≃ Finset (Finset Y) w
   left_inv := relabelFamily_symm e
   right_inv := fun F => by simpa using relabelFamily_symm e.symm F
 
+omit [Fintype X] [Fintype Y] in
 @[simp] theorem relabelFamilyEquiv_apply (e : X ≃ Y) (F : Finset (Finset X)) :
     relabelFamilyEquiv e F = relabelFamily e F := rfl
 
@@ -342,16 +345,19 @@ theorem SpeciesTree.relabel_univ_mem (σ : SpeciesTree X) (e : X ≃ Y) :
     (univ : Finset Y) ∈ relabelFamily e σ.clusters :=
   mem_image.2 ⟨univ, σ.univ_mem, Finset.map_univ_equiv e⟩
 
+omit [Fintype Y] in
 theorem SpeciesTree.relabel_singleton_mem (σ : SpeciesTree X) (e : X ≃ Y) (y : Y) :
     {y} ∈ relabelFamily e σ.clusters :=
   mem_image.2 ⟨{e.symm y}, σ.singleton_mem _, by simp⟩
 
+omit [Fintype Y] in
 theorem SpeciesTree.relabel_nonempty_of_mem (σ : SpeciesTree X) (e : X ≃ Y) :
     ∀ B ∈ relabelFamily e σ.clusters, B.Nonempty := by
   intro B hB
   obtain ⟨A, hA, rfl⟩ := mem_image.1 hB
   exact Finset.map_nonempty.2 (σ.nonempty_of_mem A hA)
 
+omit [Fintype Y] in
 theorem SpeciesTree.relabel_laminar (σ : SpeciesTree X) (e : X ≃ Y) :
     ∀ B ∈ relabelFamily e σ.clusters, ∀ C ∈ relabelFamily e σ.clusters,
       B ⊆ C ∨ C ⊆ B ∨ Disjoint B C := by

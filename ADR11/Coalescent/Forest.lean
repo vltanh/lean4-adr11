@@ -68,6 +68,7 @@ theorem mem_merges {F G : Finset (Finset L)} :
   · rintro ⟨A, hA, B, hB, hAB, rfl⟩
     exact ⟨A, B, ⟨⟨hA, hB⟩, hAB⟩, rfl⟩
 
+omit [Fintype L] [DecidableEq L] in
 theorem isForest_empty : IsForest (∅ : Finset (Finset L)) := by
   constructor <;> simp
 

@@ -88,6 +88,7 @@ private theorem marg_tr_eq_empty (e : L' ↪ L) {A : Finset L} (h : ¬ ∃ l, e 
   simp only [mem_filter, mem_univ, true_and, notMem_empty, iff_false]
   exact fun hl => h ⟨l, hl⟩
 
+omit [Fintype L] in
 theorem IsForest.restrictForest {F : Finset (Finset L)} (hF : IsForest F) (e : L' ↪ L) :
     IsForest (restrictForest e F) := by
   refine ⟨fun D hD => ?_, fun D hD D' hD' => ?_⟩
