@@ -208,6 +208,11 @@ the axiom audit, checks that the proofs follow the routes of the paper's proofs,
 the Challenge's copy of the shared definitions, the documentation's links to the code and its
 Markdown tables are current. It needs no settings.
 
+[`.github/workflows/palomar_preflight.yml`](.github/workflows/palomar_preflight.yml) runs, on
+demand, Palomar's complete mechanical verification of the current commit (the build, the source
+checks and Comparator with independent kernels), pinned to a fixed commit of Palomar's
+verifier, and publishes its report as an artifact. It needs the repository to be public.
+
 ## License
 
 [Apache-2.0](LICENSE).
